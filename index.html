@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickPEqR - Merchant QR Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #218838; }
+        #qrResult { margin-top: 20px; }
+        img { max-width: 200px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>ClickPEqR Merchant</h2>
+        <p>Generate Dynamic Scan & Pay QR</p>
+        
+        <input type="text" id="name" placeholder="Business Name" value="Lagos Store">
+        <input type="email" id="email" placeholder="Business Email" value="merchant@clickpeqr.com">
+        <input type="number" id="amount" placeholder="Amount (NGN)" value="5000">
+        
+        <button onclick="generateQR()">Generate QR Code</button>
+
+        <div id="qrResult"></div>
+    </div>
+
+    <script>
+        async function generateQR() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const amount = document.getElementById('amount').value;
+            const resultDiv = document.getElementById('qrResult');
+
+            resultDiv.innerHTML = "<p>Generating...</p>";
+
+            try {
+                const response = await fetch('http://localhost:5000/api/generate-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: Number(amount), name, email, phone: "08012345678" })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p><strong>Scan to Pay:</strong></p>
+                        <img src="${data.qrCodeImage}" alt="Payment QR Code"><br><br>
+                        <a href="${data.paymentLink}" target="_blank">Open Checkout Link</a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">Error: ${JSON.stringify(data.error)}</p>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color:red;">Server Connection Failed!</p>`;
+            }
+        }
+    </script>
+
+</body>
+</html>
