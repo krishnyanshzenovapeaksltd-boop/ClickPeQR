@@ -40,7 +40,8 @@
 
             try {
                 const response = await fetch('http://localhost:5000/api/generate-qr', {
-                    method: 'POST',
+                   const response = await fetch('https://YOUR-APP-NAME.onrender.com/api/generate-qr', {
+                       
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: Number(amount), name, email, phone: "08012345678" })
                 });
