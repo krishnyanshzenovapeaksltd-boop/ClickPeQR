@@ -1,20 +1,21 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config(); // Sabse upar hona zaroori hai!
+require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const axios = require('axios');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Check karein ki env variables load hue ya nahi
+// Check Environment Variables
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error("❌ ERROR: Supabase URL or Anon Key is missing! Check your .env file.");
+    console.error("❌ ERROR: Supabase URL or Anon Key is missing in .env file!");
 } else {
     console.log("✅ Supabase Credentials Loaded Successfully!");
 }
 
-// Supabase Client Initialization
+// Supabase Connection
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
@@ -22,10 +23,10 @@ const supabase = createClient(
 
 // Test Route
 app.get('/', (req, res) => {
-    res.json({ message: "ClickPEqR Backend is live and running!" });
+    res.json({ message: "ClickPEqR Backend & Database connected successfully!" });
 });
 
-// Register Merchant API
+// 1. Register Merchant API
 app.post('/api/merchant/register', async (req, res) => {
     try {
         const { business_name, email, phone_number, settlement_bank_code, settlement_account_number } = req.body;
@@ -42,6 +43,59 @@ app.post('/api/merchant/register', async (req, res) => {
         res.status(201).json({ success: true, message: "Merchant registered successfully!", data });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 2. Initiate Payment & Generate Payment Link / QR API
+app.post('/api/payment/initiate', async (req, res) => {
+    try {
+        const { merchant_id, customer_phone, amount, email, name } = req.body;
+        const tx_ref = "TXN_" + Date.now();
+
+        // Flutterwave API call for payment initialization
+        const response = await axios.post('https://api.flutterwave.com/v3/payments', {
+            tx_ref: tx_ref,
+            amount: amount,
+            currency: "NGN",
+            redirect_url: "https://krishnyanshzenovapeaks.com",
+            customer: {
+                email: email,
+                phonenumber: customer_phone,
+                name: name
+            },
+            customizations: {
+                title: "ClickPEqR Payment",
+                description: "Scan and Pay via Altra AI Automation"
+            }
+        }, {
+            headers: {
+                Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
+            }
+        });
+
+        if (response.data.status === "success") {
+            // Save transaction record to Supabase
+            await supabase.from('transactions').insert([
+                {
+                    merchant_id: merchant_id,
+                    customer_phone: customer_phone,
+                    amount: amount,
+                    transaction_reference: tx_ref,
+                    status: 'pending'
+                }
+            ]);
+
+            res.status(200).json({
+                success: true,
+                payment_link: response.data.data.link,
+                tx_ref: tx_ref
+            });
+        } else {
+            res.status(400).json({ success: false, message: "Payment initialization failed" });
+        }
+
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.response ? err.response.data : err.message });
     }
 });
 
