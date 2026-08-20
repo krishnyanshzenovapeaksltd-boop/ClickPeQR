@@ -7,7 +7,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Supabase Connection
+// Check if environment variables are loaded
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error("❌ Error: Supabase URL or Anon Key is missing in .env file!");
+}
+
+// Supabase Connection Initialization
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
@@ -18,7 +23,7 @@ app.get('/', (req, res) => {
     res.json({ message: "ClickPEqR Backend is running successfully!" });
 });
 
-// 1. Register Merchant API (Merchant Mode ke liye)
+// Register Merchant API
 app.post('/api/merchant/register', async (req, res) => {
     try {
         const { business_name, email, phone_number, settlement_bank_code, settlement_account_number } = req.body;
@@ -40,5 +45,5 @@ app.post('/api/merchant/register', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
 });
