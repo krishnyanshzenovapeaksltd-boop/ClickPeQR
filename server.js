@@ -1,73 +1,44 @@
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
-const QRCode = require('qrcode');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = process.env.PORT || 5000;
+// Supabase Connection
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
 
-// Base route to check if server is working
+// Test Route
 app.get('/', (req, res) => {
-    res.json({ message: "ClickPEqR Node.js Backend is running successfully!" });
+    res.json({ message: "ClickPEqR Backend is running successfully!" });
 });
 
-// Original Payment Route
-app.post('/api/initiate-payment', async (req, res) => {
+// 1. Register Merchant API (Merchant Mode ke liye)
+app.post('/api/merchant/register', async (req, res) => {
     try {
-        const { amount, email, name, phone } = req.body;
-        const response = await axios.post('https://api.flutterwave.com/v3/payments', {
-            tx_ref: "clickpeqr_" + Date.now(),
-            amount: amount,
-            currency: "NGN",
-            redirect_url: "https://example.com",
-            customer: { email, name, phone_number: phone },
-            customizations: { title: "ClickPEqR Payment", description: "Seamless QR code payment" }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` }
-        });
-        res.status(200).json({ success: true, data: response.data });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.response?.data || error.message });
+        const { business_name, email, phone_number, settlement_bank_code, settlement_account_number } = req.body;
+
+        const { data, error } = await supabase
+            .from('merchants')
+            .insert([
+                { business_name, email, phone_number, settlement_bank_code, settlement_account_number }
+            ])
+            .select();
+
+        if (error) throw error;
+
+        res.status(201).json({ success: true, message: "Merchant registered successfully!", data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// Dynamic QR Code Generation Route for Merchants
-app.post('/api/generate-qr', async (req, res) => {
-    try {
-        const { amount, email, name, phone } = req.body;
-
-        const response = await axios.post('https://api.flutterwave.com/v3/payments', {
-            tx_ref: "clickpeqr_qr_" + Date.now(),
-            amount: amount,
-            currency: "NGN",
-            redirect_url: "https://example.com",
-            customer: { email, name, phone_number: phone },
-            customizations: { 
-                title: "ClickPEqR Merchant Scan & Pay", 
-                description: "Direct Bank-to-Bank Transfer" 
-            }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` }
-        });
-
-        const paymentLink = response.data.data.link;
-        const qrCodeImage = await QRCode.toDataURL(paymentLink);
-
-        res.status(200).json({ 
-            success: true, 
-            paymentLink: paymentLink, 
-            qrCodeImage: qrCodeImage 
-        });
-
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.response?.data || error.message });
-    }
-});
-
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
