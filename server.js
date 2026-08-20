@@ -1,18 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config(); // Sabse upar hona zaroori hai!
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Check if environment variables are loaded
+// Check karein ki env variables load hue ya nahi
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error("❌ Error: Supabase URL or Anon Key is missing in .env file!");
+    console.error("❌ ERROR: Supabase URL or Anon Key is missing! Check your .env file.");
+} else {
+    console.log("✅ Supabase Credentials Loaded Successfully!");
 }
 
-// Supabase Connection Initialization
+// Supabase Client Initialization
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
@@ -20,7 +22,7 @@ const supabase = createClient(
 
 // Test Route
 app.get('/', (req, res) => {
-    res.json({ message: "ClickPEqR Backend is running successfully!" });
+    res.json({ message: "ClickPEqR Backend is live and running!" });
 });
 
 // Register Merchant API
