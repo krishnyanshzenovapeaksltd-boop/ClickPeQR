@@ -3,13 +3,13 @@ const cors = require('cors');
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
-const path = require('path'); // Add path module
+const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Serve static frontend files from the current directory
+// Serve static frontend files
 app.use(express.static(__dirname));
 
 // Supabase Connection
@@ -43,7 +43,7 @@ app.post('/api/merchant/register', async (req, res) => {
     }
 });
 
-// 2. Initiate Payment API
+// 2. Initiate Payment API with Success Page Redirect
 app.post('/api/payment/initiate', async (req, res) => {
     try {
         const { merchant_id, customer_phone, amount, email, name } = req.body;
@@ -53,7 +53,7 @@ app.post('/api/payment/initiate', async (req, res) => {
             tx_ref: tx_ref,
             amount: amount,
             currency: "NGN",
-            redirect_url: "https://krishnyanshzenovapeaks.com",
+            redirect_url: "https://clickpeqr.onrender.com/success.html", // Updated to success page!
             customer: { email, phonenumber: customer_phone, name },
             customizations: {
                 title: "ClickPEqR Payment",
