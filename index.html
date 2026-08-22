@@ -1,83 +1,253 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const { createClient } = require('@supabase/supabase-js');
-const axios = require('axios');
-const path = require('path'); // Add path module
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickPEqR - Altra AI Automation Platform</title>
+    <link rel="icon" href="Icon.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+    <!-- Navbar -->
+    <nav class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showLandingPage()">
+                <img src="Icon.png" alt="Logo" class="w-10 h-10 rounded-xl object-cover bg-white p-1 shadow">
+                <div>
+                    <span class="text-xl font-bold tracking-wide">ClickPEqR</span>
+                    <span class="block text-[10px] text-indigo-300 tracking-wider uppercase">Zenova Peak Tech Hub</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="showApp('login')" class="bg-indigo-700 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition">Merchant Portal</button>
+            </div>
+        </div>
+    </nav>
 
-// Serve static frontend files from the current directory
-app.use(express.static(__dirname));
+    <!-- LANDING PAGE VIEW -->
+    <div id="landing-page" class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Powered by Altra AI</span>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight">
+                    Next-Gen Scan & Pay Automation for African Businesses
+                </h1>
+                <p class="text-lg text-slate-600">
+                    Empowering SMEs and enterprises with seamless payment routing, instant bank settlements, and multi-tenant AI automation.
+                </p>
+                <div class="flex space-x-4">
+                    <button onclick="showApp('signup')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition">Get Started Free</button>
+                    <button onclick="showApp('login')" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold px-6 py-3 rounded-xl transition">Sign In</button>
+                </div>
+            </div>
+            <div class="bg-indigo-900 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10">
+                    <img src="Icon.png" class="w-80 h-80">
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Enterprise-Grade Fintech</h3>
+                <ul class="space-y-3 text-indigo-200">
+                    <li class="flex items-center">✓ Instant Bank Account KYC & Integration</li>
+                    <li class="flex items-center">✓ Automated Flutterwave Payment Gateway</li>
+                    <li class="flex items-center">✓ Real-time Transaction Ledger & Analytics</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-// Supabase Connection
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+    <!-- APP / DASHBOARD VIEW (Hidden initially) -->
+    <main id="app-container" class="max-w-5xl mx-auto px-6 py-10 hidden">
+        
+        <!-- Auth Box -->
+        <div id="auth-section" class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+            <div class="flex border-b mb-6">
+                <button id="tab-login" onclick="switchTab('login')" class="flex-1 pb-3 font-bold text-indigo-600 border-b-2 border-indigo-600 text-center">Sign In</button>
+                <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 pb-3 font-bold text-slate-400 text-center">Sign Up & KYC</button>
+            </div>
 
-// Serve Index.html on root visit
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Business Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="business@email.com">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition">Access Dashboard</button>
+            </form>
 
-// 1. Register Merchant API
-app.post('/api/merchant/register', async (req, res) => {
-    try {
-        const { business_name, email, phone_number, settlement_bank_code, settlement_account_number } = req.body;
+            <!-- Sign Up & KYC Form -->
+            <form id="signup-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Company / Business Name</label>
+                    <input type="text" id="reg-business" required class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Krishnyansh Zenova Peak Tech Hub">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Business Email</label>
+                    <input type="email" id="reg-email" required class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                    <input type="text" id="reg-phone" required class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" value="+2349067862223">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Settlement Bank</label>
+                        <select id="reg-bank" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="058">GTBank</option>
+                            <option value="033">UBA</option>
+                            <option value="044">Access Bank</option>
+                            <option value="057">Zenith Bank</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Account No</label>
+                        <input type="text" id="reg-account" required maxlength="10" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0123456789">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition">Complete KYC & Register</button>
+            </form>
+        </div>
 
-        const { data, error } = await supabase
-            .from('merchants')
-            .insert([
-                { business_name, email, phone_number, settlement_bank_code, settlement_account_number }
-            ])
-            .select();
+        <!-- Dashboard View -->
+        <div id="dashboard-section" class="hidden space-y-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                <div>
+                    <h2 id="dash-business-name" class="text-2xl font-bold text-slate-900">Business Dashboard</h2>
+                    <p class="text-sm text-emerald-600 font-semibold mt-1">✓ KYC Verified & Settlement Active</p>
+                </div>
+                <button onclick="logout()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">Logout</button>
+            </div>
 
-        if (error) throw error;
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-slate-500 text-sm font-medium">Total Volume</h3>
+                    <p class="text-3xl font-extrabold text-slate-900 mt-2">₦ 0.00</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-slate-500 text-sm font-medium">Transactions</h3>
+                    <p class="text-3xl font-extrabold text-indigo-600 mt-2">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-slate-500 text-sm font-medium">Gateway Status</h3>
+                    <p class="text-emerald-600 font-bold mt-2">Flutterwave Live</p>
+                </div>
+            </div>
 
-        res.status(201).json({ success: true, message: "Merchant registered successfully!", data });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
+            <!-- Scan & Pay Generator -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Generate Scan & Pay Link</h3>
+                <form onsubmit="generatePaymentLink(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="pay-phone" placeholder="Customer Phone" required class="px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="pay-amount" placeholder="Amount (NGN)" required class="px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition">Generate Link</button>
+                </form>
+                <div id="payment-result" class="hidden mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <p class="text-sm text-slate-600 font-medium">Secure Payment Link:</p>
+                    <a id="pay-link-output" href="#" target="_blank" class="text-indigo-600 font-bold underline break-all"></a>
+                </div>
+            </div>
+        </div>
 
-// 2. Initiate Payment API
-app.post('/api/payment/initiate', async (req, res) => {
-    try {
-        const { merchant_id, customer_phone, amount, email, name } = req.body;
-        const tx_ref = "TXN_" + Date.now();
+    </main>
 
-        const response = await axios.post('https://api.flutterwave.com/v3/payments', {
-            tx_ref: tx_ref,
-            amount: amount,
-            currency: "NGN",
-            redirect_url: "https://krishnyanshzenovapeaks.com",
-            customer: { email, phonenumber: customer_phone, name },
-            customizations: {
-                title: "ClickPEqR Payment",
-                description: "Scan and Pay via Altra AI Automation"
-            }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` }
-        });
+    <script>
+        const BACKEND_URL = ""; // Empty string matlab same server (Render URL or localhost)
 
-        if (response.data.status === "success") {
-            await supabase.from('transactions').insert([
-                { merchant_id, customer_phone, amount, transaction_reference: tx_ref, status: 'pending' }
-            ]);
-
-            res.status(200).json({ success: true, payment_link: response.data.data.link, tx_ref });
-        } else {
-            res.status(400).json({ success: false, message: "Payment initialization failed" });
+        function showLandingPage() {
+            document.getElementById('landing-page').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
         }
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.response ? err.response.data : err.message });
-    }
-});
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-});
+        function showApp(tab) {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            switchTab(tab);
+        }
+
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                tabLogin.className = "flex-1 pb-3 font-bold text-indigo-600 border-b-2 border-indigo-600 text-center";
+                tabSignup.className = "flex-1 pb-3 font-bold text-slate-400 text-center";
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                tabSignup.className = "flex-1 pb-3 font-bold text-indigo-600 border-b-2 border-indigo-600 text-center";
+                tabLogin.className = "flex-1 pb-3 font-bold text-slate-400 text-center";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const payload = {
+                business_name: document.getElementById('reg-business').value,
+                email: document.getElementById('reg-email').value,
+                phone_number: document.getElementById('reg-phone').value,
+                settlement_bank_code: document.getElementById('reg-bank').value,
+                settlement_account_number: document.getElementById('reg-account').value
+            };
+
+            const res = await fetch(`${BACKEND_URL}/api/merchant/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("KYC Verified & Registered Successfully!");
+                loadDashboard(data.data[0]);
+            } else {
+                alert("Error: " + data.error);
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            loadDashboard({ business_name: "Krishnyansh Zenova Peak" });
+        }
+
+        function loadDashboard(merchant) {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('dash-business-name').innerText = merchant.business_name;
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        async function generatePaymentLink(e) {
+            e.preventDefault();
+            const payload = {
+                merchant_id: 1,
+                customer_phone: document.getElementById('pay-phone').value,
+                amount: document.getElementById('pay-amount').value,
+                email: "customer@altrai.com",
+                name: "Customer"
+            };
+
+            const res = await fetch(`${BACKEND_URL}/api/payment/initiate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('payment-result').classList.remove('hidden');
+                const linkOut = document.getElementById('pay-link-output');
+                linkOut.href = data.payment_link;
+                linkOut.innerText = data.payment_link;
+            } else {
+                alert("Failed to generate payment link");
+            }
+        }
+    </script>
+</body>
+</html>
