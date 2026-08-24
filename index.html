@@ -7,17 +7,18 @@
     <link rel="icon" href="icon.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Stable HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
-<body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3">
+<body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3 relative">
 
-    <!-- Mobile App Container -->
+    <!-- Mobile App Container Frame -->
     <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[680px] relative">
         
-        <!-- 1. AUTH / LOGIN GATEWAY (App opens here first) -->
+        <!-- 1. AUTH / LOGIN GATEWAY -->
         <div id="view-auth" class="p-6 my-auto space-y-6">
             <div class="text-center space-y-2">
-                <img src="icon.png" class="w-14 h-14 rounded-2xl object-cover bg-white/10 p-1 border border-teal-500/40 mx-auto shadow-lg">
+                <img src="icon.png" onerror="this.src='https://via.placeholder.com/60?text=QR'" class="w-16 h-16 rounded-2xl object-cover bg-white/10 p-1 border border-teal-500/40 mx-auto shadow-xl">
                 <span class="bg-teal-500/20 text-teal-300 text-[11px] font-semibold px-3 py-1 rounded-full uppercase border border-teal-500/30">Altra AI Powered</span>
                 <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Welcome to ClickPEqR</h2>
                 <p class="text-xs text-teal-200/70">Sign in to access your secure payment dashboard</p>
@@ -33,7 +34,7 @@
             <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-teal-200 mb-1">Business Email</label>
-                    <input type="email" id="login-email" required class="w-full px-4 py-2.5 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-teal-400" placeholder="zenova@email.com" value="krishnyanshzenovapeaksltdd@gmail.com">
+                    <input type="email" id="login-email" required class="w-full px-4 py-2.5 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-teal-400" value="krishnyanshzenovapeaksltdd@gmail.com">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-teal-200 mb-1">Password</label>
@@ -44,15 +45,15 @@
 
             <!-- Register Form -->
             <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3 hidden">
-                <input type="text" id="reg-name" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business Name (e.g. Zenova Peak Tech Hub)" value="Krishnyansh Zenova Peak Tech Hub">
+                <input type="text" id="reg-name" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business Name" value="Krishnyansh Zenova Peak Tech Hub">
                 <input type="email" id="reg-email" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business Email">
                 <input type="text" id="reg-phone" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" value="+2349067862223">
                 <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow-lg transition">Complete KYC & Register</button>
             </form>
         </div>
 
-        <!-- 2. MAIN APP CONTENT (Hidden until logged in) -->
-        <div id="main-app-container" class="hidden flex flex-col flex-1 justify-between">
+        <!-- 2. MAIN APP CONTAINER -->
+        <div id="main-app-container" class="hidden flex flex-col flex-1 justify-between relative">
             
             <!-- SIDEBAR DRAWER (Left Menu) -->
             <div id="sidebar" class="absolute inset-y-0 left-0 w-64 bg-slate-950/95 backdrop-blur-xl border-r border-teal-700/50 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
@@ -60,12 +61,12 @@
                     <!-- User Profile & Direct DP Photo Picker -->
                     <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-4">
                         <div class="relative cursor-pointer group" onclick="document.getElementById('profile-pic-input').click()" title="Tap to change profile picture">
-                            <img id="user-avatar" src="icon.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow" alt="Profile">
-                            <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit DP</div>
+                            <img id="user-avatar" src="icon.png" onerror="this.src='https://via.placeholder.com/50?text=DP'" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow" alt="Profile">
+                            <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit</div>
                         </div>
                         <input type="file" id="profile-pic-input" accept="image/*" class="hidden" onchange="updateProfilePic(event)">
                         <div>
-                            <h4 id="sidebar-name" class="font-bold text-sm text-white">Zenova Merchant</h4>
+                            <h4 id="sidebar-name" class="font-bold text-sm text-white truncate max-w-[120px]">Zenova Merchant</h4>
                             <p class="text-[10px] text-emerald-400">Test Mode Active</p>
                         </div>
                     </div>
@@ -73,7 +74,6 @@
                     <!-- Menu Links -->
                     <div class="space-y-2 text-xs font-medium">
                         <button onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">🏠 Home</button>
-                        <button onclick="closeSidebar(); openAltraAI();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">🤖 Altra AI Assistant</button>
                         <button onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">📊 Transaction History</button>
                         <button onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">⚙️ Settings & Banks</button>
                         <button onclick="closeSidebar(); openAbout();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">ℹ️ About App</button>
@@ -89,7 +89,7 @@
                 <div class="flex items-center space-x-3">
                     <button onclick="toggleSidebar()" class="text-lg p-1 hover:bg-white/10 rounded-lg transition">☰</button>
                     <div class="flex items-center space-x-2">
-                        <img src="icon.png" class="w-8 h-8 rounded-xl object-cover bg-white/10 p-0.5 border border-white/20">
+                        <img src="icon.png" onerror="this.src='https://via.placeholder.com/35?text=QR'" class="w-8 h-8 rounded-xl object-cover bg-white/10 p-0.5 border border-white/20">
                         <div>
                             <h1 class="font-bold text-sm tracking-wide leading-tight">ClickPEqR</h1>
                             <span class="text-[9px] text-teal-300 tracking-wider uppercase">Zenova Peak</span>
@@ -100,7 +100,7 @@
             </div>
 
             <!-- App Body Views -->
-            <div class="p-5 flex-1 flex flex-col justify-between">
+            <div class="p-5 flex-1 flex flex-col justify-between relative">
 
                 <!-- MAIN HOME -->
                 <div id="view-home" class="space-y-4 my-auto">
@@ -133,29 +133,11 @@
                     </div>
                 </div>
 
-                <!-- ALTRA AI ASSISTANT VIEW -->
-                <div id="view-altra-ai" class="hidden space-y-3 my-auto flex flex-col h-[400px]">
-                    <div class="text-center border-b border-teal-800 pb-2">
-                        <h3 class="font-bold text-base text-white">🤖 Altra AI Assistant</h3>
-                        <p class="text-[10px] text-teal-300">Context Memory Active</p>
-                    </div>
-                    <div id="ai-chat-box" class="flex-1 bg-slate-950/80 p-3 rounded-xl border border-teal-800/60 overflow-y-auto space-y-2 text-xs">
-                        <div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40">
-                            <b>Altra AI:</b> Hello Ruby! I am ready to assist with your Nigerian collections and automation.
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <input type="text" id="ai-user-input" placeholder="Ask AI..." class="flex-1 px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white focus:outline-none">
-                        <button onclick="sendAIQuery()" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Send</button>
-                    </div>
-                    <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs">Back Home</button>
-                </div>
-
-                <!-- SCANNER VIEW -->
-                <div id="view-scanner" class="hidden space-y-4 my-auto">
+                <!-- SCANNER VIEW (Fixed Camera Container) -->
+                <div id="view-scanner" class="hidden space-y-3 my-auto">
                     <h3 class="font-bold text-base text-white text-center">Scan QR to Pay</h3>
-                    <div id="reader" class="w-full bg-slate-950 rounded-2xl overflow-hidden border border-teal-700/50 min-h-[220px]"></div>
-                    <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+                    <div id="reader" class="w-full bg-black rounded-2xl overflow-hidden border border-teal-700/50 min-h-[260px]"></div>
+                    <button onclick="stopScannerAndGoHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
                 </div>
 
                 <!-- QR GENERATOR MENU -->
@@ -174,19 +156,35 @@
                     <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
                 </div>
 
-                <!-- SETTINGS VIEW -->
+                <!-- SETTINGS VIEW (Full Nigerian Banks List) -->
                 <div id="view-settings" class="hidden space-y-3 my-auto">
                     <h3 class="font-bold text-base text-white text-center">App Settings & Bank Accounts</h3>
-                    <div class="space-y-2.5 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs">
+                    <div class="space-y-2.5 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs max-h-[300px] overflow-y-auto">
                         <div>
                             <label class="text-teal-300">Business Name</label>
                             <input type="text" id="set-name" value="Krishnyansh Zenova Peak Tech Hub" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
                         </div>
                         <div>
-                            <label class="text-teal-300 font-bold">Primary Bank</label>
+                            <label class="text-teal-300 font-bold">Primary Bank (Default Collection)</label>
                             <select id="bank-primary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
-                                <option value="GTBank">GTBank - 0638090889</option>
-                                <option value="UBA">UBA</option>
+                                <option value="GTBank">Guaranty Trust Bank (GTBank) - 0638090889</option>
+                                <option value="UBA">United Bank for Africa (UBA)</option>
+                                <option value="Access">Access Bank</option>
+                                <option value="Zenith">Zenith Bank</option>
+                                <option value="FirstBank">First Bank of Nigeria</option>
+                                <option value="Opay">OPay Digital Services</option>
+                                <option value="Kuda">Kuda Microfinance Bank</option>
+                                <option value="Moniepoint">Moniepoint MFB</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-teal-300 font-bold">Secondary / Backup Bank</label>
+                            <select id="bank-secondary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                                <option value="UBA">United Bank for Africa (UBA)</option>
+                                <option value="Access">Access Bank</option>
+                                <option value="Zenith">Zenith Bank</option>
+                                <option value="Opay">OPay</option>
+                                <option value="Kuda">Kuda MFB</option>
                             </select>
                         </div>
                         <button onclick="saveSettings()" class="w-full bg-teal-600 text-white py-2 rounded-xl font-semibold mt-2">Save Settings</button>
@@ -198,7 +196,7 @@
                 <div id="view-about" class="hidden space-y-4 my-auto text-center">
                     <h3 class="font-bold text-base text-white">About ClickPEqR App</h3>
                     <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-2 text-xs text-teal-200">
-                        <p class="font-bold text-white">Version: v1.2.1 Secure Live</p>
+                        <p class="font-bold text-white">Version: v1.3.0 Live</p>
                         <p>Krishnyansh Zenova Peak Tech Hub</p>
                         <p>www.krishnyanshzenovapeaks.com</p>
                     </div>
@@ -219,7 +217,31 @@
 
             </div>
 
-            <div class="py-2.5 text-center bg-teal-950/80 border-t border-teal-800/40 text-[10px] text-teal-400/70">
+            <!-- FLOATING ALTRA AI CHAT BUBBLE (Right Side) -->
+            <div class="absolute bottom-12 right-4 z-40">
+                <button onclick="toggleAIChat()" class="bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3.5 rounded-full shadow-2xl border border-teal-300 hover:scale-105 transition flex items-center justify-center text-xl">
+                    🤖
+                </button>
+            </div>
+
+            <!-- AI CHAT POPUP MODAL -->
+            <div id="ai-modal" class="absolute inset-x-4 bottom-16 bg-slate-950/95 backdrop-blur-xl border border-teal-500/50 rounded-2xl p-4 hidden z-50 shadow-2xl flex flex-col h-[320px]">
+                <div class="flex justify-between items-center border-b border-teal-800 pb-2 mb-2">
+                    <h4 class="font-bold text-xs text-teal-300">🤖 Altra AI Assistant</h4>
+                    <button onclick="toggleAIChat()" class="text-xs text-slate-400 hover:text-white">✕</button>
+                </div>
+                <div id="ai-chat-box" class="flex-1 overflow-y-auto space-y-2 text-[11px] pr-1">
+                    <div class="bg-teal-900/40 p-2 rounded-lg text-teal-200 border border-teal-700/40">
+                        Hello Ruby! How can I assist your transactions today?
+                    </div>
+                </div>
+                <div class="flex space-x-2 mt-2 pt-2 border-t border-teal-800/60">
+                    <input type="text" id="ai-user-input" placeholder="Ask AI..." class="flex-1 px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-xs text-white focus:outline-none">
+                    <button onclick="sendAIQuery()" class="bg-teal-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Send</button>
+                </div>
+            </div>
+
+            <div class="py-2 text-center bg-teal-950/80 border-t border-teal-800/40 text-[10px] text-teal-400/70">
                 ClickPEqR App • Powered by Altra AI
             </div>
         </div>
@@ -227,7 +249,7 @@
 
     <!-- Script Logic -->
     <script>
-        let chatMemory = [];
+        let html5QrCode = null;
 
         function switchAuthTab(tab) {
             const loginForm = document.getElementById('form-login');
@@ -270,15 +292,11 @@
         }
 
         function goHome() {
-            ['view-home', 'view-scanner', 'view-generator-menu', 'view-settings', 'view-about', 'view-history', 'view-altra-ai'].forEach(id => {
+            stopScanner();
+            ['view-home', 'view-scanner', 'view-generator-menu', 'view-settings', 'view-about', 'view-history'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById('view-home').classList.remove('hidden');
-        }
-
-        function openAltraAI() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-altra-ai').classList.remove('hidden');
         }
 
         function openSettings() {
@@ -329,28 +347,57 @@
             }
         }
 
+        function toggleAIChat() {
+            const modal = document.getElementById('ai-modal');
+            modal.classList.toggle('hidden');
+        }
+
         function sendAIQuery() {
             const inputField = document.getElementById('ai-user-input');
             const chatBox = document.getElementById('ai-chat-box');
             const text = inputField.value.trim();
             if(!text) return;
 
-            chatBox.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-lg text-right text-slate-100"><b>You:</b> ${text}</div>`;
+            chatBox.innerHTML += `<div class="bg-slate-900 p-2 rounded text-right text-slate-100"><b>You:</b> ${text}</div>`;
             inputField.value = "";
 
             setTimeout(() => {
-                let aiReply = "Altra AI automation processed your request.";
-                if(text.toLowerCase().includes("link")) aiReply = "Secure test link generated.";
-                chatBox.innerHTML += `<div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200"><b>Altra AI:</b> ${aiReply}</div>`;
+                let aiReply = "Altra AI automation processed your query.";
+                if(text.toLowerCase().includes("link")) aiReply = "Secure payment link generated successfully.";
+                chatBox.innerHTML += `<div class="bg-teal-900/40 p-2 rounded text-teal-200"><b>Altra AI:</b> ${aiReply}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
-            }, 800);
+            }, 700);
         }
 
+        // Camera Scanner Fix
         function openScanner() {
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-scanner').classList.remove('hidden');
-            const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 180 });
-            scanner.render((text) => { playVoiceAlert(5000); window.location.href = text; }, (err) => {});
+            
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 200, height: 200 } },
+                (decodedText) => {
+                    playVoiceAlert(5000);
+                    stopScanner();
+                    window.location.href = decodedText;
+                },
+                (errorMessage) => {}
+            ).catch((err) => {
+                alert("Camera permission denied or not supported on this browser.");
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.log(err));
+            }
+        }
+
+        function stopScannerAndGoHome() {
+            stopScanner();
+            goHome();
         }
 
         function openGeneratorMenu() {
