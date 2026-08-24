@@ -1,1 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickPEqR - Altra AI Super App</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3">
 
+    <!-- Mobile App Container -->
+    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[680px] relative">
+        
+        <!-- SIDEBAR DRAWER (Left Menu) -->
+        <div id="sidebar" class="absolute inset-y-0 left-0 w-64 bg-slate-950/95 backdrop-blur-xl border-r border-teal-700/50 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
+            <div class="space-y-6">
+                <!-- User Profile & Direct DP Photo Picker -->
+                <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-4">
+                    <div class="relative cursor-pointer group" onclick="document.getElementById('profile-pic-input').click()" title="Tap to change profile picture">
+                        <img id="user-avatar" src="icon.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow" alt="Profile">
+                        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit DP</div>
+                    </div>
+                    <input type="file" id="profile-pic-input" accept="image/*" class="hidden" onchange="updateProfilePic(event)">
+                    <div>
+                        <h4 id="sidebar-name" class="font-bold text-sm text-white">Zenova Merchant</h4>
+                        <p class="text-[10px] text-emerald-400">Test Mode Active</p>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <div class="space-y-2 text-xs font-medium">
+                    <button onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">🏠 Home</button>
+                    <button onclick="closeSidebar(); openAltraAI();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">🤖 Altra AI Assistant</button>
+                    <button onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">📊 Transaction History</button>
+                    <button onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">⚙️ Settings & Banks</button>
+                    <button onclick="closeSidebar(); openAbout();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">ℹ️ About App</button>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <button onclick="logout()" class="w-full bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900 text-rose-300 py-2.5 rounded-xl text-xs font-semibold transition">🚪 Log Out</button>
+        </div>
+
+        <!-- Header with Hamburger Menu Button -->
+        <div class="bg-gradient-to-r from-teal-800 to-emerald-800 p-4 text-white flex justify-between items-center border-b border-teal-700/50">
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleSidebar()" class="text-lg p-1 hover:bg-white/10 rounded-lg transition">☰</button>
+                <div class="flex items-center space-x-2">
+                    <img src="icon.png" class="w-8 h-8 rounded-xl object-cover bg-white/10 p-0.5 border border-white/20">
+                    <div>
+                        <h1 class="font-bold text-sm tracking-wide leading-tight">ClickPEqR</h1>
+                        <span class="text-[9px] text-teal-300 tracking-wider uppercase">Zenova Peak</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="goHome()" class="text-xs bg-teal-950/60 hover:bg-teal-950 text-teal-200 px-2.5 py-1 rounded-lg border border-teal-700/50">Home</button>
+        </div>
+
+        <!-- Body Content -->
+        <div class="p-5 flex-1 flex flex-col justify-between">
+
+            <!-- MAIN HOME -->
+            <div id="view-home" class="space-y-4 my-auto">
+                <div class="text-center space-y-1">
+                    <span class="bg-teal-500/20 text-teal-300 text-[11px] font-semibold px-3 py-1 rounded-full uppercase border border-teal-500/30">Altra AI Powered (Test Mode)</span>
+                    <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Scan & Collect Hub</h2>
+                    <p class="text-xs text-teal-200/70">Select an action or test voice alert</p>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="openScanner()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 text-white p-4 rounded-2xl shadow-lg border border-teal-500/40 flex items-center space-x-4 text-left">
+                        <div class="bg-white/10 p-3 rounded-xl text-xl">📷</div>
+                        <div>
+                            <h3 class="font-bold text-sm">1. Pay (Scan QR)</h3>
+                            <p class="text-[11px] text-teal-100/80">Open camera to scan & pay</p>
+                        </div>
+                    </button>
+
+                    <button onclick="openGeneratorMenu()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 text-left">
+                        <div class="bg-teal-800/40 p-3 rounded-xl text-xl">⚡</div>
+                        <div>
+                            <h3 class="font-bold text-sm">2. Generate QR (Static & Dynamic)</h3>
+                            <p class="text-[11px] text-teal-300/80">Create shop counter or locked bill QR</p>
+                        </div>
+                    </button>
+
+                    <!-- Test Voice Alert Button for Live Verification -->
+                    <button onclick="playVoiceAlert(5000)" class="w-full bg-emerald-900/60 hover:bg-emerald-900 text-emerald-200 p-3 rounded-xl border border-emerald-700 text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                        <span>🔊 Test Payment Voice Alert</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ALTRA AI ASSISTANT VIEW -->
+            <div id="view-altra-ai" class="hidden space-y-3 my-auto flex flex-col h-[400px]">
+                <div class="text-center border-b border-teal-800 pb-2">
+                    <h3 class="font-bold text-base text-white">🤖 Altra AI Assistant</h3>
+                    <p class="text-[10px] text-teal-300">Context Memory Active (Test Mode)</p>
+                </div>
+                <div id="ai-chat-box" class="flex-1 bg-slate-950/80 p-3 rounded-xl border border-teal-800/60 overflow-y-auto space-y-2 text-xs">
+                    <div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40">
+                        <b>Altra AI:</b> Hello Ruby! I am your smart fintech assistant. How can I help you automate collections today?
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <input type="text" id="ai-user-input" placeholder="Ask AI (e.g., generate 5000 link)..." class="flex-1 px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white focus:outline-none">
+                    <button onclick="sendAIQuery()" class="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-xl text-xs font-bold">Send</button>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs">Back Home</button>
+            </div>
+
+            <!-- SCANNER VIEW -->
+            <div id="view-scanner" class="hidden space-y-4 my-auto">
+                <h3 class="font-bold text-base text-white text-center">Scan QR to Pay</h3>
+                <div id="reader" class="w-full bg-slate-950 rounded-2xl overflow-hidden border border-teal-700/50 min-h-[220px]"></div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+            <!-- QR GENERATOR MENU -->
+            <div id="view-generator-menu" class="hidden space-y-4 my-auto">
+                <h3 class="font-bold text-base text-white text-center">Choose QR Type</h3>
+                <div class="space-y-3">
+                    <button onclick="openStaticForm()" class="w-full bg-teal-950 p-4 rounded-xl border border-teal-700 text-left">
+                        <h4 class="font-bold text-xs text-white">Static Counter QR (Permanent)</h4>
+                        <p class="text-[10px] text-teal-300">For shop counters. Buyer enters any amount.</p>
+                    </button>
+                    <button onclick="openDynamicForm()" class="w-full bg-teal-950 p-4 rounded-xl border border-teal-700 text-left">
+                        <h4 class="font-bold text-xs text-white">Dynamic Bill QR (> ₦5,000 / Locked Test)</h4>
+                        <p class="text-[10px] text-teal-300">For remote invoicing with precise amount.</p>
+                    </button>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="hidden space-y-3 my-auto">
+                <h3 class="font-bold text-base text-white text-center">App Settings & Bank Accounts</h3>
+                <div class="space-y-2.5 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs">
+                    <div>
+                        <label class="text-teal-300">Business / User Name</label>
+                        <input type="text" id="set-name" value="ZENOVA PEAK TECH HUB" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                    </div>
+                    <div>
+                        <label class="text-teal-300 font-bold">Primary Bank (Default)</label>
+                        <select id="bank-primary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                            <option value="GTBank">GTBank - 0638090889 (Primary Test)</option>
+                            <option value="UBA">UBA - Backup</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-teal-300 font-bold">Secondary / Backup Bank</label>
+                        <select id="bank-secondary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                            <option value="UBA">UBA - 2234567890</option>
+                        </select>
+                    </div>
+                    <button onclick="saveSettings()" class="w-full bg-teal-600 text-white py-2 rounded-xl font-semibold mt-2">Save Settings</button>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+            <!-- ABOUT VIEW -->
+            <div id="view-about" class="hidden space-y-4 my-auto text-center">
+                <h3 class="font-bold text-base text-white">About ClickPEqR App</h3>
+                <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-2 text-xs text-teal-200">
+                    <p class="font-bold text-white">Version: v1.2.0 Live Test</p>
+                    <p>Krishnyansh Zenova Peak Tech Hub</p>
+                    <p>Altra AI Automation & Flutterwave Test Suite</p>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+            <!-- TRANSACTION HISTORY -->
+            <div id="view-history" class="hidden space-y-3 my-auto">
+                <h3 class="font-bold text-base text-white text-center">Transaction History (Test)</h3>
+                <div class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 text-xs max-h-[220px] overflow-y-auto">
+                    <div class="flex justify-between border-b border-teal-800/50 pb-2">
+                        <span>Zenova Tech Hub (Test Pay)</span>
+                        <span class="text-emerald-400 font-bold">+₦5,000 ✓</span>
+                    </div>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+        </div>
+
+        <div class="py-2.5 text-center bg-teal-950/80 border-t border-teal-800/40 text-[10px] text-teal-400/70">
+            ClickPEqR App • Powered by Altra AI
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let chatMemory = [];
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        }
+
+        function goHome() {
+            ['view-home', 'view-scanner', 'view-generator-menu', 'view-settings', 'view-about', 'view-history', 'view-altra-ai'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('view-home').classList.remove('hidden');
+        }
+
+        function openAltraAI() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-altra-ai').classList.remove('hidden');
+        }
+
+        function openSettings() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-settings').classList.remove('hidden');
+        }
+
+        function openAbout() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-about').classList.remove('hidden');
+        }
+
+        function openHistory() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-history').classList.remove('hidden');
+        }
+
+        function updateProfilePic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('user-avatar').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveSettings() {
+            const name = document.getElementById('set-name').value;
+            document.getElementById('sidebar-name').innerText = name;
+            alert("Settings & Primary Bank updated successfully!");
+            goHome();
+        }
+
+        function logout() {
+            alert("Logged out successfully.");
+            location.reload();
+        }
+
+        // Real Voice Notification using Web Speech API
+        function playVoiceAlert(amount) {
+            if ('speechSynthesis' in window) {
+                const message = new SpeechSynthesisUtterance(`Payment of ${amount} Naira received successfully.`);
+                message.rate = 1.0;
+                message.pitch = 1.1;
+                window.speechSynthesis.speak(message);
+            } else {
+                alert(`Payment received: ₦${amount}`);
+            }
+        }
+
+        // Altra AI Chat with Memory Simulation
+        function sendAIQuery() {
+            const inputField = document.getElementById('ai-user-input');
+            const chatBox = document.getElementById('ai-chat-box');
+            const text = inputField.value.trim();
+            if(!text) return;
+
+            // Push to memory
+            chatMemory.push({role: 'user', content: text});
+
+            // Append User message
+            chatBox.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-lg text-slate-100 text-right border border-teal-900"><b>You:</b> ${text}</div>`;
+            inputField.value = "";
+
+            // Simulate Altra AI response with context memory
+            setTimeout(() => {
+                let aiReply = "I am processing your request through Altra AI automation suite.";
+                const lower = text.toLowerCase();
+                if(lower.includes("link") || lower.includes("generate")) {
+                    aiReply = "Test payment link generated successfully for your primary bank account!";
+                } else if(lower.includes("balance") || lower.includes("total")) {
+                    aiReply = "Your total test collections today is ₦5,000.";
+                } else {
+                    aiReply = `Noted. I have recorded your instruction regarding "${text}" in active session memory.`;
+                }
+
+                chatMemory.push({role: 'assistant', content: aiReply});
+                chatBox.innerHTML += `<div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40"><b>Altra AI:</b> ${aiReply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 800);
+        }
+
+        function openScanner() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-scanner').classList.remove('hidden');
+            const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 180 });
+            scanner.render((text) => { 
+                playVoiceAlert(5000);
+                window.location.href = text; 
+            }, (err) => {});
+        }
+
+        function openGeneratorMenu() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-generator-menu').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
