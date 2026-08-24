@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClickPEqR - Altra AI Fintech</title>
+    <title>ClickPEqR - Altra AI Super App</title>
     <link rel="icon" href="icon.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -12,18 +12,50 @@
 <body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3">
 
     <!-- Mobile App Container -->
-    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[680px]">
+    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[680px] relative">
         
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-teal-800 to-emerald-800 p-4 text-white flex justify-between items-center border-b border-teal-700/50">
-            <div class="flex items-center space-x-3">
-                <img src="icon.png" onerror="this.src='https://via.placeholder.com/40?text=QR'" alt="Logo" class="w-10 h-10 rounded-xl object-cover bg-white/10 p-0.5 border border-white/20 shadow">
-                <div>
-                    <h1 class="font-bold text-base tracking-wide leading-tight">ClickPEqR</h1>
-                    <span class="text-[10px] text-teal-300 tracking-wider uppercase">Zenova Peak Tech Hub</span>
+        <!-- SIDEBAR DRAWER (Left Menu) -->
+        <div id="sidebar" class="absolute inset-y-0 left-0 w-64 bg-slate-950/95 backdrop-blur-xl border-r border-teal-700/50 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
+            <div class="space-y-6">
+                <!-- User Profile & Direct DP Photo Picker -->
+                <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-4">
+                    <div class="relative cursor-pointer group" onclick="document.getElementById('profile-pic-input').click()" title="Tap to change profile picture">
+                        <img id="user-avatar" src="icon.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow" alt="Profile">
+                        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit DP</div>
+                    </div>
+                    <input type="file" id="profile-pic-input" accept="image/*" class="hidden" onchange="updateProfilePic(event)">
+                    <div>
+                        <h4 id="sidebar-name" class="font-bold text-sm text-white">Zenova Merchant</h4>
+                        <p class="text-[10px] text-emerald-400">Verified Account</p>
+                    </div>
+                </div>
+
+                <!-- Menu Links (Clean "Settings") -->
+                <div class="space-y-2 text-xs font-medium">
+                    <button onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">🏠 Home</button>
+                    <button onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">📊 Transaction History</button>
+                    <button onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">⚙️ Settings</button>
+                    <button onclick="closeSidebar(); openAbout();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 transition">ℹ️ About App</button>
                 </div>
             </div>
-            <button onclick="goHome()" class="text-xs bg-teal-950/60 hover:bg-teal-950 text-teal-200 px-3 py-1.5 rounded-lg border border-teal-700/50 transition">Home</button>
+
+            <!-- Logout -->
+            <button onclick="logout()" class="w-full bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900 text-rose-300 py-2.5 rounded-xl text-xs font-semibold transition">🚪 Log Out</button>
+        </div>
+
+        <!-- Header with Hamburger Menu Button -->
+        <div class="bg-gradient-to-r from-teal-800 to-emerald-800 p-4 text-white flex justify-between items-center border-b border-teal-700/50">
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleSidebar()" class="text-lg p-1 hover:bg-white/10 rounded-lg transition">☰</button>
+                <div class="flex items-center space-x-2">
+                    <img src="icon.png" class="w-8 h-8 rounded-xl object-cover bg-white/10 p-0.5 border border-white/20">
+                    <div>
+                        <h1 class="font-bold text-sm tracking-wide leading-tight">ClickPEqR</h1>
+                        <span class="text-[9px] text-teal-300 tracking-wider uppercase">Zenova Peak</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="goHome()" class="text-xs bg-teal-950/60 hover:bg-teal-950 text-teal-200 px-2.5 py-1 rounded-lg border border-teal-700/50">Home</button>
         </div>
 
         <!-- Body Content -->
@@ -34,11 +66,11 @@
                 <div class="text-center space-y-1">
                     <span class="bg-teal-500/20 text-teal-300 text-[11px] font-semibold px-3 py-1 rounded-full uppercase border border-teal-500/30">Altra AI Powered</span>
                     <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Scan & Collect Hub</h2>
-                    <p class="text-xs text-teal-200/70">Select an action below</p>
+                    <p class="text-xs text-teal-200/70">Tap the menu (☰) or select below</p>
                 </div>
 
                 <div class="space-y-3">
-                    <button onclick="openScanner()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white p-4 rounded-2xl shadow-lg border border-teal-500/40 flex items-center space-x-4 transition text-left">
+                    <button onclick="openScanner()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 text-white p-4 rounded-2xl shadow-lg border border-teal-500/40 flex items-center space-x-4 text-left">
                         <div class="bg-white/10 p-3 rounded-xl text-xl">📷</div>
                         <div>
                             <h3 class="font-bold text-sm">1. Pay (Scan QR)</h3>
@@ -46,27 +78,11 @@
                         </div>
                     </button>
 
-                    <button onclick="openGeneratorMenu()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 transition text-left">
+                    <button onclick="openGeneratorMenu()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 text-left">
                         <div class="bg-teal-800/40 p-3 rounded-xl text-xl">⚡</div>
                         <div>
                             <h3 class="font-bold text-sm">2. Generate QR (Static & Dynamic)</h3>
                             <p class="text-[11px] text-teal-300/80">Create shop counter or locked bill QR</p>
-                        </div>
-                    </button>
-
-                    <button onclick="openHistory()" class="w-full bg-teal-950/50 hover:bg-teal-950 text-white p-3.5 rounded-2xl shadow border border-teal-800/60 flex items-center space-x-4 transition text-left">
-                        <div class="bg-teal-800/30 p-2.5 rounded-xl text-lg">📊</div>
-                        <div>
-                            <h3 class="font-bold text-xs">Transaction History</h3>
-                            <p class="text-[10px] text-teal-300/70">View past payments and receipts</p>
-                        </div>
-                    </button>
-
-                    <button onclick="openSupport()" class="w-full bg-teal-950/50 hover:bg-teal-950 text-white p-3.5 rounded-2xl shadow border border-teal-800/60 flex items-center space-x-4 transition text-left">
-                        <div class="bg-teal-800/30 p-2.5 rounded-xl text-lg">🎧</div>
-                        <div>
-                            <h3 class="font-bold text-xs">Support & Help</h3>
-                            <p class="text-[10px] text-teal-300/70">Contact Zenova Peak Tech Hub team</p>
                         </div>
                     </button>
                 </div>
@@ -74,82 +90,76 @@
 
             <!-- SCANNER VIEW -->
             <div id="view-scanner" class="hidden space-y-4 my-auto">
-                <div class="text-center">
-                    <h3 class="font-bold text-base text-white">Scan QR to Pay</h3>
-                    <p class="text-xs text-teal-200/70">Position QR code inside the frame</p>
-                </div>
+                <h3 class="font-bold text-base text-white text-center">Scan QR to Pay</h3>
                 <div id="reader" class="w-full bg-slate-950 rounded-2xl overflow-hidden border border-teal-700/50 min-h-[220px]"></div>
                 <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
             </div>
 
-            <!-- QR GENERATOR MENU (Static vs Dynamic) -->
+            <!-- QR GENERATOR MENU -->
             <div id="view-generator-menu" class="hidden space-y-4 my-auto">
-                <div class="text-center">
-                    <h3 class="font-bold text-base text-white">Choose QR Type</h3>
-                    <p class="text-xs text-teal-200/70">Select how you want to collect money</p>
-                </div>
+                <h3 class="font-bold text-base text-white text-center">Choose QR Type</h3>
                 <div class="space-y-3">
                     <button onclick="openStaticForm()" class="w-full bg-teal-950 p-4 rounded-xl border border-teal-700 text-left">
                         <h4 class="font-bold text-xs text-white">Static Counter QR (Permanent)</h4>
                         <p class="text-[10px] text-teal-300">For shop counters. Buyer enters any amount.</p>
                     </button>
                     <button onclick="openDynamicForm()" class="w-full bg-teal-950 p-4 rounded-xl border border-teal-700 text-left">
-                        <h4 class="font-bold text-xs text-white">Dynamic Bill QR (> ₦5,000 / Locked Amount)</h4>
+                        <h4 class="font-bold text-xs text-white">Dynamic Bill QR (> ₦5,000 / Locked)</h4>
                         <p class="text-[10px] text-teal-300">For remote invoicing with precise amount.</p>
                     </button>
                 </div>
                 <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
             </div>
 
-            <!-- STATIC QR FORM -->
-            <div id="view-static-form" class="hidden space-y-3">
-                <h3 class="font-bold text-sm text-white text-center">Create Permanent Shop QR</h3>
-                <input type="text" id="s-name" placeholder="Shop / Business Name" class="w-full px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white" value="ZENOVA PEAK TECH HUB">
-                <input type="text" id="s-phone" placeholder="Phone Number" class="w-full px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white" value="+2349067862223">
-                <button onclick="generateStaticQRCode()" class="w-full bg-teal-600 text-white py-2 rounded-xl text-xs font-semibold">Generate Permanent QR</button>
-                <div id="s-output" class="hidden text-center bg-slate-950 p-3 rounded-xl border border-teal-700">
-                    <div id="s-qrcode-box" class="bg-white p-2 rounded inline-block mx-auto"></div>
-                    <p class="text-[10px] text-emerald-400 mt-1">Permanent Counter QR Ready!</p>
-                </div>
-                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs">Home</button>
-            </div>
-
-            <!-- DYNAMIC QR FORM -->
-            <div id="view-dynamic-form" class="hidden space-y-3">
-                <h3 class="font-bold text-sm text-white text-center">Create Locked Bill Link</h3>
-                <input type="text" id="d-phone" placeholder="Customer Phone" class="w-full px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white" value="+2349067862223">
-                <input type="number" id="d-amount" placeholder="Amount (e.g. 5000+ NGN)" min="5000" class="w-full px-3 py-2 bg-slate-900 border border-teal-700 rounded-xl text-xs text-white">
-                <button onclick="generateDynamicLink()" class="w-full bg-teal-600 text-white py-2 rounded-xl text-xs font-semibold">Generate Secure Link</button>
-                <div id="d-output" class="hidden bg-slate-950 p-3 rounded-xl border border-teal-700 text-center">
-                    <a id="d-link-out" href="#" target="_blank" class="text-xs text-teal-400 font-bold underline break-all"></a>
-                </div>
-                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs">Home</button>
-            </div>
-
-            <!-- TRANSACTION HISTORY -->
-            <div id="view-history" class="hidden space-y-3 my-auto">
-                <h3 class="font-bold text-base text-white text-center">Recent Transactions</h3>
-                <div class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 text-xs max-h-[250px] overflow-y-auto">
-                    <div class="flex justify-between border-b border-teal-800/50 pb-2">
-                        <span>Zenova Tech Hub (GTBank)</span>
-                        <span class="text-emerald-400 font-bold">+₦5,000 ✓</span>
+            <!-- SETTINGS VIEW (Multiple Bank Support & Primary Switch) -->
+            <div id="view-settings" class="hidden space-y-3 my-auto">
+                <h3 class="font-bold text-base text-white text-center">App Settings & Bank Accounts</h3>
+                <div class="space-y-2.5 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs max-h-[280px] overflow-y-auto">
+                    <div>
+                        <label class="text-teal-300">Business / User Name</label>
+                        <input type="text" id="set-name" value="ZENOVA PEAK TECH HUB" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
                     </div>
-                    <div class="flex justify-between border-b border-teal-800/50 pb-2">
-                        <span>Customer Payment</span>
-                        <span class="text-emerald-400 font-bold">+₦12,500 ✓</span>
+                    
+                    <div class="border-t border-teal-800/60 pt-2">
+                        <label class="text-teal-300 font-bold">Primary Bank (Default)</label>
+                        <select id="bank-primary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                            <option value="GTBank">GTBank - 0638090889 (Primary)</option>
+                            <option value="UBA">UBA - Secondary Backup</option>
+                        </select>
                     </div>
+
+                    <div class="border-t border-teal-800/60 pt-2">
+                        <label class="text-teal-300 font-bold">Secondary / Backup Bank (Switch if primary fails)</label>
+                        <select id="bank-secondary" class="w-full px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-white mt-1">
+                            <option value="UBA">UBA - 2234567890</option>
+                            <option value="Access">Access Bank - 3344556677</option>
+                        </select>
+                    </div>
+
+                    <button onclick="saveSettings()" class="w-full bg-teal-600 hover:bg-teal-500 text-white py-2 rounded-xl font-semibold mt-2">Save Settings</button>
                 </div>
                 <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
             </div>
 
-            <!-- SUPPORT VIEW -->
-            <div id="view-support" class="hidden space-y-4 my-auto text-center">
-                <h3 class="font-bold text-base text-white">Customer Support</h3>
+            <!-- ABOUT VIEW -->
+            <div id="view-about" class="hidden space-y-4 my-auto text-center">
+                <h3 class="font-bold text-base text-white">About ClickPEqR App</h3>
                 <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-2 text-xs text-teal-200">
-                    <p class="font-bold text-white">Krishnyansh Zenova Peak Tech Hub</p>
-                    <p>Website: www.krishnyanshzenovapeaks.com</p>
-                    <p>Contact: +2349067862223</p>
-                    <p class="text-[10px] text-teal-400 mt-2">Powered by Altra AI Automation Platform</p>
+                    <p class="font-bold text-white">Version: v1.1.0 Live</p>
+                    <p>Krishnyansh Zenova Peak Tech Hub</p>
+                    <p>Multi-tenant Altra AI Fintech Automation Suite</p>
+                </div>
+                <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+            </div>
+
+            <!-- TRANSACTION HISTORY -->
+            <div id="view-history" class="hidden space-y-3 my-auto">
+                <h3 class="font-bold text-base text-white text-center">Transaction History</h3>
+                <div class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 text-xs max-h-[220px] overflow-y-auto">
+                    <div class="flex justify-between border-b border-teal-800/50 pb-2">
+                        <span>Zenova Tech Hub (GTBank)</span>
+                        <span class="text-emerald-400 font-bold">+₦5,000 ✓</span>
+                    </div>
                 </div>
                 <button onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
             </div>
@@ -161,12 +171,59 @@
         </div>
     </div>
 
+    <!-- Script Logic -->
     <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        }
+
         function goHome() {
-            ['view-home', 'view-scanner', 'view-generator-menu', 'view-static-form', 'view-dynamic-form', 'view-history', 'view-support'].forEach(id => {
+            ['view-home', 'view-scanner', 'view-generator-menu', 'view-settings', 'view-about', 'view-history'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById('view-home').classList.remove('hidden');
+        }
+
+        function openSettings() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-settings').classList.remove('hidden');
+        }
+
+        function openAbout() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-about').classList.remove('hidden');
+        }
+
+        function openHistory() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-history').classList.remove('hidden');
+        }
+
+        function updateProfilePic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('user-avatar').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveSettings() {
+            const name = document.getElementById('set-name').value;
+            document.getElementById('sidebar-name').innerText = name;
+            alert("Settings & Primary Bank switched successfully!");
+            goHome();
+        }
+
+        function logout() {
+            alert("Logged out successfully.");
+            location.reload();
         }
 
         function openScanner() {
@@ -179,53 +236,6 @@
         function openGeneratorMenu() {
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-generator-menu').classList.remove('hidden');
-        }
-
-        function openStaticForm() {
-            document.getElementById('view-generator-menu').classList.add('hidden');
-            document.getElementById('view-static-form').classList.remove('hidden');
-        }
-
-        function openDynamicForm() {
-            document.getElementById('view-generator-menu').classList.add('hidden');
-            document.getElementById('view-dynamic-form').classList.remove('hidden');
-        }
-
-        function openHistory() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-history').classList.remove('hidden');
-        }
-
-        function openSupport() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-support').classList.remove('hidden');
-        }
-
-        function generateStaticQRCode() {
-            document.getElementById('s-output').classList.remove('hidden');
-            document.getElementById('s-qrcode-box').innerHTML = "";
-            new QRCode(document.getElementById("s-qrcode-box"), {
-                text: "https://clickpeqr.onrender.com/pay?shop=zenova",
-                width: 120, height: 120, colorDark: "#0f172a", colorLight: "#ffffff"
-            });
-        }
-
-        async function generateDynamicLink() {
-            const amount = document.getElementById('d-amount').value;
-            const phone = document.getElementById('d-phone').value;
-            const res = await fetch('/api/payment/initiate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: jsonString = JSON.stringify({ merchant_id: 1, customer_phone: phone, amount: amount, email: "client@altrai.com", name: "Client" })
-            });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('d-output').classList.remove('hidden');
-                document.getElementById('d-link-out').href = data.payment_link;
-                document.getElementById('d-link-out').innerText = data.payment_link;
-            } else {
-                alert("Error generating link");
-            }
         }
     </script>
 </body>
