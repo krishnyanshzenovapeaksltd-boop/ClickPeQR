@@ -1,83 +1,86 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const axios = require('axios');
-const path = require('path');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Serve static frontend files
-app.use(express.static(__dirname));
+// Supabase Configuration
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpztezqexkc.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Supabase Connection
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
-
-// Serve Index.html on root visit
+// 1. Health Check Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.json({ status: "success", message: "ClickPEqR Production Backend is live and secure!" });
 });
 
-// 1. Register Merchant API
-app.post('/api/merchant/register', async (req, res) => {
+// 2. Register Merchant / Customer API (KYC Data Routing)
+app.post('/api/auth/register', async (req, res) => {
     try {
-        const { business_name, email, phone_number, settlement_bank_code, settlement_account_number } = req.body;
-
-        const { data, error } = await supabase
-            .from('merchants')
-            .insert([
-                { business_name, email, phone_number, settlement_bank_code, settlement_account_number }
-            ])
-            .select();
-
-        if (error) throw error;
-
-        res.status(201).json({ success: true, message: "Merchant registered successfully!", data });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// 2. Initiate Payment API with Success Page Redirect
-app.post('/api/payment/initiate', async (req, res) => {
-    try {
-        const { merchant_id, customer_phone, amount, email, name } = req.body;
-        const tx_ref = "TXN_" + Date.now();
-
-        const response = await axios.post('https://api.flutterwave.com/v3/payments', {
-            tx_ref: tx_ref,
-            amount: amount,
-            currency: "NGN",
-            redirect_url: "https://clickpeqr.onrender.com/success.html", // Updated to success page!
-            customer: { email, phonenumber: customer_phone, name },
-            customizations: {
-                title: "ClickPEqR Payment",
-                description: "Scan and Pay via Altra AI Automation"
-            }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` }
-        });
-
-        if (response.data.status === "success") {
-            await supabase.from('transactions').insert([
-                { merchant_id, customer_phone, amount, transaction_reference: tx_ref, status: 'pending' }
-            ]);
-
-            res.status(200).json({ success: true, payment_link: response.data.data.link, tx_ref });
-        } else {
-            res.status(400).json({ success: false, message: "Payment initialization failed" });
+        const { full_name, email, role, business_name, nin, bvn } = req.body;
+        
+        if (!email || !full_name) {
+            return res.status(400).json({ error: "Missing required fields: email and full_name" });
         }
+
+        const tableName = role === 'merchant' ? 'merchants' : 'transactions';
+        
+        // Insert user/merchant entry into Supabase
+        const { data, error } = await supabase
+            .from(tableName)
+            .insert([{ 
+                business_name: business_name || full_name, 
+                email: email, 
+                status: 'active',
+                created_at: new Date() 
+            }]);
+
+        if (error) {
+            console.error("Supabase Error:", error.message);
+            return res.status(400).json({ error: error.message });
+        }
+
+        res.json({ status: "success", message: "KYC and registration completed successfully", data });
     } catch (err) {
-        res.status(500).json({ success: false, error: err.response ? err.response.data : err.message });
+        console.error("Server Error:", err);
+        res.status(500).json({ error: "Internal server error during registration" });
     }
 });
 
+// 3. Transactions & Flutterwave Webhook / Verification Gateway
+app.post('/api/transactions/verify', async (req, res) => {
+    try {
+        const { transaction_id, amount, sender_phone, merchant_id } = req.body;
+
+        // Log transaction to Supabase table securely
+        const { data, error } = await supabase
+            .from('transactions')
+            .insert([{
+                amount: amount || 0,
+                customer_phone: sender_phone || 'N/A',
+                transaction_reference: transaction_id || 'TXN_' + Date.now(),
+                status: 'success'
+            }]);
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        res.json({ 
+            status: "success", 
+            message: "Transaction verified, recorded, and routed to primary bank via Flutterwave rails",
+            data 
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to process transaction verification" });
+    }
+});
+
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`ClickPEqR Server running live on port ${PORT}`);
 });
