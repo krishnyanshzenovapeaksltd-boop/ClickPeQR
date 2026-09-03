@@ -37,13 +37,13 @@
             </div>
         </div>
 
-        <!-- AMOUNT ENTER MODAL -->
+        <!-- AMOUNT ENTER MODAL (For Dynamic QR & Payments) -->
         <div id="amount-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-5">
             <div class="bg-slate-900 border border-teal-500/50 p-6 rounded-3xl text-center space-y-4 w-full max-w-xs shadow-2xl">
-                <h3 class="font-bold text-sm text-white">Enter Transaction Amount (₦)</h3>
+                <h3 id="amount-modal-title" class="font-bold text-sm text-white">Enter Transaction Amount (₦)</h3>
                 <input type="number" id="input-txn-amount" placeholder="e.g. 5000" class="w-full px-3 py-2.5 bg-slate-950 border border-teal-700 rounded-xl text-center text-base text-white font-bold focus:outline-none">
                 <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="submitTransactionAmount()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 rounded-xl text-xs">Confirm & Pay</button>
+                    <button type="button" onclick="submitAmountAction()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 rounded-xl text-xs">Proceed</button>
                     <button type="button" onclick="closeAmountModal()" class="flex-1 bg-slate-800 text-slate-400 py-2 rounded-xl text-xs">Cancel</button>
                 </div>
             </div>
@@ -148,19 +148,19 @@
                             </div>
                         </button>
 
-                        <button type="button" onclick="openGeneratorMenu()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 text-left">
+                        <button type="button" onclick="promptDynamicQR()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 text-left">
                             <div class="bg-teal-800/40 p-3 rounded-xl text-xl">⚡</div>
                             <div>
-                                <h3 class="font-bold text-sm" id="home-btn-collect-text">Receive Money / Generate QR</h3>
-                                <p class="text-[11px] text-teal-300/80">Generate code to receive funds</p>
+                                <h3 class="font-bold text-sm" id="home-btn-collect-text">Dynamic QR / Receive Money</h3>
+                                <p class="text-[11px] text-teal-300/80">Generate dynamic code with specific amount</p>
                             </div>
                         </button>
 
-                        <!-- Altra AI Soundbox & Test Panel (Visible in Merchant Mode) -->
+                        <!-- Altra AI Soundbox & Test Panel -->
                         <div id="merchant-speaker-panel" class="hidden bg-emerald-950/60 p-3 rounded-xl border border-emerald-700 text-center space-y-1">
                             <p class="text-[10px] text-emerald-300 font-bold">🔊 Altra AI Soundbox Connected</p>
                             <div class="flex gap-2 justify-center mt-1">
-                                <button type="button" onclick="openAmountModal()" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Success (Enter Amount)</button>
+                                <button type="button" onclick="openPaymentSoundModal()" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Success Soundbox</button>
                                 <button type="button" onclick="simulateFailedPayment()" class="text-[10px] bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Auto-Retry</button>
                             </div>
                         </div>
@@ -176,10 +176,10 @@
 
                 <!-- GENERATOR VIEW -->
                 <div id="view-generator-menu" class="hidden space-y-4 my-auto">
-                    <h3 class="font-bold text-base text-white text-center">Generate QR Code</h3>
+                    <h3 class="font-bold text-base text-white text-center">Dynamic QR Code</h3>
                     <div class="space-y-3 bg-teal-950 p-4 rounded-xl border border-teal-700 text-center">
                         <div id="active-qrcode" class="bg-white p-2 inline-block rounded-xl mx-auto mb-2"></div>
-                        <p id="qr-desc" class="text-xs text-teal-200">Scan to pay securely via primary account.</p>
+                        <p id="qr-desc" class="text-xs text-teal-200">Scan to pay exact amount.</p>
                     </div>
                     <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
                 </div>
@@ -319,6 +319,7 @@
         let authTab = 'login';
         let html5QrCode = null;
         let isBiometricVerified = false;
+        let currentActionType = 'pay'; // 'pay' or 'dynamic_qr'
         
         let aiTransactionMemory = [
             { id: 1, type: "credit", amount: 5000, sender: "Adekunle", status: "success" },
@@ -376,12 +377,12 @@
             if(currentRole === 'merchant') {
                 document.getElementById('sidebar-role-tag').innerText = "Merchant Mode";
                 document.getElementById('header-mode-badge').innerText = "Merchant Portal";
-                document.getElementById('home-btn-collect-text').innerText = "Generate Shop Counter QR";
+                document.getElementById('home-btn-collect-text').innerText = "Dynamic QR / Receive Money";
                 document.getElementById('merchant-speaker-panel').classList.remove('hidden');
             } else {
                 document.getElementById('sidebar-role-tag').innerText = "Customer Mode";
                 document.getElementById('header-mode-badge').innerText = "Customer Portal";
-                document.getElementById('home-btn-collect-text').innerText = "Receive Money / Generate QR";
+                document.getElementById('home-btn-collect-text').innerText = "Dynamic QR / Receive Money";
                 document.getElementById('merchant-speaker-panel').classList.add('hidden');
             }
         }
@@ -395,9 +396,65 @@
             }
         }
 
-        function openAmountModal() { document.getElementById('amount-modal').classList.remove('hidden'); }
+        // --- Soundbox Voice Alert Function ---
+        function playSoundboxAlert(amount) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop previous voice if any
+                const speech = new SpeechSynthesisUtterance(`Alert! Payment of ${amount} Naira received successfully.`);
+                speech.rate = 1.0;
+                speech.pitch = 1.0;
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        // --- Dynamic QR Code Functions ---
+        function promptDynamicQR() {
+            currentActionType = 'dynamic_qr';
+            document.getElementById('amount-modal-title').innerText = "Enter Dynamic QR Amount (₦)";
+            document.getElementById('input-txn-amount').value = "";
+            document.getElementById('amount-modal').classList.remove('hidden');
+        }
+
+        function openPaymentSoundModal() {
+            currentActionType = 'pay_sound';
+            document.getElementById('amount-modal-title').innerText = "Enter Test Payment Amount (₦)";
+            document.getElementById('input-txn-amount').value = "";
+            document.getElementById('amount-modal').classList.remove('hidden');
+        }
+
         function closeAmountModal() { document.getElementById('amount-modal').classList.add('hidden'); }
         
+        function submitAmountAction() {
+            const amt = document.getElementById('input-txn-amount').value;
+            if(!amt || amt <= 0) { alert("Please enter a valid amount"); return; }
+            closeAmountModal();
+
+            if (currentActionType === 'dynamic_qr') {
+                // Generate Dynamic QR Code
+                document.getElementById('view-home').classList.add('hidden');
+                document.getElementById('view-generator-menu').classList.remove('hidden');
+                document.getElementById('active-qrcode').innerHTML = "";
+                
+                const dynamicPayload = `https://clickpeqr.com/pay/dynamic?amount=${amt}&role=${currentRole}`;
+                new QRCode(document.getElementById("active-qrcode"), { 
+                    text: dynamicPayload, 
+                    width: 140, 
+                    height: 140, 
+                    colorDark: "#0f172a", 
+                    colorLight: "#ffffff" 
+                });
+                document.getElementById('qr-desc').innerText = `Dynamic QR Code for ₦${Number(amt).toLocaleString()}`;
+            } else {
+                // Trigger Soundbox & Payment Success
+                if(aiTransactionMemory.length >= 15) aiTransactionMemory.shift();
+                aiTransactionMemory.push({ id: aiTransactionMemory.length + 1, type: "credit", amount: Number(amt), status: "success" });
+
+                playSoundboxAlert(Number(amt).toLocaleString());
+                alert(`Success! Soundbox announced: Payment of ₦${Number(amt).toLocaleString()} received.`);
+                goHome();
+            }
+        }
+
         async function submitTransactionAmount() {
             const amt = document.getElementById('input-txn-amount').value;
             if(!amt || amt <= 0) { alert("Please enter a valid amount"); return; }
@@ -414,16 +471,21 @@
                 });
             } catch(err) {}
 
-            alert(`Success! Payment of ₦${Number(amt).toLocaleString()} processed successfully via primary bank route.`);
+            playSoundboxAlert(Number(amt).toLocaleString());
+            alert(`Success! Payment of ₦${Number(amt).toLocaleString()} processed via primary bank route.`);
             goHome();
         }
 
         function simulateFailedPayment() {
             closeAmountModal();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Payment interrupted. Initiating automatic smart retry."));
+            }
             alert("Payment connection dropped. ClickPEqR smart retry mechanism is automatically rerouting your transaction...");
             setTimeout(() => {
-                alert("Retry successful! Transaction completed securely.");
-            }, 2000);
+                playSoundboxAlert("5,000");
+                alert("Retry successful! Transaction of ₦5,000 completed securely.");
+            }, 3000);
         }
 
         function linkNewBank() {
@@ -487,18 +549,12 @@
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 200 } }, (txt) => {
                 stopScanner();
-                openAmountModal();
+                document.getElementById('amount-modal-title').innerText = "Enter Transaction Amount (₦)";
+                document.getElementById('amount-modal').classList.remove('hidden');
             }, () => {});
         }
         function stopScanner() { if(html5QrCode && html5QrCode.isScanning) html5QrCode.stop(); }
         function stopScannerAndGoHome() { stopScanner(); goHome(); }
-
-        function openGeneratorMenu() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-generator-menu').classList.remove('hidden');
-            document.getElementById('active-qrcode').innerHTML = "";
-            new QRCode(document.getElementById("active-qrcode"), { text: "https://clickpeqr.com/pay/" + currentRole, width: 140, height: 140, colorDark: "#0f172a", colorLight: "#ffffff" });
-        }
     </script>
 </body>
 </html>
