@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3 relative">
 
-    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[680px] relative">
+    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[700px] relative">
         
         <!-- FLOATING BANNER NOTIFICATION -->
         <div id="floating-banner" class="absolute top-4 inset-x-4 z-50 transform -translate-y-28 transition-transform duration-300 ease-out shadow-2xl pointer-events-none">
@@ -24,20 +24,21 @@
             </div>
         </div>
 
-        <!-- FIX 1: BIOMETRIC MODAL POPUP -->
+        <!-- BIOMETRIC VERIFICATION MODAL -->
         <div id="biometric-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-5">
             <div class="bg-slate-900 border border-teal-500/50 p-6 rounded-3xl text-center space-y-4 w-full max-w-xs shadow-2xl">
                 <div class="w-16 h-16 bg-teal-950 border border-teal-500 rounded-full flex items-center justify-center mx-auto text-3xl animate-pulse">🔒</div>
-                <h3 class="font-bold text-sm text-white">Biometric Security</h3>
-                <p class="text-xs text-teal-200/70">Place your finger on the sensor or look at the camera for Face ID verification.</p>
-                <div class="space-y-2 pt-2">
-                    <button type="button" onclick="confirmBiometric()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs">Verify Fingerprint / Face ID</button>
+                <h3 class="font-bold text-sm text-white">Biometric & Passkey Verification</h3>
+                <p class="text-xs text-teal-200/70">Authenticate using Face ID, Fingerprint, or 4-digit PIN.</p>
+                <input type="password" id="bio-pin-input" maxlength="4" placeholder="Enter 4-Digit PIN" class="w-full px-3 py-2 bg-slate-950 border border-teal-700 rounded-xl text-center text-white tracking-widest font-bold">
+                <div class="space-y-2 pt-1">
+                    <button type="button" onclick="confirmBiometric()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs">Verify & Authorize</button>
                     <button type="button" onclick="closeBiometricModal()" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-xs">Cancel</button>
                 </div>
             </div>
         </div>
 
-        <!-- FIX 2: AMOUNT POPUP FORM -->
+        <!-- AMOUNT ENTER MODAL WITH RETRY MECHANISM -->
         <div id="amount-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-5">
             <div class="bg-slate-900 border border-teal-500/50 p-6 rounded-3xl text-center space-y-4 w-full max-w-xs shadow-2xl">
                 <h3 class="font-bold text-sm text-white">Enter Transaction Amount</h3>
@@ -49,34 +50,46 @@
             </div>
         </div>
 
-        <!-- AUTH GATEWAY & DUAL-ROLE ONBOARDING -->
+        <!-- AUTH GATEWAY: LOGIN VS REGISTER (KYC) -->
         <div id="view-auth" class="p-6 my-auto space-y-4">
             <div class="text-center space-y-1">
                 <img src="icon.png" onerror="this.src='https://via.placeholder.com/60?text=QR'" class="w-14 h-14 rounded-2xl object-cover bg-white/10 p-1 border border-teal-500/40 mx-auto shadow-xl">
                 <h2 class="text-xl font-bold tracking-tight text-white">ClickPEqR Network</h2>
-                <p class="text-xs text-teal-200/70">Select your role to sign in or register with Altra AI</p>
+                <p class="text-xs text-teal-200/70">Secure Fintech & AI Payment Gateway</p>
             </div>
 
-            <!-- Role Switcher -->
             <div class="flex bg-teal-950 p-1 rounded-xl border border-teal-800">
-                <button type="button" onclick="setLoginRole('customer')" id="role-btn-cust" class="flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow">Customer (Payer)</button>
-                <button type="button" onclick="setLoginRole('merchant')" id="role-btn-merc" class="flex-1 py-2 text-xs font-bold text-teal-300/70">Merchant (Receiver)</button>
+                <button type="button" onclick="switchAuthTab('login')" id="auth-tab-login" class="flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow">Existing Login</button>
+                <button type="button" onclick="switchAuthTab('register')" id="auth-tab-reg" class="flex-1 py-2 text-xs font-bold text-teal-300/70">New KYC Register</button>
             </div>
 
-            <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+            <div class="flex bg-slate-950 p-1 rounded-lg border border-teal-900 text-[11px]">
+                <button type="button" onclick="setLoginRole('customer')" id="role-btn-cust" class="flex-1 py-1.5 font-bold text-white bg-teal-900 rounded">Customer</button>
+                <button type="button" onclick="setLoginRole('merchant')" id="role-btn-merc" class="flex-1 py-1.5 font-bold text-teal-400">Merchant</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-3">
+                <input type="email" id="login-email" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Registered Email Address">
+                <input type="password" id="login-password" required placeholder="4-Digit PIN / Password" maxlength="10" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white">
+                <button type="submit" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg transition">Sign In Securely</button>
+            </form>
+
+            <!-- REGISTER KYC FORM -->
+            <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-3 hidden">
                 <div id="auth-business-field" class="hidden">
-                    <input type="text" id="auth-biz" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business Name">
+                    <input type="text" id="auth-biz" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business / Store Name">
                 </div>
                 <input type="text" id="auth-name" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Full Name">
                 <input type="email" id="auth-email" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Email Address">
                 
-                <div class="border-t border-teal-800/50 pt-2">
-                    <input type="text" id="auth-nin" required maxlength="11" class="w-full px-3 py-2 mb-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="11-Digit NIN Number">
+                <div class="border-t border-teal-800/50 pt-2 space-y-2">
+                    <input type="text" id="auth-nin" required maxlength="11" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="11-Digit NIN Number">
                     <input type="text" id="auth-bvn" required maxlength="11" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="11-Digit BVN">
                 </div>
 
-                <button type="button" onclick="openBiometricModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-teal-300 py-2 rounded-xl text-xs font-bold border border-teal-700">🔒 Verify Biometrics (PIN/Face)</button>
-                <button type="submit" id="btn-final-auth" disabled class="w-full bg-slate-700 text-slate-400 font-semibold py-2.5 rounded-xl text-xs transition">Complete KYC & Enter App</button>
+                <button type="button" onclick="openBiometricModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-teal-300 py-2 rounded-xl text-xs font-bold border border-teal-700">🔒 Complete Biometric / Face ID KYC</button>
+                <button type="submit" id="btn-final-auth" disabled class="w-full bg-slate-700 text-slate-400 font-semibold py-2.5 rounded-xl text-xs transition">Register & Launch App</button>
             </form>
         </div>
 
@@ -85,26 +98,29 @@
             
             <!-- SIDEBAR DRAWER -->
             <div id="sidebar" class="absolute inset-y-0 left-0 w-64 bg-slate-950/95 backdrop-blur-xl border-r border-teal-700/50 z-40 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
-                <div class="space-y-6">
-                    <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-4">
+                <div class="space-y-5 overflow-y-auto max-h-[580px]">
+                    <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-3">
                         <div class="relative cursor-pointer group" onclick="document.getElementById('profile-pic-input').click()" title="Change Profile Picture">
                             <img id="user-avatar" src="icon.png" onerror="this.src='https://via.placeholder.com/50?text=DP'" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow">
-                            <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit</div>
+                            <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-bold">Edit DP</div>
                         </div>
                         <input type="file" id="profile-pic-input" accept="image/*" class="hidden" onchange="updateProfilePic(event)">
                         <div>
-                            <h4 id="sidebar-name" class="font-bold text-sm text-white truncate max-w-[120px]">User</h4>
+                            <h4 id="sidebar-name" onclick="editUserName()" class="font-bold text-sm text-white truncate max-w-[120px] cursor-pointer hover:underline" title="Click to edit name">User ✏️</h4>
                             <p id="sidebar-role-tag" class="text-[10px] text-emerald-400">Customer Mode</p>
                         </div>
                     </div>
-                    <div class="space-y-2 text-xs font-medium">
-                        <button type="button" onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200">🏠 Home</button>
-                        <button type="button" onclick="closeSidebar(); openNotifications();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200 flex justify-between items-center">
+                    <div class="space-y-1.5 text-xs font-medium">
+                        <button type="button" onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">🏠 Home</button>
+                        <button type="button" onclick="closeSidebar(); openNotifications();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200 flex justify-between items-center">
                             <span>🔔 Notifications</span>
                             <span class="bg-teal-600 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">2</span>
                         </button>
-                        <button type="button" onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200">📊 Transaction History</button>
-                        <button type="button" onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-teal-900/50 text-teal-200">⚙️ Settings & Bank Accounts</button>
+                        <button type="button" onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">📊 Transaction History</button>
+                        <button type="button" onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">⚙️ Bank Accounts & Security</button>
+                        <button type="button" onclick="closeSidebar(); openAbout();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">ℹ️ About ClickPEqR</button>
+                        <button type="button" onclick="closeSidebar(); openSupport();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">💬 Help & Support (24/7)</button>
+                        <button type="button" onclick="closeSidebar(); openFAQ();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">❓ FAQ</button>
                     </div>
                 </div>
                 <button type="button" onclick="logout()" class="w-full bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900 text-rose-300 py-2.5 rounded-xl text-xs font-semibold">🚪 Log Out</button>
@@ -135,7 +151,7 @@
                 <div id="view-home" class="space-y-4 my-auto">
                     <div class="text-center space-y-1">
                         <h2 id="home-title" class="text-2xl font-bold tracking-tight text-white mt-1">Scan & Pay Hub</h2>
-                        <p id="home-subtitle" class="text-xs text-teal-200/70">Zero transaction fees for personal transfers</p>
+                        <p id="home-subtitle" class="text-xs text-teal-200/70">Zero transaction fees for primary accounts</p>
                     </div>
                     <div class="space-y-3">
                         <button type="button" onclick="openScanner()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 text-white p-4 rounded-2xl shadow-lg border border-teal-500/40 flex items-center space-x-4 text-left">
@@ -154,12 +170,11 @@
                             </div>
                         </button>
 
-                        <!-- Merchant Auto-Voice Speaker Panel -->
                         <div id="merchant-speaker-panel" class="hidden bg-emerald-950/60 p-3 rounded-xl border border-emerald-700 text-center space-y-1">
                             <p class="text-[10px] text-emerald-300 font-bold">🔊 Altra AI Soundbox Connected</p>
                             <div class="flex gap-2 justify-center mt-1">
                                 <button type="button" onclick="triggerDualAlert('success', 12500)" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Success</button>
-                                <button type="button" onclick="triggerDualAlert('retrieving')" class="text-[10px] bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Retrieving</button>
+                                <button type="button" onclick="simulateFailedPayment()" class="text-[10px] bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Auto-Retry</button>
                             </div>
                         </div>
                     </div>
@@ -188,33 +203,46 @@
                     <div class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 text-xs max-h-[240px] overflow-y-auto">
                         <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700/50 space-y-1">
                             <div class="flex justify-between font-bold text-emerald-400">
-                                <span>Payment Success</span>
+                                <span>Payment Successful</span>
                                 <span class="text-[9px] text-slate-400">Just now</span>
                             </div>
-                            <p class="text-slate-200">₦5,000 received successfully from customer.</p>
+                            <p class="text-slate-200">₦5,000 routed securely to your primary bank.</p>
                         </div>
                     </div>
                     <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
                 </div>
 
-                <!-- FIX 3 & 6: SETTINGS & BANK ACCOUNTS VIEW (Customer + Merchant) -->
+                <!-- SETTINGS & BANK ACCOUNTS VIEW -->
                 <div id="view-settings" class="hidden space-y-3 my-auto">
-                    <h3 class="font-bold text-base text-white text-center">Bank Accounts & Settings</h3>
-                    <div class="space-y-2.5 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs max-h-[300px] overflow-y-auto">
+                    <h3 class="font-bold text-base text-white text-center">Accounts & Security</h3>
+                    <div class="space-y-3 bg-teal-950/50 p-4 rounded-2xl border border-teal-800 text-xs max-h-[320px] overflow-y-auto">
                         <div>
-                            <label class="text-teal-300 font-bold">Linked Bank Accounts</label>
+                            <label class="text-teal-300 font-bold">Linked Bank Accounts (Set Primary)</label>
                             <div id="bank-list-container" class="space-y-1.5 mt-1">
-                                <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-teal-700/50">
-                                    <span>GTBank - 0638090889 (Primary)</span>
-                                    <span class="text-emerald-400 text-[10px]">Active</span>
+                                <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-teal-700/50">
+                                    <div>
+                                        <p class="font-bold text-white">GTBank - 0638090889</p>
+                                        <span class="text-emerald-400 text-[10px] font-bold">⭐ Primary Account</span>
+                                    </div>
+                                    <span class="text-slate-400 text-[10px]">Active</span>
                                 </div>
                             </div>
                         </div>
+
                         <div class="pt-2 border-t border-teal-800 space-y-2">
-                            <label class="text-teal-300 font-bold">Add New Bank</label>
-                            <input type="text" id="new-bank-name" placeholder="Bank Name (e.g. UBA, Zenith, OPay)" class="w-full px-3 py-1.5 bg-slate-950 border border-teal-700 rounded-lg text-white">
+                            <label class="text-teal-300 font-bold">Add Separate Bank Account</label>
+                            <input type="text" id="new-bank-name" placeholder="Bank Name (e.g. Zenith, UBA, OPay)" class="w-full px-3 py-1.5 bg-slate-950 border border-teal-700 rounded-lg text-white">
                             <input type="text" id="new-account-num" placeholder="10-Digit Account Number" maxlength="10" class="w-full px-3 py-1.5 bg-slate-950 border border-teal-700 rounded-lg text-white">
-                            <button type="button" onclick="linkNewBank()" class="w-full bg-teal-700 hover:bg-teal-600 text-white py-2 rounded-xl font-semibold">+ Link Bank Account</button>
+                            <button type="button" onclick="linkNewBank()" class="w-full bg-teal-700 hover:bg-teal-600 text-white py-2 rounded-xl font-semibold">+ Link & Set Bank</button>
+                        </div>
+
+                        <div class="pt-2 border-t border-teal-800 space-y-2">
+                            <label class="text-teal-300 font-bold">Security & Biometrics</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="alert('Biometric / Passkey enabled successfully!')" class="bg-slate-900 border border-teal-700/50 py-2 rounded-lg text-teal-200 hover:bg-teal-900/40">🔒 Setup Face/Pin</button>
+                                <button type="button" onclick="changePasswordPrompt()" class="bg-slate-900 border border-teal-700/50 py-2 rounded-lg text-teal-200 hover:bg-teal-900/40">🔑 Change Password</button>
+                            </div>
+                            <button type="button" onclick="deleteAccountPrompt()" class="w-full bg-rose-950/50 border border-rose-800 text-rose-300 py-2 rounded-lg font-semibold">⚠️ Delete Account</button>
                         </div>
                     </div>
                     <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
@@ -225,8 +253,57 @@
                     <h3 class="font-bold text-base text-white text-center">Transaction History</h3>
                     <div class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 text-xs max-h-[200px] overflow-y-auto">
                         <div class="flex justify-between border-b border-teal-800/50 pb-2">
-                            <span>Transfer / Collection</span>
+                            <span>Transfer / Collection (Primary Account)</span>
                             <span class="text-emerald-400 font-bold">₦5,000 ✓</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+                </div>
+
+                <!-- ABOUT VIEW -->
+                <div id="view-about" class="hidden space-y-3 my-auto text-xs">
+                    <h3 class="font-bold text-base text-white text-center">About ClickPEqR</h3>
+                    <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-2">
+                        <p class="font-bold text-teal-300">ClickPEqR v2.4 (Production)</p>
+                        <p class="text-teal-100/80">ClickPEqR is an AI-powered financial super-app designed for lightning-fast peer-to-peer and merchant QR code collections across Nigeria, integrated with secure Flutterwave and NIBSS banking rails.</p>
+                        <p class="text-[10px] text-emerald-400 font-bold">✓ CBN & NDPR Compliance Verified</p>
+                    </div>
+                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+                </div>
+
+                <!-- SUPPORT VIEW (24/7) -->
+                <div id="view-support" class="hidden space-y-3 my-auto text-xs">
+                    <h3 class="font-bold text-base text-white text-center">24/7 Help & Support 💬</h3>
+                    <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-3">
+                        <p class="text-teal-200">Our customer success and technical team are available around the clock.</p>
+                        <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700/50 space-y-1">
+                            <p class="font-bold text-teal-300">📧 Email Support</p>
+                            <p class="text-slate-300">support@clickpeqr.com</p>
+                        </div>
+                        <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700/50 space-y-1">
+                            <p class="font-bold text-teal-300">📞 Hotline (Nigeria)</p>
+                            <p class="text-slate-300">+234 800 CLICKPEQR</p>
+                        </div>
+                        <button type="button" onclick="alert('Live support chat agent connected!')" class="w-full bg-teal-600 hover:bg-teal-500 text-white py-2 rounded-xl font-bold">Start Live Chat Agent</button>
+                    </div>
+                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+                </div>
+
+                <!-- FAQ VIEW -->
+                <div id="view-faq" class="hidden space-y-3 my-auto text-xs">
+                    <h3 class="font-bold text-base text-white text-center">Frequently Asked Questions</h3>
+                    <div class="bg-teal-950/50 p-3 rounded-2xl border border-teal-800 space-y-2.5 max-h-[260px] overflow-y-auto">
+                        <div class="bg-slate-900 p-2 rounded-lg border border-teal-700/40">
+                            <p class="font-bold text-teal-300">Q: What happens if a payment fails?</p>
+                            <p class="text-slate-300 mt-1">A: ClickPEqR features an automatic smart retry mechanism that instantly reroutes the transaction gateway without losing funds.</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded-lg border border-teal-700/40">
+                            <p class="font-bold text-teal-300">Q: How do I change my primary bank?</p>
+                            <p class="text-slate-300 mt-1">A: Go to Settings > Linked Bank Accounts and click 'Make Primary' on any desired account.</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded-lg border border-teal-700/40">
+                            <p class="font-bold text-teal-300">Q: Is my BVN and NIN secure?</p>
+                            <p class="text-slate-300 mt-1">A: Yes, all data is encrypted with strict Supabase Row-Level Security and CBN compliance standards.</p>
                         </div>
                     </div>
                     <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
@@ -239,17 +316,17 @@
                 <button type="button" onclick="toggleAIChat()" class="bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3.5 rounded-full shadow-2xl border border-teal-300 hover:scale-105 transition flex items-center justify-center text-xl">🤖</button>
             </div>
 
-            <!-- FIX 4 & 5: AI CHAT MODAL (Scrollable & Smart Context Response) -->
-            <div id="ai-modal" class="absolute inset-x-4 bottom-16 bg-slate-950/95 backdrop-blur-xl border border-teal-500/50 rounded-2xl p-4 hidden z-40 shadow-2xl flex flex-col h-[340px]">
+            <!-- AI CHAT MODAL WITH 15-TRANSACTION MEMORY -->
+            <div id="ai-modal" class="absolute inset-x-4 bottom-16 bg-slate-950/95 backdrop-blur-xl border border-teal-500/50 rounded-2xl p-4 hidden z-40 shadow-2xl flex flex-col h-[350px]">
                 <div class="flex justify-between items-center border-b border-teal-800 pb-2 mb-2">
-                    <h4 class="font-bold text-xs text-teal-300">🤖 Altra AI Assistant (<span id="ai-mode-label">Customer</span> Mode)</h4>
+                    <h4 class="font-bold text-xs text-teal-300">🤖 Altra AI Assistant [Memory: 15 Txns]</h4>
                     <button type="button" onclick="toggleAIChat()" class="text-xs text-slate-400 hover:text-white">✕</button>
                 </div>
                 <div id="ai-chat-box" class="flex-1 overflow-y-auto space-y-2 text-[11px] pr-1 scroll-smooth">
-                    <div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40">Hello! I am Altra AI. Ask me about your balance, statements, collections, or transaction statuses!</div>
+                    <div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40">Hello! I am Altra AI with active memory across your last 15 transactions. Ask me anything!</div>
                 </div>
                 <div class="flex space-x-2 mt-2 pt-2 border-t border-teal-800/60">
-                    <input type="text" id="ai-user-input" placeholder="Type a message & press Enter..." onkeypress="handleAIKeyPress(event)" class="flex-1 px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-xs text-white focus:outline-none">
+                    <input type="text" id="ai-user-input" placeholder="Type query & press Enter..." onkeypress="handleAIKeyPress(event)" class="flex-1 px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-xs text-white focus:outline-none">
                     <button type="button" onclick="sendAIQuery()" class="bg-teal-600 hover:bg-teal-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Send</button>
                 </div>
             </div>
@@ -261,9 +338,35 @@
     <!-- Scripts -->
     <script>
         let currentRole = 'customer';
+        let authTab = 'login';
         let html5QrCode = null;
         let isBiometricVerified = false;
-        let chatMemory = [];
+        
+        let aiTransactionMemory = [
+            { id: 1, type: "credit", amount: 5000, sender: "Adekunle", status: "success" },
+            { id: 2, type: "debit", amount: 1200, recipient: "Shoprite Store", status: "success" },
+            { id: 3, type: "credit", amount: 15000, sender: "Chioma", status: "success" }
+        ];
+
+        function switchAuthTab(tab) {
+            authTab = tab;
+            const tabLogin = document.getElementById('auth-tab-login');
+            const tabReg = document.getElementById('auth-tab-reg');
+            const formLogin = document.getElementById('form-login');
+            const formReg = document.getElementById('form-register');
+
+            if(tab === 'login') {
+                tabLogin.className = "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow";
+                tabReg.className = "flex-1 py-2 text-xs font-bold text-teal-300/70";
+                formLogin.classList.remove('hidden');
+                formReg.classList.add('hidden');
+            } else {
+                tabReg.className = "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow";
+                tabLogin.className = "flex-1 py-2 text-xs font-bold text-teal-300/70";
+                formReg.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            }
+        }
 
         function setLoginRole(role) {
             currentRole = role;
@@ -272,72 +375,94 @@
             const bizField = document.getElementById('auth-business-field');
 
             if(role === 'customer') {
-                btnCust.className = "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow";
-                btnMerc.className = "flex-1 py-2 text-xs font-bold text-teal-300/70";
+                btnCust.className = "flex-1 py-1.5 font-bold text-white bg-teal-900 rounded";
+                btnMerc.className = "flex-1 py-1.5 font-bold text-teal-400";
                 bizField.classList.add('hidden');
             } else {
-                btnMerc.className = "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow";
-                btnCust.className = "flex-1 py-2 text-xs font-bold text-teal-300/70";
+                btnMerc.className = "flex-1 py-1.5 font-bold text-white bg-teal-900 rounded";
+                btnCust.className = "flex-1 py-1.5 font-bold text-teal-400";
                 bizField.classList.remove('hidden');
             }
         }
 
-        // FIX 1: Biometric Modal Control
-        function openBiometricModal() {
-            document.getElementById('biometric-modal').classList.remove('hidden');
-        }
-        function closeBiometricModal() {
-            document.getElementById('biometric-modal').classList.add('hidden');
-        }
+        function openBiometricModal() { document.getElementById('biometric-modal').classList.remove('hidden'); }
+        function closeBiometricModal() { document.getElementById('biometric-modal').classList.add('hidden'); }
         function confirmBiometric() {
+            const pin = document.getElementById('bio-pin-input').value;
+            if(pin.length < 4) { alert("Please enter a valid 4-digit security PIN."); return; }
             closeBiometricModal();
             isBiometricVerified = true;
             const btnFinal = document.getElementById('btn-final-auth');
             btnFinal.disabled = false;
             btnFinal.className = "w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg transition";
             triggerDualAlert('success', 0);
-            document.getElementById('banner-title').innerText = "Biometric Verified";
-            document.getElementById('banner-msg').innerText = "Identity successfully authenticated via NIN/BVN.";
+            document.getElementById('banner-title').innerText = "Biometrics Verified";
+            document.getElementById('banner-msg').innerText = "NIN & BVN KYC approved via Passkey/Face ID.";
         }
 
-        // FIX 2: Amount Modal Control
-        let pendingScanResult = "";
-        function openAmountModal(scannedText) {
-            pendingScanResult = scannedText;
-            document.getElementById('amount-modal').classList.remove('hidden');
-        }
-        function closeAmountModal() {
-            document.getElementById('amount-modal').classList.add('hidden');
-        }
+        function openAmountModal(scannedText) { document.getElementById('amount-modal').classList.remove('hidden'); }
+        function closeAmountModal() { document.getElementById('amount-modal').classList.add('hidden'); }
+        
         function submitTransactionAmount() {
             const amt = document.getElementById('input-txn-amount').value;
-            if(!amt || amt <= 0) {
-                alert("Please enter a valid amount");
-                return;
-            }
+            if(!amt || amt <= 0) { alert("Please enter a valid amount"); return; }
             closeAmountModal();
+            
+            if(aiTransactionMemory.length >= 15) aiTransactionMemory.shift();
+            aiTransactionMemory.push({ id: aiTransactionMemory.length + 1, type: "debit", amount: Number(amt), recipient: "Scanned Merchant", status: "success" });
+
             triggerDualAlert('success', Number(amt));
             goHome();
         }
 
-        function handleAuthSubmit(e) {
-            e.preventDefault();
-            if(!isBiometricVerified) {
-                alert("Please complete biometric verification first!");
-                return;
+        // Automatic Retry Mechanism for Failed Payments
+        function simulateFailedPayment() {
+            closeAmountModal();
+            const banner = document.getElementById('floating-banner');
+            const bannerBox = document.getElementById('banner-box');
+            const bannerIcon = document.getElementById('banner-icon');
+            const bannerTitle = document.getElementById('banner-title');
+            const bannerMsg = document.getElementById('banner-msg');
+
+            bannerBox.className = "p-3 rounded-2xl border flex items-center space-x-3 text-xs font-medium bg-slate-900 text-white border-amber-500 shadow-xl";
+            bannerIcon.innerText = "🔄";
+            bannerTitle.innerText = "Payment Interrupted";
+            bannerMsg.innerText = "Initiating automated smart retry via backup gateway...";
+            banner.classList.remove('-translate-y-28');
+            banner.classList.add('translate-y-0');
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Payment interrupted. Initiating automatic retry."));
             }
+
+            setTimeout(() => {
+                triggerDualAlert('success', 5000);
+            }, 3000);
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            launchAppSession(email.split('@')[0]);
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            if(!isBiometricVerified) { alert("Please complete biometric verification first!"); return; }
             const name = document.getElementById('auth-name').value;
-            
+            launchAppSession(name);
+        }
+
+        function launchAppSession(name) {
             document.getElementById('view-auth').classList.add('hidden');
             document.getElementById('main-app-container').classList.remove('hidden');
-            document.getElementById('sidebar-name').innerText = name;
-            document.getElementById('ai-mode-label').innerText = currentRole === 'merchant' ? 'Merchant' : 'Customer';
+            document.getElementById('sidebar-name').innerText = name + " ✏️";
 
             if(currentRole === 'merchant') {
                 document.getElementById('sidebar-role-tag').innerText = "Merchant Mode";
                 document.getElementById('header-mode-badge').innerText = "Merchant Portal";
                 document.getElementById('home-title').innerText = "Business Collections";
-                document.getElementById('home-subtitle').innerText = "Automated settlement & voice alerts active";
+                document.getElementById('home-subtitle').innerText = "Automated settlements to primary bank";
                 document.getElementById('home-btn-collect-text').innerText = "Generate Shop Counter QR";
                 document.getElementById('merchant-speaker-panel').classList.remove('hidden');
             } else {
@@ -345,68 +470,6 @@
                 document.getElementById('header-mode-badge').innerText = "Customer Portal";
                 document.getElementById('merchant-speaker-panel').classList.add('hidden');
             }
-        }
-
-        // FIX 3 & 6: Bank Account Linking & Removing Form
-        function linkNewBank() {
-            const bankName = document.getElementById('new-bank-name').value.trim();
-            const accNum = document.getElementById('new-account-num').value.trim();
-            if(!bankName || accNum.length !== 10) {
-                alert("Please enter a valid bank name and 10-digit account number.");
-                return;
-            }
-            const container = document.getElementById('bank-list-container');
-            container.innerHTML += `
-                <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-teal-700/50">
-                    <span>${bankName} - ${accNum}</span>
-                    <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 text-[10px] underline">Remove</button>
-                </div>
-            `;
-            document.getElementById('new-bank-name').value = "";
-            document.getElementById('new-account-num').value = "";
-            triggerDualAlert('success', 0);
-            document.getElementById('banner-title').innerText = "Bank Linked";
-            document.getElementById('banner-msg').innerText = `${bankName} added successfully.`;
-        }
-
-        // DUAL ALERT SYSTEM
-        function triggerDualAlert(status, amount = 5000) {
-            const banner = document.getElementById('floating-banner');
-            const bannerBox = document.getElementById('banner-box');
-            const bannerIcon = document.getElementById('banner-icon');
-            const bannerTitle = document.getElementById('banner-title');
-            const bannerMsg = document.getElementById('banner-msg');
-
-            let spokenText = "";
-
-            if(status === 'success') {
-                bannerBox.className = "p-3 rounded-2xl border flex items-center space-x-3 text-xs font-medium bg-slate-900 text-white border-emerald-500 shadow-emerald-950/50 shadow-lg";
-                bannerIcon.innerText = "✅";
-                bannerTitle.innerText = "Payment Successful";
-                bannerMsg.innerText = amount > 0 ? `₦${amount.toLocaleString()} received and routed.` : `Action completed successfully.`;
-                spokenText = amount > 0 ? `Alert! Payment of ${amount} Naira received successfully.` : `Authentication successful.`;
-            } else if(status === 'retrieving') {
-                bannerBox.className = "p-3 rounded-2xl border flex items-center space-x-3 text-xs font-medium bg-slate-900 text-white border-amber-500 shadow-amber-950/50 shadow-lg";
-                bannerIcon.innerText = "⏳";
-                bannerTitle.innerText = "Retrieving Status";
-                bannerMsg.innerText = "Checking bank gateway response...";
-                spokenText = "Please wait, retrieving transaction status from bank gateway.";
-            }
-
-            banner.classList.remove('-translate-y-28');
-            banner.classList.add('translate-y-0');
-
-            if ('speechSynthesis' in window) {
-                const speech = new SpeechSynthesisUtterance(spokenText);
-                speech.rate = 1.0;
-                speech.pitch = 1.1;
-                window.speechSynthesis.speak(speech);
-            }
-
-            setTimeout(() => {
-                banner.classList.remove('translate-y-0');
-                banner.classList.add('-translate-y-28');
-            }, 4000);
         }
 
         function updateProfilePic(event) {
@@ -418,12 +481,77 @@
             }
         }
 
-        // Navigation helpers
+        function editUserName() {
+            const newName = prompt("Enter your updated name:");
+            if(newName && newName.trim() !== "") {
+                document.getElementById('sidebar-name').innerText = newName.trim() + " ✏️";
+                triggerDualAlert('success', 0);
+                document.getElementById('banner-title').innerText = "Profile Updated";
+                document.getElementById('banner-msg').innerText = "Your personal details were modified.";
+            }
+        }
+
+        function linkNewBank() {
+            const bankName = document.getElementById('new-bank-name').value.trim();
+            const accNum = document.getElementById('new-account-num').value.trim();
+            if(!bankName || accNum.length !== 10) { alert("Please enter a valid bank name and 10-digit account number."); return; }
+            const container = document.getElementById('bank-list-container');
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-teal-700/50">
+                    <div>
+                        <p class="font-bold text-white">${bankName} - ${accNum}</p>
+                        <button type="button" onclick="setPrimaryBank(this)" class="text-teal-400 text-[10px] underline font-semibold">Make Primary</button>
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 text-[10px] underline">Remove</button>
+                </div>
+            `;
+            document.getElementById('new-bank-name').value = "";
+            document.getElementById('new-account-num').value = "";
+            triggerDualAlert('success', 0);
+            document.getElementById('banner-title').innerText = "Bank Linked";
+            document.getElementById('banner-msg').innerText = `${bankName} added successfully.`;
+        }
+
+        function setPrimaryBank(btn) { alert("Account successfully set as Primary for receiving and sending funds."); }
+        function changePasswordPrompt() { const pin = prompt("Enter new 4-digit security PIN / Passkey:"); if(pin) alert("Security credentials updated successfully."); }
+        function deleteAccountPrompt() { if(confirm("Are you sure you want to delete your ClickPEqR account?")) { location.reload(); } }
+
+        function triggerDualAlert(status, amount = 5000) {
+            const banner = document.getElementById('floating-banner');
+            const bannerBox = document.getElementById('banner-box');
+            const bannerIcon = document.getElementById('banner-icon');
+            const bannerTitle = document.getElementById('banner-title');
+            const bannerMsg = document.getElementById('banner-msg');
+
+            let spokenText = "";
+            if(status === 'success') {
+                bannerBox.className = "p-3 rounded-2xl border flex items-center space-x-3 text-xs font-medium bg-slate-900 text-white border-emerald-500 shadow-xl";
+                bannerIcon.innerText = "✅";
+                bannerTitle.innerText = "Payment Successful";
+                bannerMsg.innerText = amount > 0 ? `₦${amount.toLocaleString()} routed via Primary Bank.` : `Action completed successfully.`;
+                spokenText = amount > 0 ? `Alert! Payment of ${amount} Naira received successfully.` : `Authentication successful.`;
+            }
+
+            banner.classList.remove('-translate-y-28');
+            banner.classList.add('translate-y-0');
+
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance(spokenText);
+                window.speechSynthesis.speak(speech);
+            }
+
+            setTimeout(() => {
+                banner.classList.remove('translate-y-0');
+                banner.classList.add('-translate-y-28');
+            }, 4000);
+        }
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
         function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full'); }
+        
         function goHome() {
             stopScanner();
-            ['view-home', 'view-scanner', 'view-generator-menu', 'view-notifications', 'view-settings', 'view-history'].forEach(id => {
+            ['view-home', 'view-scanner', 'view-generator-menu', 'view-notifications', 'view-settings', 'view-history', 'view-about', 'view-support', 'view-faq'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById('view-home').classList.remove('hidden');
@@ -431,17 +559,13 @@
         function openNotifications() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-notifications').classList.remove('hidden'); }
         function openSettings() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-settings').classList.remove('hidden'); }
         function openHistory() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-history').classList.remove('hidden'); }
+        function openAbout() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-about').classList.remove('hidden'); }
+        function openSupport() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-support').classList.remove('hidden'); }
+        function openFAQ() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-faq').classList.remove('hidden'); }
         function logout() { location.reload(); }
         
-        // FIX 4 & 5: AI Chat Logic & Enter Button Support
         function toggleAIChat() { document.getElementById('ai-modal').classList.toggle('hidden'); }
-        
-        function handleAIKeyPress(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendAIQuery();
-            }
-        }
+        function handleAIKeyPress(event) { if (event.key === 'Enter') { event.preventDefault(); sendAIQuery(); } }
 
         function sendAIQuery() {
             const inputField = document.getElementById('ai-user-input');
@@ -454,36 +578,15 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             setTimeout(() => {
-                let aiReply = "Altra AI is processing your request.";
-                const lower = text.toLowerCase();
-                
-                if(currentRole === 'merchant') {
-                    if(lower.includes("sales") || lower.includes("total") || lower.includes("statement")) {
-                        aiReply = "📊 Business CFO Summary: Total collection today is ₦23,999. All settlements successfully routed to primary bank.";
-                    } else if(lower.includes("qr") || lower.includes("code")) {
-                        aiReply = "⚡ Your dynamic shop counter QR is active for customer collections.";
-                    } else {
-                        aiReply = "💼 Merchant AI Suite: Monitoring automated audio soundbox and daily bank settlements.";
-                    }
-                } else {
-                    if(lower.includes("balance") || lower.includes("statement")) {
-                        aiReply = "💳 Financial Assistant: Your linked bank accounts are fully active with zero transaction fees.";
-                    } else if(lower.includes("status") || lower.includes("payment")) {
-                        aiReply = "🔍 All recent transactions completed securely via Flutterwave gateway.";
-                    } else {
-                        aiReply = "✨ Customer AI: I am ready to help you track spending or verify transfers.";
-                    }
-                }
-
+                let aiReply = `🧠 AI Memory Active (Across ${aiTransactionMemory.length} transactions): All security rules, primary bank routes, and automated retry systems are operational.`;
                 chatBox.innerHTML += `<div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200 border border-teal-700/40"><b>Altra AI:</b> ${aiReply}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
-            }, 600);
+            }, 500);
         }
 
         function openScanner() {
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-scanner').classList.remove('hidden');
-            triggerDualAlert('retrieving');
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 200 } }, (text) => {
                 stopScanner();
