@@ -553,8 +553,16 @@
                 document.getElementById('amount-modal').classList.remove('hidden');
             }, () => {});
         }
-        function stopScanner() { if(html5QrCode && html5QrCode.isScanning) html5QrCode.stop(); }
-        function stopScannerAndGoHome() { stopScanner(); goHome(); }
+       function stopScanner() { 
+    if(html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(err => console.log(err));
+    }
+}
+
+function stopScannerAndGoHome() { 
+    stopScanner(); 
+    goHome(); 
+}
     </script>
 </body>
 </html>
