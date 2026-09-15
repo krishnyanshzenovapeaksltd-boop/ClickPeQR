@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpztezqexkc.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlenFleGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxODc3MDUsImV4cCI6MjEwMjc2MzcwNX0.6kJOgwgSfxsQ6pUV11da2SZj7sxZyJDqGDMl_PuNmUg ";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || "FLWSECK_REAL-xxx";
