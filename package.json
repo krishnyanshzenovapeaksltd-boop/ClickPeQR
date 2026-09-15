@@ -1,5 +1,5 @@
 {
-  "name": "clickpe-backend",
+  "name": "clickPeQR-backend",
   "version": "1.0.0",
   "description": "ClickPeQR Backend",
   "main": "server.js",
