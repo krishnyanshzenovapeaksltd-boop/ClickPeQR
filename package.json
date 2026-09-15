@@ -1,7 +1,7 @@
 {
   "name": "clickpe-backend",
   "version": "1.0.0",
-  "description": "ClickPEqR Backend",
+  "description": "ClickPeQR Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
