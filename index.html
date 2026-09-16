@@ -139,13 +139,22 @@
         <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
             
             <!-- CUSTOMER PORTAL VIEW -->
-            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden">
-                <div class="flex justify-between items-center mb-4">
+            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+                <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
                         <p class="text-xs text-slate-400">Zero transaction fees for primary accounts</p>
                     </div>
                     <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
+                </div>
+
+                <!-- Permanent Customer QR on Homepage -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
+                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
+                    <p class="text-[10px] text-slate-400 mb-2">Show this code to receive payments</p>
+                    <div class="p-2 bg-white inline-block rounded-lg shadow-inner">
+                        <canvas id="customerPermanentQRCanvas"></canvas>
+                    </div>
                 </div>
 
                 <div class="space-y-3">
@@ -156,20 +165,12 @@
                             <p class="text-xs text-slate-400">Open live camera to scan merchant QR</p>
                         </div>
                     </button>
-
-                    <button onclick="openCustomerReceiveQR()" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-left hover:bg-slate-750 transition flex items-center space-x-3">
-                        <div class="bg-slate-700 text-teal-400 p-2.5 rounded-lg font-bold">⚡</div>
-                        <div>
-                            <h4 class="text-sm font-bold text-white">Receive Money / Request QR</h4>
-                            <p class="text-xs text-slate-400">Generate QR code to get paid by anyone</p>
-                        </div>
-                    </button>
                 </div>
             </div>
 
             <!-- MERCHANT PORTAL VIEW -->
-            <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden">
-                <div class="flex justify-between items-center mb-4">
+            <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+                <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
                         <p class="text-xs text-slate-400">Standard Fee: 1.5% MDR</p>
@@ -177,22 +178,22 @@
                     <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
                 </div>
 
-                <div class="bg-slate-950 p-4 rounded-xl mb-4 border border-slate-800">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <p class="text-xs text-slate-400">Today's Sales Analytics</p>
                     <h3 class="text-2xl font-bold text-teal-300 mt-1">₦ 0.00</h3>
                 </div>
 
                 <div class="space-y-3">
-                    <!-- Permanent / Static Shop QR Option -->
+                    <!-- Permanent Shop QR on Homepage (Unique per Merchant) -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
-                        <p class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
+                        <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
                         <div class="p-2 bg-white inline-block rounded-lg shadow-inner">
                             <canvas id="permanentShopQRCanvas"></canvas>
                         </div>
                     </div>
 
-                    <!-- Dynamic QR Option -->
+                    <!-- Dynamic Amount QR Generator -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <h4 class="text-xs font-semibold text-slate-300 mb-1">Dynamic Amount QR Generator</h4>
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
@@ -234,7 +235,7 @@
         </div>
     </div>
 
-    <!-- AMOUNT POPUP & BIOMETRIC PAYMENT MODAL -->
+    <!-- AMOUNT POPUP & BIOMETRIC PAYMENT MODAL (Triggers after scan) -->
     <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
             <h3 class="text-base font-bold text-teal-400">Authorize Payment</h3>
@@ -247,21 +248,6 @@
                 🔒 Pay with Biometrics / PIN
             </button>
             <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
-        </div>
-    </div>
-
-    <!-- RECEIVE MONEY / DYNAMIC QR MODAL -->
-    <div id="receiveQRModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-center space-y-3">
-            <h3 class="text-sm font-bold text-teal-400">Receive Money QR</h3>
-            <p class="text-xs text-slate-400">Scan this code with any camera to pay this user.</p>
-            <div class="p-2 bg-white inline-block rounded-xl shadow-inner">
-                <canvas id="receiveQRCanvas"></canvas>
-            </div>
-            <div>
-                <input type="number" id="receiveModalAmt" placeholder="Set Specific Amount (Optional)" class="w-full bg-slate-950 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none" oninput="updateReceiveQRWithAmount()">
-            </div>
-            <button onclick="closeReceiveQRModal()" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs font-semibold">Done</button>
         </div>
     </div>
 
@@ -496,10 +482,12 @@
             e.preventDefault();
             const fullName = document.getElementById('fullNameInput').value;
             const email = document.getElementById('emailInput').value;
-            const bizName = document.getElementById('businessNameInput')?.value || "My Store";
+            const bizName = document.getElementById('businessNameInput')?.value || (fullName + " Store");
+
+            const uniqueId = email.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.floor(Math.random() * 10000);
 
             const userData = {
-                id: email.replace(/[^a-zA-Z0-9]/g, '_'),
+                id: uniqueId,
                 full_name: fullName,
                 email: email,
                 business_name: bizName,
@@ -530,13 +518,18 @@
                 document.getElementById('merchantPortalView').classList.remove('hidden');
                 document.getElementById('customerPortalView').classList.add('hidden');
                 
-                // Safely render Permanent QR after DOM is visible
+                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
+
                 setTimeout(() => {
                     renderPermanentShopQR(user);
-                }, 100);
+                }, 150);
             } else {
                 document.getElementById('customerPortalView').classList.remove('hidden');
                 document.getElementById('merchantPortalView').classList.add('hidden');
+
+                setTimeout(() => {
+                    renderCustomerPermanentQR(user);
+                }, 150);
             }
 
             renderLinkedBanks(user.id);
@@ -571,6 +564,10 @@
             user.full_name = document.getElementById('settingsFullName').value;
             if (user.portal_type === 'merchant') {
                 user.business_name = document.getElementById('settingsBizName').value;
+                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
+                renderPermanentShopQR(user);
+            } else {
+                renderCustomerPermanentQR(user);
             }
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
             document.getElementById('sidebarUserName').textContent = user.full_name;
@@ -578,17 +575,36 @@
             alert("Settings updated successfully!");
         }
 
-        // Permanent QR Generator for Merchant
+        // Unique Permanent Shop QR Generator for each Merchant on Homepage
         function renderPermanentShopQR(user) {
             const canvas = document.getElementById('permanentShopQRCanvas');
             if (!canvas) return;
-            const payload = JSON.stringify({ type: "MERCHANT_STATIC", name: user.business_name || user.full_name, id: user.id });
-            QRCode.toCanvas(canvas, payload, { width: 140, margin: 1 }, function(error) {
-                if (error) console.error("QR Error:", error);
+            const uniquePayload = JSON.stringify({
+                type: "MERCHANT_PERMANENT",
+                merchantId: user.id,
+                businessName: user.business_name || user.full_name,
+                owner: user.full_name
+            });
+            QRCode.toCanvas(canvas, uniquePayload, { width: 140, margin: 1 }, function(error) {
+                if (error) console.error("Permanent QR Error:", error);
             });
         }
 
-        // Dynamic QR Generator for Merchant
+        // Unique Permanent Customer QR Generator on Homepage
+        function renderCustomerPermanentQR(user) {
+            const canvas = document.getElementById('customerPermanentQRCanvas');
+            if (!canvas) return;
+            const uniquePayload = JSON.stringify({
+                type: "CUSTOMER_PERMANENT",
+                customerId: user.id,
+                name: user.full_name
+            });
+            QRCode.toCanvas(canvas, uniquePayload, { width: 140, margin: 1 }, function(error) {
+                if (error) console.error("Customer QR Error:", error);
+            });
+        }
+
+        // Dynamic Amount QR Generator for Merchant
         function generateMerchantDynamicQR() {
             const amt = document.getElementById('merchantDynAmt').value;
             if (!amt) {
@@ -596,40 +612,23 @@
                 return;
             }
             const canvas = document.getElementById('dynamicQRCanvas');
+            if (!canvas) return;
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const payload = JSON.stringify({ type: "MERCHANT_DYNAMIC", amount: amt, merchant: user.business_name || user.full_name });
+            const uniquePayload = JSON.stringify({
+                type: "MERCHANT_DYNAMIC",
+                merchantId: user.id,
+                businessName: user.business_name || user.full_name,
+                amount: amt
+            });
             
-            QRCode.toCanvas(canvas, payload, { width: 150, margin: 1 }, function(error) {
+            QRCode.toCanvas(canvas, uniquePayload, { width: 150, margin: 1 }, function(error) {
                 if (!error) {
                     document.getElementById('merchantQRResult').classList.remove('hidden');
-                }
-            });
-        }
-
-        // Customer Receive QR Generator
-        function openCustomerReceiveQR() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const canvas = document.getElementById('receiveQRCanvas');
-            const payload = JSON.stringify({ type: "CUSTOMER_RECEIVE", name: user.full_name, id: user.id });
-            
-            QRCode.toCanvas(canvas, payload, { width: 160, margin: 1 }, function(error) {
-                if (!error) {
-                    document.getElementById('receiveQRModal').classList.remove('hidden');
                 } else {
-                    console.error(error);
+                    console.error("Dynamic QR Error:", error);
                 }
             });
         }
-
-        function updateReceiveQRWithAmount() {
-            const amt = document.getElementById('receiveModalAmt').value;
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const canvas = document.getElementById('receiveQRCanvas');
-            const payload = JSON.stringify({ type: "CUSTOMER_RECEIVE", amount: amt, name: user.full_name });
-            QRCode.toCanvas(canvas, payload, { width: 160, margin: 1 });
-        }
-
-        function closeReceiveQRModal() { document.getElementById('receiveQRModal').classList.add('hidden'); }
 
         async function openWorkingScanner() {
             document.getElementById('scannerModal').classList.remove('hidden');
@@ -643,15 +642,17 @@
 
         function closeScannerModal() {
             const video = document.getElementById('cameraVideoFeed');
-            if (video.srcObject) {
+            if (video && video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
             }
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
+        // After scan, automatically pop up amount and pay button
         function simulateSuccessfulScan() {
             closeScannerModal();
-            document.getElementById('paymentTargetInfo').textContent = "Scanned Merchant QR Verified";
+            document.getElementById('paymentTargetInfo').textContent = "Scanned Merchant QR Verified Successfully";
+            document.getElementById('paymentPopupAmount').value = "";
             document.getElementById('paymentModal').classList.remove('hidden');
         }
 
@@ -665,11 +666,15 @@
         }
 
         function executeBiometricPayment() {
-            const amt = document.getElementById('paymentPopupAmount').value || "5000";
+            const amt = document.getElementById('paymentPopupAmount').value;
+            if (!amt || amt <= 0) {
+                alert("Please enter a valid amount to pay.");
+                return;
+            }
             document.getElementById('paymentModal').classList.add('hidden');
             saveTransactionRecord(amt, "Outgoing Transfer");
             speakVoiceAssistant("Payment successfully sent of " + amt + " Naira. Thank you for using ClickPeQR.");
-            alert("✅ Payment successfully sent! Thank you message: Transaction of ₦" + amt + " completed successfully.");
+            alert("✅ Payment successfully sent! Transaction of ₦" + amt + " completed successfully.");
         }
 
         function saveTransactionRecord(amount, type) {
@@ -795,7 +800,7 @@
                 } else if (lower.includes('bank') || lower.includes('44')) {
                     reply = "We support 44+ Nigerian commercial & digital banks with multi-account persistence.";
                 } else if (lower.includes('qr') || lower.includes('scan') || lower.includes('payment')) {
-                    reply = "You can generate static/dynamic QRs or scan vendor codes instantly with biometric authorization!";
+                    reply = "You can generate unique static shop QRs or dynamic amount codes instantly with biometric authorization!";
                 } else if (lower.includes('hello') || lower.includes('hi')) {
                     reply = "Hello! Welcome to ClickPeQR. How can I assist you with your payment and transaction today?";
                 }
