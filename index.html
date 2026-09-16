@@ -534,7 +534,7 @@
                 }, 100);
             }
 
-            renderLinkedBanks(user.id);
+            fetchAndRenderBanks(user.id);
         }
 
         function handleDPChange(event) {
@@ -561,13 +561,19 @@
             document.getElementById('settingsModal').classList.remove('hidden');
         }
 
-        function saveProfileSettings() {
+        async function saveProfileSettings() {
             let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             user.full_name = document.getElementById('settingsFullName').value;
             if (user.portal_type === 'merchant') {
                 user.business_name = document.getElementById('settingsBizName').value;
                 document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
                 renderPermanentShopQR(user);
+                
+                try {
+                    await supabaseClient.from('merchants').update({ business_name: user.business_name }).eq('id', user.id);
+                } catch (err) {
+                    console.warn("Supabase merchant update warning:", err);
+                }
             } else {
                 renderCustomerPermanentQR(user);
             }
@@ -759,10 +765,35 @@
             document.getElementById('transactionModal').classList.remove('hidden');
         }
 
-        function renderLinkedBanks(userId) {
+        async function fetchAndRenderBanks(userId) {
             const container = document.getElementById('linkedBanksListContainer');
-            const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
             
+            try {
+                const { data, error } = await supabaseClient
+                    .from('linked_accounts')
+                    .select('*')
+                    .eq('user_id', userId);
+
+                if (!error && data && data.length > 0) {
+                    container.innerHTML = '';
+                    data.forEach((acc, index) => {
+                        container.innerHTML += `
+                            <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                                <div>
+                                    <p class="text-xs font-bold text-white">${acc.bank_name}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono">${acc.account_number} - ${acc.account_name}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    return;
+                }
+            } catch (err) {
+                console.warn("Error fetching banks from Supabase:", err);
+            }
+
+            // Fallback to localStorage if empty/offline
+            const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
             if (savedAccounts.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>`;
                 return;
@@ -773,10 +804,9 @@
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                         <div>
-                            <p class="text-xs font-bold text-white">${acc.bankName} ${acc.isPrimary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : ''}</p>
+                            <p class="text-xs font-bold text-white">${acc.bankName}</p>
                             <p class="text-[10px] text-slate-400 font-mono">${acc.accountNumber} - ${acc.accountName}</p>
                         </div>
-                        <button onclick="switchPrimaryBank('${userId}', ${index})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded hover:bg-slate-700">Switch</button>
                     </div>
                 `;
             });
@@ -802,9 +832,15 @@
             let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
             const isPrimary = savedAccounts.length === 0;
 
-            const newBank = { user_id: user.id, bank_name: bankName, account_number: accountNumber, account_name: accountName, is_primary: isPrimary };
             savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
             localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+
+            const newBank = { 
+                user_id: user.id, 
+                bank_name: bankName, 
+                account_number: accountNumber, 
+                account_name: accountName 
+            };
 
             try {
                 await supabaseClient.from('linked_accounts').insert([newBank]);
@@ -813,16 +849,8 @@
             }
 
             closeAddBankModal();
-            renderLinkedBanks(user.id);
+            fetchAndRenderBanks(user.id);
             alert("Bank account successfully linked and saved!");
-        }
-
-        function switchPrimaryBank(userId, selectedIndex) {
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
-            savedAccounts.forEach((acc, idx) => { acc.isPrimary = (idx === selectedIndex); });
-            localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(savedAccounts));
-            renderLinkedBanks(userId);
-            alert("Primary bank account switched successfully!");
         }
 
         function showComplaintWhatsApp() {
