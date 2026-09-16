@@ -561,17 +561,37 @@
             }
             document.getElementById('settingsModal').classList.remove('hidden');
         }
+async function saveProfileSettings() {
+    let user = JSON.parse(localStorage.getItem('clickpeqr_active_user')) || '{}';
+    user.full_name = document.getElementById('settingsFullName').value;
+    
+    if (user.portal_type === 'merchant') {
+        user.business_name = document.getElementById('settingsBizName').value;
+        document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
+        renderPermanentShopQR(user);
+        
+        // Supabase database mein merchant details update karein
+        const { error } = await supabaseClient
+            .from('merchants')
+            .update({ 
+                business_name: user.business_name, 
+                // agar email ya phone bhi update ho raha ho toh yahan add kar sakti hain
+            })
+            .eq('id', user.id); // ya email se match karayein
+            
+        if (error) {
+            console.error("Supabase update error:", error.message);
+        }
+    } else {
+        renderCustomerPermanentQR(user);
+    }
 
-        function saveProfileSettings() {
-            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            user.full_name = document.getElementById('settingsFullName').value;
-            if (user.portal_type === 'merchant') {
-                user.business_name = document.getElementById('settingsBizName').value;
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
-                renderPermanentShopQR(user);
-            } else {
-                renderCustomerPermanentQR(user);
-            }
+    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
+    document.getElementById('sidebarUserName').textContent = user.full_name;
+    document.getElementById('settingsModal').classList.add('hidden');
+    alert("Settings updated & saved to database successfully!");
+}
+       
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
             document.getElementById('sidebarUserName').textContent = user.full_name;
             document.getElementById('settingsModal').classList.add('hidden');
