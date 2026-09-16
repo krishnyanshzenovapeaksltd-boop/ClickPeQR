@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between relative overflow-x-hidden">
 
-    <!-- TOP HEADER NAVBAR (Hidden on Auth Screen as per Problem 1) -->
+    <!-- TOP HEADER NAVBAR -->
     <header id="mainHeader" class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
         <div class="flex items-center space-x-3">
             <button onclick="toggleSidebar()" class="text-teal-400 focus:outline-none p-1 rounded-lg hover:bg-slate-800 transition">
@@ -27,7 +27,6 @@
             </div>
         </div>
         <div class="flex items-center space-x-3">
-            <!-- Notification Bell Icon (Problem 8) -->
             <button onclick="showNotificationModal()" class="relative p-2 text-slate-300 hover:text-teal-400 transition">
                 🔔
                 <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
@@ -40,7 +39,6 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
     <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
         <div>
-            <!-- Editable DP & Name Header (Problem 6) -->
             <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
                 <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
                     <img id="sidebarUserDP" src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
@@ -56,7 +54,6 @@
                 </div>
             </div>
 
-            <!-- Navigation Links -->
             <nav class="space-y-1.5 text-sm">
                 <a href="#" onclick="toggleSidebar(); switchView('home')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🏠 <span>Home</span></a>
                 <a href="#" onclick="toggleSidebar(); showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🔔 <span>Notifications</span></a>
@@ -78,7 +75,7 @@
     <!-- MAIN APP CONTAINER -->
     <main class="flex-grow flex items-center justify-center p-4">
 
-        <!-- AUTH SCREEN (Problem 1, 2, 3: No hamburger, portal selector here, easy biometrics login) -->
+        <!-- AUTH SCREEN (Default visible on load) -->
         <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
             <div class="text-center mb-5 flex flex-col items-center">
                 <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
@@ -92,7 +89,7 @@
                 <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
             </div>
 
-            <!-- Portal Type Switcher on Registration/Login page (Problem 3) -->
+            <!-- Portal Type Switcher -->
             <div class="mb-4">
                 <label class="block text-xs text-slate-400 mb-1.5">Select Account Role</label>
                 <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
@@ -130,7 +127,6 @@
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
                 
-                <!-- Biometric Quick Login Button (Problem 2) -->
                 <div class="pt-2">
                     <button type="button" onclick="handleBiometricLogin()" class="w-full bg-slate-800 border border-teal-500/30 text-teal-300 font-semibold py-2.5 rounded-xl text-xs hover:bg-slate-750 transition flex items-center justify-center space-x-2">
                         <span>🔓 Login with Biometrics / Face ID</span>
@@ -187,7 +183,6 @@
                 </div>
 
                 <div class="space-y-3">
-                    <!-- Permanent / Static Shop QR Option -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
@@ -196,7 +191,6 @@
                         </div>
                     </div>
 
-                    <!-- Dynamic QR Option -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
                         <h4 class="text-xs font-semibold text-slate-300 mb-1">Dynamic Amount QR Generator</h4>
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
@@ -238,7 +232,7 @@
         </div>
     </div>
 
-    <!-- AMOUNT POPUP & BIOMETRIC PAYMENT MODAL (Problem 5, 15, 16) -->
+    <!-- AMOUNT POPUP & BIOMETRIC PAYMENT MODAL -->
     <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
             <h3 class="text-base font-bold text-teal-400">Authorize Payment</h3>
@@ -254,7 +248,7 @@
         </div>
     </div>
 
-    <!-- RECEIVE MONEY / DYNAMIC QR MODAL (Problem 4, 5) -->
+    <!-- RECEIVE MONEY / DYNAMIC QR MODAL -->
     <div id="receiveQRModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-center space-y-3">
             <h3 class="text-sm font-bold text-teal-400">Receive Money QR</h3>
@@ -269,7 +263,7 @@
         </div>
     </div>
 
-    <!-- ADD BANK MODAL (Problem 10) -->
+    <!-- ADD BANK MODAL -->
     <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
             <h3 class="text-base font-bold text-white">Link Nigerian Bank Account</h3>
@@ -294,7 +288,7 @@
         </div>
     </div>
 
-    <!-- NOTIFICATIONS MODAL (Problem 8) -->
+    <!-- NOTIFICATIONS MODAL -->
     <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -306,28 +300,22 @@
                     <p class="font-bold text-white">Welcome to ClickPeQR!</p>
                     <p class="text-[10px] text-slate-400">Your account is active under CBN guidelines.</p>
                 </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <p class="font-bold text-white">Security Notice</p>
-                    <p class="text-[10px] text-slate-400">Biometric authentication configured successfully.</p>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- TRANSACTION HISTORY MODAL (Problem 9) -->
+    <!-- TRANSACTION HISTORY MODAL -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                 <h3 class="text-sm font-bold text-teal-400">Transaction History</h3>
                 <button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
-            <div id="transactionListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300">
-                <!-- Populated dynamically -->
-            </div>
+            <div id="transactionListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300"></div>
         </div>
     </div>
 
-    <!-- ABOUT MODAL (Problem 11) -->
+    <!-- ABOUT MODAL -->
     <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl space-y-3 text-xs text-slate-300">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -342,7 +330,7 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL (Problem 6, 14) -->
+    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -379,7 +367,7 @@
         </div>
     </div>
 
-    <!-- SMART AI BOT (Problem 17: Greeting with help about payment and transaction) -->
+    <!-- SMART AI BOT -->
     <div class="fixed bottom-4 right-4 z-40">
         <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">
             🤖
@@ -402,7 +390,6 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // 44+ Nigerian Commercial Banks & Digital Banks (Problem 10)
         const nigerianBanksList = [
             { name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" },
             { name: "Ecobank Nigeria", code: "050" }, { name: "Fidelity Bank", code: "070" },
@@ -485,16 +472,14 @@
             });
         }
 
+        // Fix: Do NOT auto-load dashboard on DOM load. Always start at Auth Screen unless Biometric Login is clicked.
         window.addEventListener('DOMContentLoaded', () => {
             populateBankDropdown();
-            const activeUser = localStorage.getItem('clickpeqr_active_user');
-            if (activeUser) {
-                const user = JSON.parse(activeUser);
-                loadDashboard(user);
-            }
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden');
+            document.getElementById('mainHeader').classList.add('hidden');
         });
 
-        // Easy Biometric Login (Problem 2)
         function handleBiometricLogin() {
             const savedUser = localStorage.getItem('clickpeqr_active_user');
             if (savedUser) {
@@ -502,7 +487,7 @@
                 speakVoiceAssistant("Biometric authentication successful. Welcome back " + user.full_name);
                 loadDashboard(user);
             } else {
-                alert("No previous session found. Please register or login with your PIN first.");
+                alert("No previous session found. Please register or sign in with your PIN first.");
             }
         }
 
@@ -528,7 +513,7 @@
 
         function loadDashboard(user) {
             document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainHeader').classList.remove('hidden'); // Show header & hamburger menu only after login (Problem 1)
+            document.getElementById('mainHeader').classList.remove('hidden');
 
             document.getElementById('sidebarUserName').textContent = user.full_name;
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
@@ -549,9 +534,9 @@
             }
 
             renderLinkedBanks(user.id);
+            document.getElementById('dashboardScreen').classList.remove('hidden');
         }
 
-        // Editable DP from Gallery (Problem 6)
         function handleDPChange(event) {
             const file = event.target.files[0];
             if (file) {
@@ -566,7 +551,6 @@
             }
         }
 
-        // Settings Modal Controls (Problem 6, 14)
         function openSettingsModal() {
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             document.getElementById('settingsFullName').value = user.full_name || '';
@@ -589,7 +573,6 @@
             alert("Settings updated successfully!");
         }
 
-        // QR Code Generator (Problem 4)
         function renderPermanentShopQR(user) {
             const canvas = document.getElementById('permanentShopQRCanvas');
             const payload = JSON.stringify({ type: "MERCHANT_STATIC", name: user.business_name || user.full_name, id: user.id });
@@ -636,7 +619,6 @@
 
         function closeReceiveQRModal() { document.getElementById('receiveQRModal').classList.add('hidden'); }
 
-        // Camera Scanner & Amount Popup (Problem 4, 5, 15, 16)
         async function openWorkingScanner() {
             document.getElementById('scannerModal').classList.remove('hidden');
             try {
@@ -657,12 +639,10 @@
 
         function simulateSuccessfulScan() {
             closeScannerModal();
-            // Open Amount Popup with Biometrics (Problem 5)
             document.getElementById('paymentTargetInfo').textContent = "Scanned Merchant QR Verified";
             document.getElementById('paymentModal').classList.remove('hidden');
         }
 
-        // Voice Assistant Speaker (Problem 16)
         function speakVoiceAssistant(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -675,16 +655,11 @@
         function executeBiometricPayment() {
             const amt = document.getElementById('paymentPopupAmount').value || "5000";
             document.getElementById('paymentModal').classList.add('hidden');
-            
-            // Save transaction history
             saveTransactionRecord(amt, "Outgoing Transfer");
-
-            // Voice announcement & Thank you message (Problem 15, 16)
             speakVoiceAssistant("Payment successfully sent of " + amt + " Naira. Thank you for using ClickPeQR.");
             alert("✅ Payment successfully sent! Thank you message: Transaction of ₦" + amt + " completed successfully.");
         }
 
-        // Transaction History (Problem 9)
         function saveTransactionRecord(amount, type) {
             let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
             txs.unshift({ amount, type, date: new Date().toLocaleString() });
@@ -713,7 +688,6 @@
             document.getElementById('transactionModal').classList.remove('hidden');
         }
 
-        // Bank Accounts (Problem 10)
         function renderLinkedBanks(userId) {
             const container = document.getElementById('linkedBanksListContainer');
             const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
@@ -772,7 +746,6 @@
             alert("Primary bank account switched successfully!");
         }
 
-        // WhatsApp Complaint Redirection (Problem 13)
         function showComplaintWhatsApp() {
             const phone = "2349067862223";
             const text = encodeURIComponent("Hello ClickPeQR Support, I have a complaint regarding the app.");
@@ -789,7 +762,6 @@
             window.location.reload();
         }
 
-        // Smart AI Bot with Greeting and Memory (Problem 17)
         function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
 
         function sendBotMessage() {
