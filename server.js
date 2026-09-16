@@ -57,6 +57,31 @@ app.post('/api/transactions/verify', async (req, res) => {
     }
 });
 
+// Flutterwave Webhook Endpoint for Real-time Payment Logging
+app.post('/api/webhook/flutterwave', async (req, res) => {
+    try {
+        const event = req.body;
+        
+        if (event && event.data && event.event === 'charge.completed' && event.data.status === 'successful') {
+            const txData = event.data;
+            
+            await supabase.from('transactions').insert([{
+                amount: txData.amount,
+                customer_phone: txData.customer.phone_number || 'N/A',
+                status: 'success',
+                reference: String(txData.id)
+            }]);
+            
+            console.log("Webhook verified & recorded transaction ID:", txData.id);
+        }
+        
+        res.status(200).json({ status: "handled" });
+    } catch (err) {
+        console.error("Webhook processing error:", err.message);
+        res.status(500).json({ error: "Webhook error" });
+    }
+});
+
 // Catch-all route to serve index.html for any web browser visit
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
