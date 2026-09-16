@@ -3,566 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClickPeQR - KRISHNYANSH ZENOVA PEAKS LTD. App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-950 min-h-screen font-sans text-slate-100 flex items-center justify-center p-3 relative">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
 
-    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-3xl shadow-2xl border border-teal-500/30 overflow-hidden flex flex-col min-h-[700px] relative">
-        
-        <!-- FLOATING BANNER NOTIFICATION -->
-        <div id="floating-banner" class="absolute top-4 inset-x-4 z-50 transform -translate-y-28 transition-transform duration-300 ease-out shadow-2xl pointer-events-none">
-            <div id="banner-box" class="p-3 rounded-2xl border flex items-center space-x-3 text-xs font-medium bg-slate-900 text-white border-teal-500">
-                <span id="banner-icon" class="text-lg">📢</span>
-                <div class="flex-1">
-                    <h5 id="banner-title" class="font-bold">System Notification</h5>
-                    <p id="banner-msg" class="text-[11px] opacity-80">Processing state...</p>
-                </div>
+    <!-- TOP HEADER NAVBAR WITH YOUR ACTUAL GITHUB LOGO (logo.png) -->
+    <header class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-2">
+            <img src="logo.png" alt="ClickPeQR Logo" class="w-10 h-10 object-contain rounded-xl shadow-lg border border-teal-500/30 bg-slate-950">
+            <h1 class="text-xl font-bold text-white tracking-wide">ClickPeQR</h1>
+        </div>
+        <div id="headerUserInfo" class="hidden flex items-center space-x-3">
+            <img id="userDpHeader" src="https://via.placeholder.com/40" class="w-9 h-9 rounded-full object-cover border border-teal-500" alt="DP">
+            <div>
+                <p id="userNameHeader" class="text-xs font-semibold text-white">User Name</p>
+                <span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded">Customer</span>
             </div>
         </div>
+    </header>
 
-        <!-- BIOMETRIC VERIFICATION MODAL -->
-        <div id="biometric-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-5">
-            <div class="bg-slate-900 border border-teal-500/50 p-6 rounded-3xl text-center space-y-4 w-full max-w-xs shadow-2xl">
-                <div class="w-16 h-16 bg-teal-950 border border-teal-500 rounded-full flex items-center justify-center mx-auto text-3xl animate-pulse">🔒</div>
-                <h3 class="font-bold text-sm text-white">Biometric & Passkey Verification</h3>
-                <p class="text-xs text-teal-200/70">Authenticate using Face ID, Fingerprint, or 4-digit PIN.</p>
-                <input type="password" id="bio-pin-input" maxlength="4" placeholder="Enter 4-Digit PIN" class="w-full px-3 py-2 bg-slate-950 border border-teal-700 rounded-xl text-center text-white tracking-widest font-bold">
-                <div class="space-y-2 pt-1">
-                    <button type="button" onclick="confirmBiometric()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs">Verify & Authorize</button>
-                    <button type="button" onclick="closeBiometricModal()" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-xs">Cancel</button>
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-grow flex items-center justify-center p-4">
+
+        <!-- AUTH SCREEN (LOGIN / REGISTER) -->
+        <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
+            <div class="text-center mb-6 flex flex-col items-center">
+                <img src="logo.png" alt="Logo" class="w-16 h-16 object-contain mb-2 rounded-2xl border border-teal-500/30 shadow-md">
+                <h2 class="text-2xl font-bold text-teal-400">ClickPeQR Network</h2>
+                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex bg-slate-950 p-1 rounded-xl mb-6">
+                <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
+                <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
+            </div>
+
+            <!-- Portal Type Switcher (Customer / Merchant) -->
+            <div class="flex bg-slate-950 p-1 rounded-xl mb-4 border border-slate-800">
+                <button onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
+                <button onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
+            </div>
+
+            <!-- Form Content -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="businessNameField" class="hidden">
+                    <label class="block text-xs text-slate-400 mb-1">Business / Store Name</label>
+                    <input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Store Name">
                 </div>
-            </div>
-        </div>
-
-        <!-- AMOUNT ENTER MODAL (For Dynamic QR & Payments) -->
-        <div id="amount-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-5">
-            <div class="bg-slate-900 border border-teal-500/50 p-6 rounded-3xl text-center space-y-4 w-full max-w-xs shadow-2xl">
-                <h3 id="amount-modal-title" class="font-bold text-sm text-white">Enter Transaction Amount (₦)</h3>
-                <input type="number" id="input-txn-amount" placeholder="e.g. 5000" class="w-full px-3 py-2.5 bg-slate-950 border border-teal-700 rounded-xl text-center text-base text-white font-bold focus:outline-none">
-                <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="submitAmountAction()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 rounded-xl text-xs">Proceed</button>
-                    <button type="button" onclick="closeAmountModal()" class="flex-1 bg-slate-800 text-slate-400 py-2 rounded-xl text-xs">Cancel</button>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+                    <input type="text" id="fullNameInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Enter Full Name">
                 </div>
-            </div>
-        </div>
-
-        <!-- AUTH GATEWAY -->
-        <div id="view-auth" class="p-6 my-auto space-y-4">
-            <div class="text-center space-y-1">
-                <h2 class="text-xl font-bold tracking-tight text-white">ClickPEqR Network</h2>
-                <p class="text-xs text-teal-200/70">Secure Fintech & AI Payment Gateway</p>
-            </div>
-
-            <div class="flex bg-teal-950 p-1 rounded-xl border border-teal-800">
-                <button type="button" onclick="switchAuthTab('login')" id="auth-tab-login" class="flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow">Existing Login</button>
-                <button type="button" onclick="switchAuthTab('register')" id="auth-tab-reg" class="flex-1 py-2 text-xs font-bold text-teal-300/70">New KYC Register</button>
-            </div>
-
-            <div class="flex bg-slate-950 p-1 rounded-lg border border-teal-900 text-[11px]">
-                <button type="button" onclick="setLoginRole('customer')" id="role-btn-cust" class="flex-1 py-1.5 font-bold text-white bg-teal-900 rounded">Customer</button>
-                <button type="button" onclick="setLoginRole('merchant')" id="role-btn-merc" class="flex-1 py-1.5 font-bold text-teal-400">Merchant</button>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-3">
-                <input type="email" id="login-email" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Registered Email Address">
-                <input type="password" id="login-password" required placeholder="4-Digit PIN / Password" maxlength="10" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white">
-                <button type="submit" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg transition">Sign In Securely</button>
-            </form>
-
-            <!-- REGISTER FORM -->
-            <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-3 hidden">
-                <div id="auth-business-field" class="hidden">
-                    <input type="text" id="auth-biz" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Business / Store Name">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Email Address / Phone</label>
+                    <input type="text" id="emailInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="name@example.com">
                 </div>
-                <input type="text" id="auth-name" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Full Name">
-                <input type="email" id="auth-email" required class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="Email Address">
-                
-                <div class="border-t border-teal-800/50 pt-2 space-y-2">
-                    <input type="text" id="auth-nin" required maxlength="11" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="11-Digit NIN Number">
-                    <input type="text" id="auth-bvn" required maxlength="11" class="w-full px-3 py-2 bg-slate-950 border border-teal-700/60 rounded-xl text-xs text-white" placeholder="11-Digit BVN">
-                </div>
-
-                <button type="button" onclick="openBiometricModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-teal-300 py-2 rounded-xl text-xs font-bold border border-teal-700">🔒 Complete Biometric / Face ID KYC</button>
-                <button type="submit" id="btn-final-auth" disabled class="w-full bg-slate-700 text-slate-400 font-semibold py-2.5 rounded-xl text-xs transition">Register & Launch App</button>
-            </form>
-        </div>
-
-        <!-- MAIN APP CONTAINER -->
-        <div id="main-app-container" class="hidden flex flex-col flex-1 justify-between relative">
-            
-            <!-- SIDEBAR -->
-            <div id="sidebar" class="absolute inset-y-0 left-0 w-64 bg-slate-950/95 backdrop-blur-xl border-r border-teal-700/50 z-40 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
-                <div class="space-y-5 overflow-y-auto max-h-[580px]">
-                    <div class="flex items-center space-x-3 border-b border-teal-800/60 pb-3">
-                        <div class="relative cursor-pointer group" onclick="document.getElementById('profile-pic-input').click()">
-                            <img id="user-avatar" src="https://via.placeholder.com/50?text=DP" class="w-12 h-12 rounded-full object-cover border-2 border-teal-400 shadow">
-                        </div>
-                        <input type="file" id="profile-pic-input" accept="image/*" class="hidden" onchange="updateProfilePic(event)">
-                        <div>
-                            <h4 id="sidebar-name" onclick="editUserName()" class="font-bold text-sm text-white cursor-pointer hover:underline">User ✏️</h4>
-                            <p id="sidebar-role-tag" class="text-[10px] text-emerald-400">Customer Mode</p>
-                        </div>
-                    </div>
-                    <div class="space-y-1.5 text-xs font-medium">
-                        <button type="button" onclick="closeSidebar(); goHome();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">🏠 Home</button>
-                        <button type="button" onclick="closeSidebar(); openNotifications();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">🔔 Notifications</button>
-                        <button type="button" onclick="closeSidebar(); openHistory();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">📊 Transaction History</button>
-                        <button type="button" onclick="closeSidebar(); openSettings();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">⚙️ Bank Accounts & Security</button>
-                        <button type="button" onclick="closeSidebar(); openAbout();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">ℹ️ About ClickPEqR</button>
-                        <button type="button" onclick="closeSidebar(); openSupport();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">💬 Help & Support (24/7)</button>
-                        <button type="button" onclick="closeSidebar(); openFAQ();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-teal-900/50 text-teal-200">❓ FAQ</button>
-                    </div>
-                </div>
-                <button type="button" onclick="logout()" class="w-full bg-rose-950/40 border border-rose-800/50 text-rose-300 py-2.5 rounded-xl text-xs font-semibold">🚪 Log Out</button>
-            </div>
-
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-teal-800 to-emerald-800 p-4 text-white flex justify-between items-center border-b border-teal-700/50">
-                <div class="flex items-center space-x-3">
-                    <button type="button" onclick="toggleSidebar()" class="text-lg p-1 hover:bg-white/10 rounded-lg">☰</button>
+                <div id="kycFields" class="space-y-4 hidden">
                     <div>
-                        <h1 class="font-bold text-sm tracking-wide leading-tight">ClickPEqR</h1>
-                        <span id="header-mode-badge" class="text-[9px] text-teal-300 tracking-wider uppercase">Customer Portal</span>
+                        <label class="block text-xs text-slate-400 mb-1">11-Digit NIN Number</label>
+                        <input type="text" id="ninInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="NIN Number">
                     </div>
-                </div>
-            </div>
-
-            <!-- Views Container -->
-            <div class="p-5 flex-1 flex flex-col justify-between relative overflow-y-auto">
-                <!-- HOME -->
-                <div id="view-home" class="space-y-4 my-auto">
-                    <div class="text-center space-y-1">
-                        <h2 id="home-title" class="text-2xl font-bold tracking-tight text-white mt-1">Scan & Pay Hub</h2>
-                        <p id="home-subtitle" class="text-xs text-teal-200/70">Zero transaction fees for primary accounts</p>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">11-Digit BVN</label>
+                        <input type="text" id="bvnInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="BVN Number">
                     </div>
-                    <div class="space-y-3">
-                        <button type="button" onclick="openScanner()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 rounded-2xl shadow-lg border border-teal-500/40 flex items-center space-x-4 text-left">
-                            <div class="bg-white/10 p-3 rounded-xl text-xl">📷</div>
-                            <div>
-                                <h3 class="font-bold text-sm">Pay (Scan QR)</h3>
-                                <p class="text-[11px] text-teal-100/80">Open camera to scan any merchant QR</p>
-                            </div>
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-center">
+                        <button type="button" onclick="triggerBiometricKYC()" class="text-xs text-teal-400 font-semibold flex items-center justify-center space-x-2 w-full">
+                            <span>🔒 Complete Biometric / Face ID KYC</span>
                         </button>
-
-                        <button type="button" onclick="promptDynamicQR()" class="w-full bg-teal-950/80 hover:bg-teal-950 text-white p-4 rounded-2xl shadow-lg border border-teal-800 flex items-center space-x-4 text-left">
-                            <div class="bg-teal-800/40 p-3 rounded-xl text-xl">⚡</div>
-                            <div>
-                                <h3 class="font-bold text-sm" id="home-btn-collect-text">Dynamic QR / Receive Money</h3>
-                                <p class="text-[11px] text-teal-300/80">Generate dynamic code with specific amount</p>
-                            </div>
-                        </button>
-
-                        <!-- Altra AI Soundbox & REAL Panel -->
-                        <div id="merchant-speaker-panel" class="hidden bg-emerald-950/60 p-3 rounded-xl border border-emerald-700 text-center space-y-1">
-                            <p class="text-[10px] text-emerald-300 font-bold">🔊 Altra AI Soundbox Connected</p>
-                            <div class="flex gap-2 justify-center mt-1">
-                                <button type="button" onclick="openPaymentSoundModal()" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Success Soundbox</button>
-                                <button type="button" onclick="simulateFailedPayment()" class="text-[10px] bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg font-semibold">Test Auto-Retry</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">4-Digit PIN / Password</label>
+                    <input type="password" id="pinInput" required maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="••••">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
+            </form>
+        </div>
 
-                <!-- SCANNER -->
-                <div id="view-scanner" class="hidden space-y-3 my-auto">
-                    <h3 class="font-bold text-base text-white text-center">Scan QR to Pay</h3>
-                    <div id="reader" class="w-full bg-black rounded-2xl overflow-hidden border border-teal-700/50 min-h-[260px]"></div>
-                    <button type="button" onclick="stopScannerAndGoHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
+            
+            <!-- CUSTOMER PORTAL VIEW -->
+            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
+                        <p class="text-xs text-slate-400">Zero transaction fees for primary accounts</p>
+                    </div>
+                    <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER PORTAL</span>
                 </div>
 
-                <!-- GENERATOR VIEW -->
-                <div id="view-generator-menu" class="hidden space-y-4 my-auto">
-                    <h3 class="font-bold text-base text-white text-center">Dynamic QR Code</h3>
-                    <div class="space-y-3 bg-teal-950 p-4 rounded-xl border border-teal-700 text-center">
-                        <div id="active-qrcode" class="bg-white p-2 inline-block rounded-xl mx-auto mb-2"></div>
-                        <p id="qr-desc" class="text-xs text-teal-200">Scan to pay exact amount.</p>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Back</button>
-                </div>
+                <div class="space-y-3">
+                    <button onclick="openScannerModal()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3">
+                        <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Pay (Scan QR)</h4>
+                            <p class="text-xs text-slate-400">Open camera to scan any merchant QR</p>
+                        </div>
+                    </button>
 
-                <!-- NOTIFICATIONS -->
-                <div id="view-notifications" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">Notifications & Alerts</h3>
-                    <div class="bg-slate-900 p-3 rounded-xl border border-teal-700/50 space-y-1">
-                        <p class="font-bold text-emerald-400">Payment Processed Successfully</p>
-                        <p class="text-slate-300">Routed via Primary Bank Account.</p>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
-                </div>
-
-                <!-- SETTINGS & SECURITY -->
-                <div id="view-settings" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">Accounts & Security</h3>
-                    <div class="bg-teal-950/50 p-4 rounded-2xl border border-teal-800 space-y-3">
-                        <label class="text-teal-300 font-bold">Linked Bank Accounts</label>
-                        <div id="bank-list-container" class="space-y-2">
-                            <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-teal-700">
-                                <div>
-                                    <p class="font-bold text-white">GTBank - 0638090889</p>
-                                    <span class="text-emerald-400 text-[10px] font-bold">⭐ Primary Account</span>
-                                </div>
-                            </div>
+                    <button onclick="openReceiveQRModal()" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-left hover:bg-slate-750 transition flex items-center space-x-3">
+                        <div class="bg-slate-700 text-teal-400 p-2.5 rounded-lg font-bold">⚡</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Dynamic QR / Receive Money</h4>
+                            <p class="text-xs text-slate-400">Generate dynamic code with specific amount</p>
                         </div>
-                        <div class="pt-2 border-t border-teal-800 space-y-2">
-                            <label class="text-teal-300 font-bold">Add New Bank Account</label>
-                            <input type="text" id="new-bank-name" placeholder="Bank Name (e.g. Zenith, OPay)" class="w-full px-3 py-1.5 bg-slate-950 border border-teal-700 rounded-lg text-white">
-                            <input type="text" id="new-account-num" placeholder="10-Digit Account Number" maxlength="10" class="w-full px-3 py-1.5 bg-slate-950 border border-teal-700 rounded-lg text-white">
-                            <button type="button" onclick="linkNewBank()" class="w-full bg-teal-700 text-white py-2 rounded-xl font-semibold">+ Link & Set Primary</button>
-                        </div>
-                        <div class="pt-2 border-t border-teal-800 space-y-2">
-                            <label class="text-teal-300 font-bold">Security Options</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button type="button" onclick="alert('Biometric / Passkey enabled')" class="bg-slate-900 border border-teal-700 py-2 rounded-lg text-teal-200">🔒 Face/Pin Setup</button>
-                                <button type="button" onclick="prompt('Enter new password:')" class="bg-slate-900 border border-teal-700 py-2 rounded-lg text-teal-200">🔑 Change Password</button>
-                            </div>
-                            <button type="button" onclick="if(confirm('Delete account?')) location.reload();" class="w-full bg-rose-950/50 border border-rose-800 text-rose-300 py-2 rounded-lg">⚠️ Delete Account</button>
-                        </div>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
-                </div>
-
-                <!-- HISTORY -->
-                <div id="view-history" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">Transaction History (Memory: 15 Txns)</h3>
-                    <div id="history-list" class="space-y-2 bg-teal-950/50 p-3 rounded-2xl border border-teal-800 max-h-[220px] overflow-y-auto">
-                        <div class="flex justify-between border-b border-teal-800 pb-2">
-                            <span>Adekunle (Credit)</span>
-                            <span class="text-emerald-400 font-bold">₦5,000 ✓</span>
-                        </div>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
-                </div>
-
-                <!-- ABOUT CLICKPEQR -->
-                <div id="view-about" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">About ClickPEqR</h3>
-                    <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-2.5 text-teal-100">
-                        <p>ClickPeQR is an KRISHNYANSH ZENOVA PEAKS LTD. powered financial super app designed for lightning fast peer to peer and merchant QR code collection across Nigeria, integrated with secure Flutterwave and NIBSS banking rails.</p>
-                        <p class="font-bold text-emerald-400">✓ CBN & Compliance Verified</p>
-                        <div class="pt-2 border-t border-teal-800 space-y-1">
-                            <p class="font-bold text-teal-300">App Designed By:</p>
-                            <p>KRISHNYANSH ZENOVA PEAKS LTD</p>
-                            <p class="text-[10px] opacity-80">RC - 9810296</p>
-                        </div>
-                        <div class="pt-1">
-                            <p class="font-bold text-teal-300">Powered By:</p>
-                            <p class="text-emerald-300">Flutterwave</p>
-                        </div>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
-                </div>
-
-                <!-- HELP & SUPPORT -->
-                <div id="view-support" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">Help & Support 24/7 💬</h3>
-                    <div class="bg-teal-950/60 p-4 rounded-2xl border border-teal-800 space-y-3 text-teal-100">
-                        <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700">
-                            <p class="font-bold text-teal-300">📞 Phone / Hotline:</p>
-                            <p class="text-slate-200 font-mono">+2349067862223</p>
-                        </div>
-                        <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700 space-y-1">
-                            <p class="font-bold text-teal-300">📧 Emails:</p>
-                            <p class="text-slate-200 text-[11px]">Krishnyanshzenovapeaksltd@gmail.com</p>
-                            <p class="text-slate-200 text-[11px]">info@krishnyanshzenovapeaks.com</p>
-                        </div>
-                        <div class="bg-slate-900 p-2.5 rounded-xl border border-teal-700">
-                            <p class="font-bold text-teal-300">🌐 Official Website:</p>
-                            <a href="https://www.krishnyanshzenovapeaks.com" target="_blank" class="text-teal-400 underline text-[11px]">https://www.krishnyanshzenovapeaks.com</a>
-                        </div>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
-                </div>
-
-                <!-- FAQ -->
-                <div id="view-faq" class="hidden space-y-3 my-auto text-xs">
-                    <h3 class="font-bold text-base text-white text-center">Frequently Asked Questions</h3>
-                    <div class="bg-teal-950/50 p-3 rounded-2xl border border-teal-800 space-y-2 max-h-[260px] overflow-y-auto">
-                        <div class="bg-slate-900 p-2 rounded-lg border border-teal-700">
-                            <p class="font-bold text-teal-300">Q: What happens if a payment fails?</p>
-                            <p class="text-slate-300 mt-1">A: ClickPEqR features an automatic smart retry mechanism that instantly reroutes the transaction gateway without losing funds.</p>
-                        </div>
-                    </div>
-                    <button type="button" onclick="goHome()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl">Back</button>
+                    </button>
                 </div>
             </div>
 
-            <!-- AI CHAT BUBBLE -->
-            <div class="absolute bottom-12 right-4 z-30">
-                <button type="button" onclick="toggleAIChat()" class="bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-3.5 rounded-full shadow-2xl">🤖</button>
+            <!-- MERCHANT PORTAL VIEW -->
+            <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-amber-400">Merchant Hub</h2>
+                        <p class="text-xs text-slate-400">Business & Store Terminal</p>
+                    </div>
+                    <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">Fee: 1.5% MDR</span>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-xl mb-4 border border-slate-800">
+                    <p class="text-xs text-slate-400">Today's Sales Analytics</p>
+                    <h3 class="text-2xl font-bold text-teal-300 mt-1">₦ 0.00</h3>
+                    <p class="text-xs text-emerald-400 mt-1">Settlement Bank: Active</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
+                        <button onclick="generateMerchantQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Store QR</button>
+                        <div id="merchantQRResult" class="mt-2 text-center"></div>
+                    </div>
+
+                    <button onclick="openSupplierScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">
+                        📷 Scan Supplier QR to Pay
+                    </button>
+                </div>
             </div>
 
-            <!-- AI MODAL -->
-            <div id="ai-modal" class="absolute inset-x-4 bottom-16 bg-slate-950/95 border border-teal-500/50 rounded-2xl p-4 hidden z-40 shadow-2xl flex flex-col h-[350px]">
-                <div class="flex justify-between items-center border-b border-teal-800 pb-2 mb-2">
-                    <h4 class="font-bold text-xs text-teal-300">🤖 Altra AI [Active Memory: 15 Txns]</h4>
-                    <button type="button" onclick="toggleAIChat()" class="text-xs text-slate-400">✕</button>
+            <!-- BANK ACCOUNTS SECTION & 44+ BANKS -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts</h3>
+                    <button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
                 </div>
-                <div id="ai-chat-box" class="flex-1 overflow-y-auto space-y-2 text-[11px] pr-1">
-                    <div class="bg-teal-900/40 p-2.5 rounded-lg text-teal-200">Hello! I am Altra AI with active memory across your last 15 transactions. Ask me anything!</div>
+                <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto">
+                    <!-- Populated dynamically -->
                 </div>
-                <div class="flex space-x-2 mt-2 pt-2 border-t border-teal-800/60">
-                    <input type="text" id="ai-user-input" placeholder="Type query & press Enter..." onkeypress="handleAIKeyPress(event)" class="flex-1 px-3 py-1.5 bg-slate-900 border border-teal-700 rounded-lg text-xs text-white">
-                    <button type="button" onclick="sendAIQuery()" class="bg-teal-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Send</button>
-                </div>
+            </div>
+
+            <!-- LOGOUT BUTTON -->
+            <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/20 transition">
+                Log Out Securely
+            </button>
+        </div>
+    </main>
+
+    <!-- ADD BANK MODAL -->
+    <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+            <h3 class="text-base font-bold text-white">Link Nigerian Bank Account</h3>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Select Bank (44+ Available)</label>
+                <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none">
+                    <option value="">Select Bank</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">10-Digit Account Number</label>
+                <input type="text" id="accountNumberInput" maxlength="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Account Holder Name</label>
+                <input type="text" id="accountNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="Name on Account">
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
+                <button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Save Bank</button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- FLOATING BOT / ASSISTANT BUTTON -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">
+            🤖
+        </button>
+    </div>
+
+    <!-- AI BOT MODAL -->
+    <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+            <h4 class="text-xs font-bold text-teal-400">ClickPeQR 24/7 AI Assistant</h4>
+            <button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
+        </div>
+        <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
+            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! How can I help you with transfers, bank accounts, or security limits today?</div>
+        </div>
+        <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
+            <input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none">
+            <button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-3 text-[10px] text-slate-500 border-t border-slate-900">
+        &copy; 2026 ClickPeQR Network. Licensed under CBN Guidelines.
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const BACKEND_URL = 'https://clickpeqr.onrender.com';
-        let currentRole = 'customer';
-        let authTab = 'login';
-        let html5QrCode = null;
-        let isBiometricVerified = false;
-        let currentActionType = 'pay'; // 'pay' or 'dynamic_qr'
-        
-        let aiTransactionMemory = [
-            { id: 1, type: "credit", amount: 5000, sender: "Adekunle", status: "success" },
-            { id: 2, type: "debit", amount: 1200, recipient: "Shoprite Store", status: "success" }
+        // 44+ Nigerian Commercial Banks, Digital Banks, and MFBs
+        const nigerianBanksList = [
+            { name: "Access Bank", code: "044" },
+            { name: "Citibank Nigeria", code: "023" },
+            { name: "Ecobank Nigeria", code: "050" },
+            { name: "Fidelity Bank", code: "070" },
+            { name: "First Bank of Nigeria", code: "011" },
+            { name: "First City Monument Bank (FCMB)", code: "214" },
+            { name: "Guaranty Trust Bank (GTB)", code: "058" },
+            { name: "Heritage Bank", code: "030" },
+            { name: "Keystone Bank", code: "082" },
+            { name: "Polaris Bank", code: "076" },
+            { name: "Providus Bank", code: "101" },
+            { name: "Stanbic IBTC Bank", code: "221" },
+            { name: "Standard Chartered Bank", code: "068" },
+            { name: "Sterling Bank", code: "232" },
+            { name: "Union Bank of Nigeria", code: "032" },
+            { name: "United Bank for Africa (UBA)", code: "033" },
+            { name: "Unity Bank", code: "215" },
+            { name: "Wema Bank", code: "035" },
+            { name: "Zenith Bank", code: "057" },
+            { name: "Jaiz Bank", code: "301" },
+            { name: "Taj Bank", code: "302" },
+            { name: "Lotus Bank", code: "303" },
+            { name: "Kuda Bank", code: "50211" },
+            { name: "Moniepoint MFB", code: "50515" },
+            { name: "Opay Digital Services", code: "999992" },
+            { name: "PalmPay", code: "999991" },
+            { name: "Paga", code: "100002" },
+            { name: "VFD Microfinance Bank", code: "566" },
+            { name: "Sparkle", code: "51310" },
+            { name: "Airtel Smartcash PSB", code: "120004" },
+            { name: "MTN Momo PSB", code: "120003" },
+            { name: "9psb", code: "120001" },
+            { name: "Hope PSBank", code: "120002" },
+            { name: "Parallex Bank", code: "104" },
+            { name: "Globus Bank", code: "103" },
+            { name: "Signature Bank", code: "106" },
+            { name: "Titan Trust Bank", code: "102" }
         ];
 
-        function switchAuthTab(tab) {
-            authTab = tab;
-            document.getElementById('auth-tab-login').className = tab === 'login' ? "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow" : "flex-1 py-2 text-xs font-bold text-teal-300/70";
-            document.getElementById('auth-tab-reg').className = tab === 'register' ? "flex-1 py-2 text-xs font-bold text-white bg-teal-700 rounded-lg shadow" : "flex-1 py-2 text-xs font-bold text-teal-300/70";
-            document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
-            document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+        let currentAuthMode = 'login';
+        let currentPortalType = 'customer';
+
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            const loginBtn = document.getElementById('loginTabBtn');
+            const regBtn = document.getElementById('registerTabBtn');
+            const kycFields = document.getElementById('kycFields');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            if (mode === 'login') {
+                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition";
+                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition";
+                kycFields.classList.add('hidden');
+                submitBtn.textContent = "Sign In Securely";
+            } else {
+                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition";
+                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition";
+                kycFields.classList.remove('hidden');
+                submitBtn.textContent = "Register & Launch App";
+            }
         }
 
-        function setLoginRole(role) {
-            currentRole = role;
-            document.getElementById('role-btn-cust').className = role === 'customer' ? "flex-1 py-1.5 font-bold text-white bg-teal-900 rounded" : "flex-1 py-1.5 font-bold text-teal-400";
-            document.getElementById('role-btn-merc').className = role === 'merchant' ? "flex-1 py-1.5 font-bold text-white bg-teal-900 rounded" : "flex-1 py-1.5 font-bold text-teal-400";
-            document.getElementById('auth-business-field').classList.toggle('hidden', role !== 'merchant');
+        function setPortalType(type) {
+            currentPortalType = type;
+            const custBtn = document.getElementById('typeCustomerBtn');
+            const merchBtn = document.getElementById('typeMerchantBtn');
+            const bizField = document.getElementById('businessNameField');
+
+            if (type === 'customer') {
+                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition";
+                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
+                bizField.classList.add('hidden');
+            } else {
+                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400 transition";
+                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
+                bizField.classList.remove('hidden');
+            }
         }
 
-        function openBiometricModal() { document.getElementById('biometric-modal').classList.remove('hidden'); }
-        function closeBiometricModal() { document.getElementById('biometric-modal').classList.add('hidden'); }
-        function confirmBiometric() {
-            if(document.getElementById('bio-pin-input').value.length < 4) { alert("Enter 4-digit PIN"); return; }
-            closeBiometricModal();
-            isBiometricVerified = true;
-            document.getElementById('btn-final-auth').disabled = false;
-            document.getElementById('btn-final-auth').className = "w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs";
-            alert("Biometric KYC Verified Successfully!");
+        function populateBankDropdown() {
+            const dropdown = document.getElementById('bankSelectDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<option value="">Select Bank</option>';
+            nigerianBanksList.forEach(bank => {
+                let opt = document.createElement('option');
+                opt.value = bank.code;
+                opt.textContent = bank.name;
+                dropdown.appendChild(opt);
+            });
         }
 
-        async function handleRegisterSubmit(e) {
+        // Session & Persistence Check on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            populateBankDropdown();
+            const activeUser = localStorage.getItem('clickpeqr_active_user');
+            if (activeUser) {
+                const user = JSON.parse(activeUser);
+                loadDashboard(user);
+            }
+        });
+
+        function handleAuthSubmit(e) {
             e.preventDefault();
-            if(!isBiometricVerified) { alert("Complete biometric verification first!"); return; }
-            const name = document.getElementById('auth-name').value;
-            const email = document.getElementById('auth-email').value;
+            const fullName = document.getElementById('fullNameInput').value;
+            const email = document.getElementById('emailInput').value;
+
+            const userData = {
+                id: email.replace(/[^a-zA-Z0-9]/g, '_'),
+                full_name: fullName,
+                email: email,
+                portal_type: currentPortalType,
+                avatar_url: "logo.png"
+            };
+
+            localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
+            loadDashboard(userData);
+        }
+
+        function loadDashboard(user) {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.remove('hidden');
+            document.getElementById('headerUserInfo').classList.remove('hidden');
+
+            document.getElementById('userNameHeader').textContent = user.full_name;
+            document.getElementById('userRoleHeader').textContent = user.portal_type.toUpperCase() + ' PORTAL';
+            document.getElementById('userDpHeader').src = "logo.png";
+
+            if (user.portal_type === 'customer') {
+                document.getElementById('customerPortalView').classList.remove('hidden');
+                document.getElementById('merchantPortalView').classList.add('hidden');
+            } else {
+                document.getElementById('merchantPortalView').classList.remove('hidden');
+                document.getElementById('customerPortalView').classList.add('hidden');
+            }
+
+            renderLinkedBanks(user.id);
+        }
+
+        function renderLinkedBanks(userId) {
+            const container = document.getElementById('linkedBanksListContainer');
+            const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
             
-            try {
-                await fetch(`${BACKEND_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ full_name: name, email, role: currentRole })
-                });
-            } catch(err) {}
-            launchAppSession(name);
-        }
-
-        function handleLoginSubmit(e) { e.preventDefault(); launchAppSession(document.getElementById('login-email').value.split('@')[0]); }
-
-        function launchAppSession(name) {
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('main-app-container').classList.remove('hidden');
-            document.getElementById('sidebar-name').innerText = name + " ✏️";
-            if(currentRole === 'merchant') {
-                document.getElementById('sidebar-role-tag').innerText = "Merchant Mode";
-                document.getElementById('header-mode-badge').innerText = "Merchant Portal";
-                document.getElementById('home-btn-collect-text').innerText = "Dynamic QR / Receive Money";
-                document.getElementById('merchant-speaker-panel').classList.remove('hidden');
-            } else {
-                document.getElementById('sidebar-role-tag').innerText = "Customer Mode";
-                document.getElementById('header-mode-badge').innerText = "Customer Portal";
-                document.getElementById('home-btn-collect-text').innerText = "Dynamic QR / Receive Money";
-                document.getElementById('merchant-speaker-panel').classList.add('hidden');
+            if (savedAccounts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>`;
+                return;
             }
-        }
 
-        function updateProfilePic(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) { document.getElementById('user-avatar').src = e.target.result; }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // --- Soundbox Voice Alert Function ---
-        function playSoundboxAlert(amount) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Stop previous voice if any
-                const speech = new SpeechSynthesisUtterance(`Alert! Payment of ${amount} Naira received successfully.`);
-                speech.rate = 1.0;
-                speech.pitch = 1.0;
-                window.speechSynthesis.speak(speech);
-            }
-        }
-
-        // --- Dynamic QR Code Functions ---
-        function promptDynamicQR() {
-            currentActionType = 'dynamic_qr';
-            document.getElementById('amount-modal-title').innerText = "Enter Dynamic QR Amount (₦)";
-            document.getElementById('input-txn-amount').value = "";
-            document.getElementById('amount-modal').classList.remove('hidden');
-        }
-
-        function openPaymentSoundModal() {
-            currentActionType = 'pay_sound';
-            document.getElementById('amount-modal-title').innerText = "Enter Test Payment Amount (₦)";
-            document.getElementById('input-txn-amount').value = "";
-            document.getElementById('amount-modal').classList.remove('hidden');
-        }
-
-        function closeAmountModal() { document.getElementById('amount-modal').classList.add('hidden'); }
-        
-        function submitAmountAction() {
-            const amt = document.getElementById('input-txn-amount').value;
-            if(!amt || amt <= 0) { alert("Please enter a valid amount"); return; }
-            closeAmountModal();
-
-            if (currentActionType === 'dynamic_qr') {
-                // Generate Dynamic QR Code
-                document.getElementById('view-home').classList.add('hidden');
-                document.getElementById('view-generator-menu').classList.remove('hidden');
-                document.getElementById('active-qrcode').innerHTML = "";
-                
-                const dynamicPayload = `https://clickpeqr.com/pay/dynamic?amount=${amt}&role=${currentRole}`;
-                new QRCode(document.getElementById("active-qrcode"), { 
-                    text: dynamicPayload, 
-                    width: 140, 
-                    height: 140, 
-                    colorDark: "#0f172a", 
-                    colorLight: "#ffffff" 
-                });
-                document.getElementById('qr-desc').innerText = `Dynamic QR Code for ₦${Number(amt).toLocaleString()}`;
-            } else {
-                // Trigger Soundbox & Payment Success
-                if(aiTransactionMemory.length >= 15) aiTransactionMemory.shift();
-                aiTransactionMemory.push({ id: aiTransactionMemory.length + 1, type: "credit", amount: Number(amt), status: "success" });
-
-                playSoundboxAlert(Number(amt).toLocaleString());
-                alert(`Success! Soundbox announced: Payment of ₦${Number(amt).toLocaleString()} received.`);
-                goHome();
-            }
-        }
-
-        async function submitTransactionAmount() {
-            const amt = document.getElementById('input-txn-amount').value;
-            if(!amt || amt <= 0) { alert("Please enter a valid amount"); return; }
-            closeAmountModal();
-
-            if(aiTransactionMemory.length >= 15) aiTransactionMemory.shift();
-            aiTransactionMemory.push({ id: aiTransactionMemory.length + 1, type: "credit", amount: Number(amt), status: "success" });
-
-            try {
-                await fetch(`${BACKEND_URL}/api/transactions/verify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amt, sender_phone: '08000000000' })
-                });
-            } catch(err) {}
-
-            playSoundboxAlert(Number(amt).toLocaleString());
-            alert(`Success! Payment of ₦${Number(amt).toLocaleString()} processed via primary bank route.`);
-            goHome();
-        }
-
-        function simulateFailedPayment() {
-            closeAmountModal();
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Payment interrupted. Initiating automatic smart retry."));
-            }
-            alert("Payment connection dropped. ClickPEqR smart retry mechanism is automatically rerouting your transaction...");
-            setTimeout(() => {
-                playSoundboxAlert("5,000");
-                alert("Retry successful! Transaction of ₦5,000 completed securely.");
-            }, 3000);
-        }
-
-        function linkNewBank() {
-            const bankName = document.getElementById('new-bank-name').value.trim();
-            const accNum = document.getElementById('new-account-num').value.trim();
-            if(!bankName || accNum.length !== 10) { alert("Enter valid bank name & 10-digit account number."); return; }
-            const container = document.getElementById('bank-list-container');
-            container.innerHTML += `
-                <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-teal-700">
-                    <div>
-                        <p class="font-bold text-white">${bankName} - ${accNum}</p>
-                        <span class="text-emerald-400 text-[10px] font-bold">⭐ Primary Account</span>
+            container.innerHTML = '';
+            savedAccounts.forEach((acc, index) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <div>
+                            <p class="text-xs font-bold text-white">${acc.bankName} ${acc.isPrimary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : ''}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${acc.accountNumber} - ${acc.accountName}</p>
+                        </div>
+                        <button onclick="switchPrimaryBank('${userId}', ${index})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded hover:bg-slate-700">Switch</button>
                     </div>
-                </div>
-            `;
-            document.getElementById('new-bank-name').value = "";
-            document.getElementById('new-account-num').value = "";
-            alert("New bank linked and set as Primary successfully!");
+                `;
+            });
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full'); }
-        
-        function goHome() {
-            stopScanner();
-            ['view-home', 'view-scanner', 'view-generator-menu', 'view-notifications', 'view-settings', 'view-history', 'view-about', 'view-support', 'view-faq'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById('view-home').classList.remove('hidden');
+        function openAddBankModal() {
+            document.getElementById('addBankModal').classList.remove('hidden');
         }
-        function openNotifications() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-notifications').classList.remove('hidden'); }
-        function openSettings() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-settings').classList.remove('hidden'); }
-        function openHistory() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-history').classList.remove('hidden'); }
-        function openAbout() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-about').classList.remove('hidden'); }
-        function openSupport() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-support').classList.remove('hidden'); }
-        function openFAQ() { goHome(); document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-faq').classList.remove('hidden'); }
-        function logout() { location.reload(); }
-        function editUserName() { const n = prompt("Enter updated name:"); if(n) document.getElementById('sidebar-name').innerText = n + " ✏️"; }
 
-        function toggleAIChat() { document.getElementById('ai-modal').classList.toggle('hidden'); }
-        function handleAIKeyPress(e) { if(e.key === 'Enter') sendAIQuery(); }
-        
-        function sendAIQuery() {
-            const box = document.getElementById('ai-chat-box');
-            const inp = document.getElementById('ai-user-input');
-            const text = inp.value.trim();
-            if(!text) return;
+        function closeAddBankModal() {
+            document.getElementById('addBankModal').classList.add('hidden');
+        }
 
-            box.innerHTML += `<div class="bg-slate-900 p-2.5 rounded text-right"><b>You:</b> ${text}</div>`;
-            inp.value = "";
-            box.scrollTop = box.scrollHeight;
+        function saveNewBankAccount() {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user'));
+            if (!user) return;
+
+            const dropdown = document.getElementById('bankSelectDropdown');
+            const bankName = dropdown.options[dropdown.selectedIndex]?.text;
+            const accountNumber = document.getElementById('accountNumberInput').value;
+            const accountName = document.getElementById('accountNameInput').value;
+
+            if (!bankName || accountNumber.length !== 10 || !accountName) {
+                alert("Please fill in valid bank details (10-digit account number required).");
+                return;
+            }
+
+            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
+            const isPrimary = savedAccounts.length === 0;
+
+            savedAccounts.push({
+                bankName,
+                accountNumber,
+                accountName,
+                isPrimary
+            });
+
+            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+            closeAddBankModal();
+            renderLinkedBanks(user.id);
+            alert("Bank account successfully linked and saved!");
+        }
+
+        function switchPrimaryBank(userId, selectedIndex) {
+            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
+            savedAccounts.forEach((acc, idx) => {
+                acc.isPrimary = (idx === selectedIndex);
+            });
+            localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(savedAccounts));
+            renderLinkedBanks(userId);
+            alert("Primary bank account switched successfully!");
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('clickpeqr_active_user');
+            window.location.reload();
+        }
+
+        function toggleAIBot() {
+            const modal = document.getElementById('aiBotModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function sendBotMessage() {
+            const input = document.getElementById('botInputText');
+            const chat = document.getElementById('botChatMessages');
+            if (!input.value.trim()) return;
+
+            chat.innerHTML += `<div class="bg-teal-500/10 text-teal-300 p-2 rounded-xl text-right">${input.value}</div>`;
+            const query = input.value;
+            input.value = '';
 
             setTimeout(() => {
-                let reply = `🧠 Altra AI Memory Active: Reviewed your last ${aiTransactionMemory.length} transactions. Primary account settlement rails are fully secure.`;
-                box.innerHTML += `<div class="bg-teal-900/40 p-2.5 rounded text-teal-200"><b>Altra AI:</b> ${reply}</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 500);
+                let reply = "I can assist you with your bank transfers, limits, and portals.";
+                if (query.toLowerCase().includes('limit')) reply = "Customer limit is ₦250,000 and Merchant limit is ₦1,000,000 with biometric verification.";
+                if (query.toLowerCase().includes('bank')) reply = "You can link multiple accounts from our list of 44+ Nigerian banks and switch between them anytime!";
+                chat.innerHTML += `<div class="bg-slate-950 p-2 rounded-xl">${reply}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 600);
         }
 
-        function openScanner() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-scanner').classList.remove('hidden');
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 200 } }, (txt) => {
-                stopScanner();
-                document.getElementById('amount-modal-title').innerText = "Enter Transaction Amount (₦)";
-                document.getElementById('amount-modal').classList.remove('hidden');
-            }, () => {});
+        function triggerBiometricKYC() {
+            alert("🔒 Biometric / Face ID Verification simulated successfully!");
         }
-       function stopScanner() { 
-    if(html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.log(err));
-    }
-}
 
-function stopScannerAndGoHome() { 
-    stopScanner(); 
-    goHome(); 
-}
+        function openScannerModal() {
+            alert("📷 Opening camera scanner for payment...");
+        }
+
+        function openReceiveQRModal() {
+            alert("⚡ Generating dynamic customer receive QR...");
+        }
+
+        function generateMerchantQR() {
+            const amt = document.getElementById('merchantDynAmt').value;
+            document.getElementById('merchantQRResult').innerHTML = `<p class="text-[11px] text-teal-400 font-mono">Store QR generated for ₦${amt || 'Static'}</p>`;
+        }
+
+        function openSupplierScanner() {
+            alert("📷 Opening supplier scanner for vendor payments...");
+        }
     </script>
 </body>
 </html>
