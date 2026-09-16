@@ -835,7 +835,30 @@ async function saveProfileSettings() {
             const newBank = { user_id: user.id, bank_name: bankName, account_number: accountNumber, account_name: accountName, is_primary: isPrimary };
             savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
             localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
 
+    // Yeh naya Supabase code line 837 ke baad yahan add karein:
+    try {
+        const { error } = await supabaseClient
+            .from('linked_accounts')
+            .insert([{
+                user_id: user.id,
+                bank_name: bankName,
+                account_number: accountNumber,
+                account_name: accountName
+            }]);
+        
+        if (error) {
+            console.error("Supabase bank save error:", error.message);
+            alert("Bank saved locally, but database sync failed: " + error.message);
+        } else {
+            console.log("Bank account successfully saved to Supabase!");
+            alert("Bank account successfully added!");
+        }
+    } catch (err) {
+        console.error("Network error:", err);
+    }
+}
             try {
                 await supabaseClient.from('bank_accounts').insert([newBank]);
             } catch (err) {
