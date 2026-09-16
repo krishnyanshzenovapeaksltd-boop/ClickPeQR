@@ -736,11 +736,16 @@
             localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
 
             try {
-                await supabaseClient.from('transactions').insert([txData]);
-            } catch (err) {
-                console.warn("Supabase transaction log warning:", err);
-            }
-        }
+    const { data, error } = await supabaseClient.from('transactions').insert([txData]);
+    if (error) {
+        console.error("Supabase Error Details:", error.message);
+        alert("Transaction successful, but failed to sync with database: " + error.message);
+    } else {
+        console.log("Transaction successfully saved to Supabase!", data);
+    }
+} catch (err) { 
+    console.error("Network or Client Error:", err); 
+}
 
         function showTransactionHistory() {
             const container = document.getElementById('transactionListContainer');
