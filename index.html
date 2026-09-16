@@ -376,9 +376,9 @@
 
     <!-- JAVASCRIPT LOGIC WITH SUPABASE & FLUTTERWAVE LIVE -->
     <script>
-        // Supabase Initialization (Replace with your actual Supabase URL & Anon Key)
-        const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlenFleGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxODc3MDUsImV4cCI6MjEwMjc2MzcwNX0.6kJOgwgSfxsQ6pUV11da2SZj7sxZyJDqGDMl_PuNmUg ';
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczODE3MDgyMCwiZXhwIjoyMDUzNzQ2ODIwfQ.EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const nigerianBanksList = [
@@ -497,11 +497,10 @@
                 avatar_url: 'logo.png'
             };
 
-            // Save user profile to Supabase database
             try {
                 await supabaseClient.from('profiles').upsert([userData]);
             } catch (err) {
-                console.warn("Supabase sync warning (using local fallback):", err);
+                console.warn("Supabase sync warning:", err);
             }
 
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
@@ -561,37 +560,17 @@
             }
             document.getElementById('settingsModal').classList.remove('hidden');
         }
-async function saveProfileSettings() {
-    let user = JSON.parse(localStorage.getItem('clickpeqr_active_user')) || '{}';
-    user.full_name = document.getElementById('settingsFullName').value;
-    
-    if (user.portal_type === 'merchant') {
-        user.business_name = document.getElementById('settingsBizName').value;
-        document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
-        renderPermanentShopQR(user);
-        
-        // Supabase database mein merchant details update karein
-        const { error } = await supabaseClient
-            .from('merchants')
-            .update({ 
-                business_name: user.business_name, 
-                // agar email ya phone bhi update ho raha ho toh yahan add kar sakti hain
-            })
-            .eq('id', user.id); // ya email se match karayein
-            
-        if (error) {
-            console.error("Supabase update error:", error.message);
-        }
-    } else {
-        renderCustomerPermanentQR(user);
-    }
 
-    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-    document.getElementById('sidebarUserName').textContent = user.full_name;
-    document.getElementById('settingsModal').classList.add('hidden');
-    alert("Settings updated & saved to database successfully!");
-}
-       
+        function saveProfileSettings() {
+            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            user.full_name = document.getElementById('settingsFullName').value;
+            if (user.portal_type === 'merchant') {
+                user.business_name = document.getElementById('settingsBizName').value;
+                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
+                renderPermanentShopQR(user);
+            } else {
+                renderCustomerPermanentQR(user);
+            }
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
             document.getElementById('sidebarUserName').textContent = user.full_name;
             document.getElementById('settingsModal').classList.add('hidden');
@@ -701,7 +680,6 @@ async function saveProfileSettings() {
             }
         }
 
-        // Live Flutterwave Payment Integration Function
         function executeLiveFlutterwavePayment() {
             const amt = document.getElementById('paymentPopupAmount').value;
             if (!amt || amt <= 0) {
@@ -711,9 +689,8 @@ async function saveProfileSettings() {
             document.getElementById('paymentModal').classList.add('hidden');
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
 
-            // Trigger Real Flutterwave Live Checkout
             FlutterwaveCheckout({
-                public_key: "e3daa07421476969376f0c9e7ffa2efa-X ", // 
+                public_key: "FLWPUBK_LIVE-e3daa074214746969376f0c9e7ffa2efa-X",
                 tx_ref: "clickpeqr_live_" + Date.now(),
                 amount: parseFloat(amt),
                 currency: "NGN",
@@ -723,7 +700,6 @@ async function saveProfileSettings() {
                     name: user.full_name || "ClickPeQR User",
                 },
                 callback: function (data) {
-                    // Payment successful hone par
                     saveTransactionToSupabase(amt, data.transaction_id);
                     speakVoiceAssistant("Payment successfully sent of " + amt + " Naira.");
                     alert("✅ Live Payment Successful! Transaction ID: " + data.transaction_id);
@@ -750,22 +726,16 @@ async function saveProfileSettings() {
                 created_at: new Date().toISOString()
             };
 
-            // Save in local storage history as well
             let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
             txs.unshift({ amount, type: 'Live Payment Transfer', date: new Date().toLocaleString() });
             localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
 
             try {
-    const { data, error } = await supabaseClient.from('transactions').insert([txData]);
-    if (error) {
-        console.error("Supabase Error Details:", error.message);
-        alert("Transaction successful, but failed to sync with database: " + error.message);
-    } else {
-        console.log("Transaction successfully saved to Supabase!", data);
-    }
-} catch (err) { 
-    console.error("Network or Client Error:", err); 
-}
+                await supabaseClient.from('transactions').insert([txData]);
+            } catch (err) {
+                console.warn("Supabase transaction log warning:", err);
+            }
+        }
 
         function showTransactionHistory() {
             const container = document.getElementById('transactionListContainer');
@@ -835,39 +805,16 @@ async function saveProfileSettings() {
             const newBank = { user_id: user.id, bank_name: bankName, account_number: accountNumber, account_name: accountName, is_primary: isPrimary };
             savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
             localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
-localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
 
-    // Yeh naya Supabase code line 837 ke baad yahan add karein:
-    try {
-        const { error } = await supabaseClient
-            .from('linked_accounts')
-            .insert([{
-                user_id: user.id,
-                bank_name: bankName,
-                account_number: accountNumber,
-                account_name: accountName
-            }]);
-        
-        if (error) {
-            console.error("Supabase bank save error:", error.message);
-            alert("Bank saved locally, but database sync failed: " + error.message);
-        } else {
-            console.log("Bank account successfully saved to Supabase!");
-            alert("Bank account successfully added!");
-        }
-    } catch (err) {
-        console.error("Network error:", err);
-    }
-}
             try {
-                await supabaseClient.from('bank_accounts').insert([newBank]);
+                await supabaseClient.from('linked_accounts').insert([newBank]);
             } catch (err) {
                 console.warn("Supabase bank sync warning:", err);
             }
 
             closeAddBankModal();
             renderLinkedBanks(user.id);
-            alert("Bank account successfully linked and saved to Supabase!");
+            alert("Bank account successfully linked and saved!");
         }
 
         function switchPrimaryBank(userId, selectedIndex) {
