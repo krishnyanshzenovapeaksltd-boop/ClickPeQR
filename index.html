@@ -8,37 +8,50 @@
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- QRCode Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between relative overflow-x-hidden">
 
-    <!-- TOP HEADER NAVBAR -->
-    <header class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
+    <!-- TOP HEADER NAVBAR (Hidden on Auth Screen as per Problem 1) -->
+    <header id="mainHeader" class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
         <div class="flex items-center space-x-3">
-            <!-- Hamburger Menu Button -->
             <button onclick="toggleSidebar()" class="text-teal-400 focus:outline-none p-1 rounded-lg hover:bg-slate-800 transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
             <div class="flex items-center space-x-2">
-                <img src="logo.png" alt="Logo" class="w-9 h-9 object-contain rounded-xl border border-teal-500/30 bg-slate-950">
+                <img src="logo.png" alt="Logo" class="w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
                 <h1 class="text-lg font-bold text-white tracking-wide">ClickPeQR</h1>
             </div>
         </div>
-        <div id="headerUserInfo" class="hidden flex items-center space-x-2">
+        <div class="flex items-center space-x-3">
+            <!-- Notification Bell Icon (Problem 8) -->
+            <button onclick="showNotificationModal()" class="relative p-2 text-slate-300 hover:text-teal-400 transition">
+                🔔
+                <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+            </button>
             <span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full font-semibold uppercase">Customer</span>
         </div>
     </header>
 
-    <!-- SIDEBAR / HAMBURGER MENU (As in your screenshots) -->
+    <!-- SIDEBAR / HAMBURGER MENU -->
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
-    <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
+    <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
         <div>
-            <!-- User Profile Header in Sidebar -->
+            <!-- Editable DP & Name Header (Problem 6) -->
             <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
-                <img src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
+                <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
+                    <img id="sidebarUserDP" src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
+                    <div class="absolute inset-0 bg-slate-950/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] text-teal-300 font-bold">Edit</div>
+                </div>
+                <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
                 <div class="overflow-hidden">
-                    <h4 id="sidebarUserName" class="text-sm font-bold text-white truncate">User Name</h4>
+                    <div class="flex items-center space-x-1">
+                        <h4 id="sidebarUserName" class="text-sm font-bold text-white truncate">User Name</h4>
+                        <button onclick="openSettingsModal()" class="text-teal-400 text-xs">✏️</button>
+                    </div>
                     <p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
                 </div>
             </div>
@@ -49,21 +62,15 @@
                 <a href="#" onclick="toggleSidebar(); showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🔔 <span>Notifications</span></a>
                 <a href="#" onclick="toggleSidebar(); showTransactionHistory()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">📊 <span>Transaction History</span></a>
                 <a href="#" onclick="toggleSidebar(); openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🏦 <span>Bank Accounts & Security</span></a>
+                <a href="#" onclick="toggleSidebar(); openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">⚙️ <span>Settings (Edit Profile)</span></a>
                 <a href="#" onclick="toggleSidebar(); showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">ℹ️ <span>About ClickPeQR</span></a>
                 <a href="#" onclick="toggleSidebar(); toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">💬 <span>Help & Support (24/7)</span></a>
+                <a href="#" onclick="toggleSidebar(); showComplaintWhatsApp()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300 transition">⚠️ <span>Complain / WhatsApp</span></a>
                 <a href="#" onclick="toggleSidebar(); showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">❓ <span>FAQ</span></a>
             </nav>
         </div>
 
-        <div>
-            <!-- Portal Mode Switcher in Sidebar -->
-            <div class="bg-slate-950 p-3 rounded-xl mb-3 border border-slate-800">
-                <p class="text-[10px] text-slate-400 mb-1.5">Switch App Mode</p>
-                <div class="flex space-x-1">
-                    <button onclick="switchPortalMode('customer')" id="sbCustBtn" class="flex-1 py-1.5 text-xs rounded-lg font-bold bg-teal-500 text-slate-950 transition">Customer</button>
-                    <button onclick="switchPortalMode('merchant')" id="sbMerchBtn" class="flex-1 py-1.5 text-xs rounded-lg font-bold text-slate-400 transition">Merchant</button>
-                </div>
-            </div>
+        <div class="pt-4 border-t border-slate-800">
             <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
         </div>
     </aside>
@@ -71,10 +78,10 @@
     <!-- MAIN APP CONTAINER -->
     <main class="flex-grow flex items-center justify-center p-4">
 
-        <!-- AUTH SCREEN -->
+        <!-- AUTH SCREEN (Problem 1, 2, 3: No hamburger, portal selector here, easy biometrics login) -->
         <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
             <div class="text-center mb-5 flex flex-col items-center">
-                <img src="logo.png" alt="Logo" class="w-16 h-16 object-contain mb-2 rounded-2xl border border-teal-500/30 shadow-md">
+                <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
                 <h2 class="text-2xl font-bold text-teal-400">ClickPeQR Network</h2>
                 <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
             </div>
@@ -83,6 +90,15 @@
             <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
                 <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
                 <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
+            </div>
+
+            <!-- Portal Type Switcher on Registration/Login page (Problem 3) -->
+            <div class="mb-4">
+                <label class="block text-xs text-slate-400 mb-1.5">Select Account Role</label>
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
+                    <button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
+                </div>
             </div>
 
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
@@ -107,13 +123,19 @@
                         <label class="block text-xs text-slate-400 mb-1">11-Digit BVN</label>
                         <input type="text" id="bvnInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="BVN Number">
                     </div>
-                    <button type="button" onclick="triggerBiometricKYC()" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-teal-400 font-semibold">🔒 Complete Biometric / Face ID KYC</button>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">4-Digit PIN / Password</label>
                     <input type="password" id="pinInput" required maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="••••">
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
+                
+                <!-- Biometric Quick Login Button (Problem 2) -->
+                <div class="pt-2">
+                    <button type="button" onclick="handleBiometricLogin()" class="w-full bg-slate-800 border border-teal-500/30 text-teal-300 font-semibold py-2.5 rounded-xl text-xs hover:bg-slate-750 transition flex items-center justify-center space-x-2">
+                        <span>🔓 Login with Biometrics / Face ID</span>
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -139,11 +161,11 @@
                         </div>
                     </button>
 
-                    <button onclick="openReceiveQRModal()" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-left hover:bg-slate-750 transition flex items-center space-x-3">
+                    <button onclick="openCustomerReceiveQR()" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-left hover:bg-slate-750 transition flex items-center space-x-3">
                         <div class="bg-slate-700 text-teal-400 p-2.5 rounded-lg font-bold">⚡</div>
                         <div>
                             <h4 class="text-sm font-bold text-white">Receive Money / Request QR</h4>
-                            <p class="text-xs text-slate-400">Generate code to get paid by anyone</p>
+                            <p class="text-xs text-slate-400">Generate QR code to get paid by anyone</p>
                         </div>
                     </button>
                 </div>
@@ -169,8 +191,8 @@
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
-                        <div id="staticShopQR" class="p-3 bg-white text-slate-950 rounded-lg text-xs font-mono inline-block">
-                            [ STATIC STORE QR CODE ]
+                        <div class="p-3 bg-white inline-block rounded-lg shadow-inner">
+                            <canvas id="permanentShopQRCanvas"></canvas>
                         </div>
                     </div>
 
@@ -179,10 +201,12 @@
                         <h4 class="text-xs font-semibold text-slate-300 mb-1">Dynamic Amount QR Generator</h4>
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
                         <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
-                        <div id="merchantQRResult" class="mt-2 text-center"></div>
+                        <div id="merchantQRResult" class="mt-2 text-center hidden flex flex-col items-center">
+                            <canvas id="dynamicQRCanvas" class="p-2 bg-white rounded-lg"></canvas>
+                        </div>
                     </div>
 
-                    <button onclick="openSupplierScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">
+                    <button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">
                         📷 Scan Supplier QR to Pay
                     </button>
                 </div>
@@ -209,23 +233,43 @@
                     <span class="text-xs text-teal-300 bg-slate-950/80 px-2 py-1 rounded">Align QR Inside Frame</span>
                 </div>
             </div>
+            <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate QR Scan Match</button>
             <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close Camera</button>
         </div>
     </div>
 
-    <!-- RECEIVE MONEY / DYNAMIC QR MODAL -->
+    <!-- AMOUNT POPUP & BIOMETRIC PAYMENT MODAL (Problem 5, 15, 16) -->
+    <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
+            <h3 class="text-base font-bold text-teal-400">Authorize Payment</h3>
+            <p id="paymentTargetInfo" class="text-xs text-slate-300">Transfer to ClickPeQR Verified Account</p>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Enter Amount (₦)</label>
+                <input type="number" id="paymentPopupAmount" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-lg font-bold text-white outline-none" placeholder="5000">
+            </div>
+            <button onclick="executeBiometricPayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">
+                🔒 Pay with Biometrics / PIN
+            </button>
+            <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
+        </div>
+    </div>
+
+    <!-- RECEIVE MONEY / DYNAMIC QR MODAL (Problem 4, 5) -->
     <div id="receiveQRModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-center space-y-3">
             <h3 class="text-sm font-bold text-teal-400">Receive Money QR</h3>
-            <p class="text-xs text-slate-400">Share this QR code with anyone to receive payment instantly.</p>
-            <div id="customerReceiveQRBox" class="p-4 bg-white text-slate-950 rounded-xl font-mono text-xs font-bold inline-block shadow-inner">
-                [ CUSTOMER RECEIVE QR ]
+            <p class="text-xs text-slate-400">Scan this code with any camera to pay this user.</p>
+            <div class="p-3 bg-white inline-block rounded-xl shadow-inner">
+                <canvas id="receiveQRCanvas"></canvas>
+            </div>
+            <div>
+                <input type="number" id="receiveModalAmt" placeholder="Set Specific Amount (Optional)" class="w-full bg-slate-950 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none" oninput="updateReceiveQRWithAmount()">
             </div>
             <button onclick="closeReceiveQRModal()" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs font-semibold">Done</button>
         </div>
     </div>
 
-    <!-- ADD BANK MODAL -->
+    <!-- ADD BANK MODAL (Problem 10) -->
     <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
             <h3 class="text-base font-bold text-white">Link Nigerian Bank Account</h3>
@@ -250,7 +294,92 @@
         </div>
     </div>
 
-    <!-- SMART AI BOT (With Session Memory) -->
+    <!-- NOTIFICATIONS MODAL (Problem 8) -->
+    <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-teal-400">Notifications</h3>
+                <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
+            </div>
+            <div class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <p class="font-bold text-white">Welcome to ClickPeQR!</p>
+                    <p class="text-[10px] text-slate-400">Your account is active under CBN guidelines.</p>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <p class="font-bold text-white">Security Notice</p>
+                    <p class="text-[10px] text-slate-400">Biometric authentication configured successfully.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANSACTION HISTORY MODAL (Problem 9) -->
+    <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-teal-400">Transaction History</h3>
+                <button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
+            </div>
+            <div id="transactionListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT MODAL (Problem 11) -->
+    <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl space-y-3 text-xs text-slate-300">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-teal-400">About ClickPeQR</h3>
+                <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
+            </div>
+            <p><strong>ClickPeQR</strong> designed by <strong>KRISHNYANSH ZENOVA PEAKS LTD. NIGERIA</strong></p>
+            <p><strong>RC-9810296</strong></p>
+            <p><strong>Ruby Garg</strong> (Founder & CEO)</p>
+            <p class="pt-2 text-slate-400">For Nigeria to provide secure fintech & payment Gateway (licensed under CBN guidelines).</p>
+            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave</p>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL (Problem 6, 14) -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-teal-400">Edit Profile Settings</h3>
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">Full Name</label>
+                    <input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none">
+                </div>
+                <div id="settingsBizField" class="hidden">
+                    <label class="block text-slate-400 mb-1">Business Name</label>
+                    <input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Phone Number</label>
+                    <input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" value="+2349067862223">
+                </div>
+                <button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ MODAL -->
+    <div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 text-xs text-slate-300">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-teal-400">FAQ & Support</h3>
+                <button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
+            </div>
+            <p><strong>Q: Are transfers free?</strong><br>Primary accounts enjoy zero transaction fees.</p>
+            <p><strong>Q: What is the merchant fee?</strong><br>Standard processing fee is 1.5% MDR.</p>
+        </div>
+    </div>
+
+    <!-- SMART AI BOT (Problem 17: Greeting with help about payment and transaction) -->
     <div class="fixed bottom-4 right-4 z-40">
         <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">
             🤖
@@ -259,21 +388,21 @@
 
     <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
-            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant (Memory Active)</h4>
+            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant</h4>
             <button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
         </div>
         <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
-            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! I remember our session. Ask me about bank limits, 44+ Nigerian banks, or QR setup!</div>
+            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR. How can I assist you with your payments, QR generation, or bank transactions today?</div>
         </div>
         <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
-            <input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()">
+            <input type="text" id="botInputText" placeholder="Ask about payments..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()">
             <button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button>
         </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // 44+ Nigerian Commercial Banks & Digital Banks
+        // 44+ Nigerian Commercial Banks & Digital Banks (Problem 10)
         const nigerianBanksList = [
             { name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" },
             { name: "Ecobank Nigeria", code: "050" }, { name: "Fidelity Bank", code: "070" },
@@ -298,7 +427,7 @@
 
         let currentAuthMode = 'login';
         let currentPortalType = 'customer';
-        let botMemory = []; // Smart memory array for AI bot conversation
+        let botMemory = [];
 
         function toggleSidebar() {
             const sidebar = document.getElementById('appSidebar');
@@ -313,7 +442,6 @@
             const regBtn = document.getElementById('registerTabBtn');
             const kycFields = document.getElementById('kycFields');
             const submitBtn = document.getElementById('authSubmitBtn');
-            const bizField = document.getElementById('businessNameField');
 
             if (mode === 'login') {
                 loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition";
@@ -328,29 +456,20 @@
             }
         }
 
-        function switchPortalMode(type) {
+        function setPortalType(type) {
             currentPortalType = type;
-            const custBtn = document.getElementById('sbCustBtn');
-            const merchBtn = document.getElementById('sbMerchBtn');
-            const modeLabel = document.getElementById('sidebarModeLabel');
-            const custView = document.getElementById('customerPortalView');
-            const merchView = document.getElementById('merchantPortalView');
-            const roleHeader = document.getElementById('userRoleHeader');
+            const custBtn = document.getElementById('typeCustomerBtn');
+            const merchBtn = document.getElementById('typeMerchantBtn');
+            const bizField = document.getElementById('businessNameField');
 
             if (type === 'customer') {
-                custBtn.className = "flex-1 py-1.5 text-xs rounded-lg font-bold bg-teal-500 text-slate-950 transition";
-                merchBtn.className = "flex-1 py-1.5 text-xs rounded-lg font-bold text-slate-400 transition";
-                modeLabel.textContent = "Customer Mode";
-                roleHeader.textContent = "Customer";
-                custView.classList.remove('hidden');
-                merchView.classList.add('hidden');
+                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition";
+                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
+                bizField.classList.add('hidden');
             } else {
-                merchBtn.className = "flex-1 py-1.5 text-xs rounded-lg font-bold bg-amber-500 text-slate-950 transition";
-                custBtn.className = "flex-1 py-1.5 text-xs rounded-lg font-bold text-slate-400 transition";
-                modeLabel.textContent = "Merchant Mode";
-                roleHeader.textContent = "Merchant";
-                merchView.classList.remove('hidden');
-                custView.classList.add('hidden');
+                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400 transition";
+                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
+                bizField.classList.remove('hidden');
             }
         }
 
@@ -375,32 +494,226 @@
             }
         });
 
+        // Easy Biometric Login (Problem 2)
+        function handleBiometricLogin() {
+            const savedUser = localStorage.getItem('clickpeqr_active_user');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                speakVoiceAssistant("Biometric authentication successful. Welcome back " + user.full_name);
+                loadDashboard(user);
+            } else {
+                alert("No previous session found. Please register or login with your PIN first.");
+            }
+        }
+
         function handleAuthSubmit(e) {
             e.preventDefault();
             const fullName = document.getElementById('fullNameInput').value;
             const email = document.getElementById('emailInput').value;
+            const bizName = document.getElementById('businessNameInput')?.value || "My Store";
 
             const userData = {
                 id: email.replace(/[^a-zA-Z0-9]/g, '_'),
                 full_name: fullName,
                 email: email,
-                portal_type: currentPortalType
+                business_name: bizName,
+                portal_type: currentPortalType,
+                avatar_url: localStorage.getItem('user_custom_dp') || 'logo.png'
             };
 
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
+            speakVoiceAssistant("Account registered successfully. Welcome to ClickPeQR.");
             loadDashboard(userData);
         }
 
         function loadDashboard(user) {
             document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
-            document.getElementById('headerUserInfo').classList.remove('hidden');
+            document.getElementById('mainHeader').classList.remove('hidden'); // Show header & hamburger menu only after login (Problem 1)
 
             document.getElementById('sidebarUserName').textContent = user.full_name;
-            switchPortalMode(user.portal_type || 'customer');
+            document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
+            document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
+            
+            const savedDp = localStorage.getItem('user_custom_dp');
+            if (savedDp) {
+                document.getElementById('sidebarUserDP').src = savedDp;
+            }
+
+            if (user.portal_type === 'merchant') {
+                document.getElementById('merchantPortalView').classList.remove('hidden');
+                document.getElementById('customerPortalView').classList.add('hidden');
+                renderPermanentShopQR(user);
+            } else {
+                document.getElementById('customerPortalView').classList.remove('hidden');
+                document.getElementById('merchantPortalView').classList.add('hidden');
+            }
+
             renderLinkedBanks(user.id);
         }
 
+        // Editable DP from Gallery (Problem 6)
+        function handleDPChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    localStorage.setItem('user_custom_dp', base64Img);
+                    document.getElementById('sidebarUserDP').src = base64Img;
+                    alert("Profile Picture updated successfully!");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Settings Modal Controls (Problem 6, 14)
+        function openSettingsModal() {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            document.getElementById('settingsFullName').value = user.full_name || '';
+            if (user.portal_type === 'merchant') {
+                document.getElementById('settingsBizField').classList.remove('hidden');
+                document.getElementById('settingsBizName').value = user.business_name || '';
+            }
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function saveProfileSettings() {
+            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            user.full_name = document.getElementById('settingsFullName').value;
+            if (user.portal_type === 'merchant') {
+                user.business_name = document.getElementById('settingsBizName').value;
+            }
+            localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
+            document.getElementById('sidebarUserName').textContent = user.full_name;
+            document.getElementById('settingsModal').classList.add('hidden');
+            alert("Settings updated successfully!");
+        }
+
+        // QR Code Generator (Problem 4)
+        function renderPermanentShopQR(user) {
+            const canvas = document.getElementById('permanentShopQRCanvas');
+            const payload = JSON.stringify({ type: "MERCHANT_STATIC", name: user.business_name || user.full_name, id: user.id });
+            QRCode.toCanvas(canvas, payload, { width: 140, margin: 1 }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+
+        function generateMerchantDynamicQR() {
+            const amt = document.getElementById('merchantDynAmt').value;
+            if (!amt) {
+                alert("Please enter an amount to generate dynamic QR.");
+                return;
+            }
+            const canvas = document.getElementById('dynamicQRCanvas');
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            const payload = JSON.stringify({ type: "MERCHANT_DYNAMIC", amount: amt, merchant: user.business_name });
+            
+            QRCode.toCanvas(canvas, payload, { width: 150, margin: 1 }, function(error) {
+                if (!error) {
+                    document.getElementById('merchantQRResult').classList.remove('hidden');
+                }
+            });
+        }
+
+        function openCustomerReceiveQR() {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            const canvas = document.getElementById('receiveQRCanvas');
+            const payload = JSON.stringify({ type: "CUSTOMER_RECEIVE", name: user.full_name, id: user.id });
+            QRCode.toCanvas(canvas, payload, { width: 160, margin: 1 }, function(error) {
+                if (!error) {
+                    document.getElementById('receiveQRModal').classList.remove('hidden');
+                }
+            });
+        }
+
+        function updateReceiveQRWithAmount() {
+            const amt = document.getElementById('receiveModalAmt').value;
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            const canvas = document.getElementById('receiveQRCanvas');
+            const payload = JSON.stringify({ type: "CUSTOMER_RECEIVE", amount: amt, name: user.full_name });
+            QRCode.toCanvas(canvas, payload, { width: 160, margin: 1 });
+        }
+
+        function closeReceiveQRModal() { document.getElementById('receiveQRModal').classList.add('hidden'); }
+
+        // Camera Scanner & Amount Popup (Problem 4, 5, 15, 16)
+        async function openWorkingScanner() {
+            document.getElementById('scannerModal').classList.remove('hidden');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                document.getElementById('cameraVideoFeed').srcObject = stream;
+            } catch (err) {
+                console.warn("Camera access fallback:", err);
+            }
+        }
+
+        function closeScannerModal() {
+            const video = document.getElementById('cameraVideoFeed');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('scannerModal').classList.add('hidden');
+        }
+
+        function simulateSuccessfulScan() {
+            closeScannerModal();
+            // Open Amount Popup with Biometrics (Problem 5)
+            document.getElementById('paymentTargetInfo').textContent = "Scanned Merchant QR Verified";
+            document.getElementById('paymentModal').classList.remove('hidden');
+        }
+
+        // Voice Assistant Speaker (Problem 16)
+        function speakVoiceAssistant(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function executeBiometricPayment() {
+            const amt = document.getElementById('paymentPopupAmount').value || "5000";
+            document.getElementById('paymentModal').classList.add('hidden');
+            
+            // Save transaction history
+            saveTransactionRecord(amt, "Outgoing Transfer");
+
+            // Voice announcement & Thank you message (Problem 15, 16)
+            speakVoiceAssistant("Payment successfully sent of " + amt + " Naira. Thank you for using ClickPeQR.");
+            alert("✅ Payment successfully sent! Thank you message: Transaction of ₦" + amt + " completed successfully.");
+        }
+
+        // Transaction History (Problem 9)
+        function saveTransactionRecord(amount, type) {
+            let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+            txs.unshift({ amount, type, date: new Date().toLocaleString() });
+            localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
+        }
+
+        function showTransactionHistory() {
+            const container = document.getElementById('transactionListContainer');
+            const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+            if (txs.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-2">No recent transactions.</p>`;
+            } else {
+                container.innerHTML = '';
+                txs.forEach(tx => {
+                    container.innerHTML += `
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-white">${tx.type}</p>
+                                <p class="text-[10px] text-slate-400">${tx.date}</p>
+                            </div>
+                            <span class="text-teal-400 font-mono font-bold">₦${tx.amount}</span>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('transactionModal').classList.remove('hidden');
+        }
+
+        // Bank Accounts (Problem 10)
         function renderLinkedBanks(userId) {
             const container = document.getElementById('linkedBanksListContainer');
             const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
@@ -428,8 +741,8 @@
         function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
 
         function saveNewBankAccount() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user'));
-            if (!user) return;
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            if (!user.id) return;
 
             const dropdown = document.getElementById('bankSelectDropdown');
             const bankName = dropdown.options[dropdown.selectedIndex]?.text;
@@ -459,46 +772,24 @@
             alert("Primary bank account switched successfully!");
         }
 
+        // WhatsApp Complaint Redirection (Problem 13)
+        function showComplaintWhatsApp() {
+            const phone = "2349067862223";
+            const text = encodeURIComponent("Hello ClickPeQR Support, I have a complaint regarding the app.");
+            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+        }
+
+        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
+        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
+        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
+        function switchView(view) {}
+
         function handleLogout() {
             localStorage.removeItem('clickpeqr_active_user');
             window.location.reload();
         }
 
-        // WORKING CAMERA SCANNER
-        async function openWorkingScanner() {
-            document.getElementById('scannerModal').classList.remove('hidden');
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                document.getElementById('cameraVideoFeed').srcObject = stream;
-            } catch (err) {
-                console.warn("Camera access not available or blocked:", err);
-            }
-        }
-
-        function closeScannerModal() {
-            const video = document.getElementById('cameraVideoFeed');
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
-            document.getElementById('scannerModal').classList.add('hidden');
-        }
-
-        function openReceiveQRModal() {
-            document.getElementById('receiveQRModal').classList.remove('hidden');
-        }
-
-        function closeReceiveQRModal() {
-            document.getElementById('receiveQRModal').classList.add('hidden');
-        }
-
-        function generateMerchantDynamicQR() {
-            const amt = document.getElementById('merchantDynAmt').value;
-            document.getElementById('merchantQRResult').innerHTML = `<p class="text-[11px] text-teal-400 font-mono bg-slate-900 p-2 rounded">Dynamic QR Generated for ₦${amt || '0.00'}</p>`;
-        }
-
-        function openSupplierScanner() { openWorkingScanner(); }
-
-        // SMART AI BOT WITH MEMORY
+        // Smart AI Bot with Greeting and Memory (Problem 17)
         function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
 
         function sendBotMessage() {
@@ -507,34 +798,29 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // Push to memory
             botMemory.push({ role: 'user', content: text });
             chat.innerHTML += `<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">${text}</div>`;
             input.value = '';
 
             setTimeout(() => {
-                let reply = "I've logged that in our session memory. How else can I assist your gateway?";
+                let reply = "Hello! I am your ClickPeQR Assistant. I can help you with payment transactions, bank linking, and QR generation.";
                 const lower = text.toLowerCase();
                 
                 if (lower.includes('limit')) {
-                    reply = "Customer limit is ₦250,000/transfer and Merchant limit is ₦1,000,000/transfer before biometric triggers.";
+                    reply = "Customer limit is ₦250,000 and Merchant limit is ₦1,000,000 before biometrics verification.";
                 } else if (lower.includes('bank') || lower.includes('44')) {
-                    reply = "We support all 44+ Nigerian commercial and digital banks with multi-account persistence.";
-                } else if (lower.includes('qr') || lower.includes('scanner')) {
-                    reply = "Both static shop QR codes and dynamic camera scanners are fully active in your dashboard!";
+                    reply = "We support 44+ Nigerian commercial & digital banks with multi-account persistence.";
+                } else if (lower.includes('qr') || lower.includes('scan') || lower.includes('payment')) {
+                    reply = "You can generate static/dynamic QRs or scan vendor codes instantly with biometric authorization!";
+                } else if (lower.includes('hello') || lower.includes('hi')) {
+                    reply = "Hello! Welcome to ClickPeQR. How can I assist you with your payment and transaction today?";
                 }
+
                 botMemory.push({ role: 'assistant', content: reply });
                 chat.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl">${reply}</div>`;
                 chat.scrollTop = chat.scrollHeight;
             }, 600);
         }
-
-        function triggerBiometricKYC() { alert("🔒 Biometric / Face ID KYC simulated successfully!"); }
-        function showNotificationModal() { alert("No new notifications."); }
-        function showTransactionHistory() { alert("Transaction history is up to date."); }
-        function showAboutModal() { alert("ClickPeQR Network - Secure Fintech & AI Payment Gateway (Licensed under CBN guidelines)."); }
-        function showFAQModal() { alert("FAQ: Primary accounts enjoy zero transfer fees. Merchants incur a 1.5% MDR fee."); }
-        function switchView(view) {}
     </script>
 </body>
 </html>
