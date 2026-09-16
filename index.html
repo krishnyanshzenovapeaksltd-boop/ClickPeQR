@@ -6,10 +6,8 @@
     <title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- QRCode Generator Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Standard Reliable QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between relative overflow-x-hidden">
 
@@ -152,9 +150,7 @@
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                     <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
                     <p class="text-[10px] text-slate-400 mb-2">Show this code to receive payments</p>
-                    <div class="p-2 bg-white inline-block rounded-lg shadow-inner">
-                        <canvas id="customerPermanentQRCanvas" width="140" height="140"></canvas>
-                    </div>
+                    <div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner flex justify-center items-center min-h-[140px] min-w-[140px]"></div>
                 </div>
 
                 <div class="space-y-3">
@@ -188,9 +184,7 @@
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
-                        <div class="p-2 bg-white inline-block rounded-lg shadow-inner">
-                            <canvas id="permanentShopQRCanvas" width="140" height="140"></canvas>
-                        </div>
+                        <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner flex justify-center items-center min-h-[140px] min-w-[140px]"></div>
                     </div>
 
                     <!-- Dynamic Amount QR Generator -->
@@ -199,7 +193,7 @@
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
                         <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
                         <div id="merchantQRResult" class="mt-2 hidden flex flex-col items-center">
-                            <canvas id="dynamicQRCanvas" width="150" height="150" class="p-2 bg-white rounded-lg"></canvas>
+                            <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg shadow-inner"></div>
                         </div>
                     </div>
 
@@ -574,44 +568,58 @@
             alert("Settings updated successfully!");
         }
 
-        // Render Permanent Merchant Shop QR
+        // Render Permanent Merchant Shop QR using qrcode.js
         function renderPermanentShopQR(user) {
-            const canvas = document.getElementById('permanentShopQRCanvas');
-            if (!canvas) return;
+            const container = document.getElementById('permanentShopQRContainer');
+            if (!container) return;
+            container.innerHTML = ""; // Clear previous
             const uniquePayload = JSON.stringify({
                 type: "MERCHANT_PERMANENT",
                 merchantId: user.id,
                 businessName: user.business_name || user.full_name,
                 owner: user.full_name
             });
-            QRCode.toCanvas(canvas, uniquePayload, { width: 140, margin: 1 }, function(error) {
-                if (error) console.error("Permanent QR Error:", error);
+            new QRCode(container, {
+                text: uniquePayload,
+                width: 130,
+                height: 130,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 
-        // Render Permanent Customer QR
+        // Render Permanent Customer QR using qrcode.js
         function renderCustomerPermanentQR(user) {
-            const canvas = document.getElementById('customerPermanentQRCanvas');
-            if (!canvas) return;
+            const container = document.getElementById('customerPermanentQRContainer');
+            if (!container) return;
+            container.innerHTML = ""; // Clear previous
             const uniquePayload = JSON.stringify({
                 type: "CUSTOMER_PERMANENT",
                 customerId: user.id,
                 name: user.full_name
             });
-            QRCode.toCanvas(canvas, uniquePayload, { width: 140, margin: 1 }, function(error) {
-                if (error) console.error("Customer QR Error:", error);
+            new QRCode(container, {
+                text: uniquePayload,
+                width: 130,
+                height: 130,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 
-        // Generate Merchant Dynamic QR with Amount
+        // Generate Merchant Dynamic QR with Amount using qrcode.js
         function generateMerchantDynamicQR() {
             const amt = document.getElementById('merchantDynAmt').value;
             if (!amt || amt <= 0) {
                 alert("Please enter a valid amount to generate dynamic QR.");
                 return;
             }
-            const canvas = document.getElementById('dynamicQRCanvas');
-            if (!canvas) return;
+            const container = document.getElementById('dynamicQRContainer');
+            if (!container) return;
+            container.innerHTML = ""; // Clear previous
+            
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             const uniquePayload = JSON.stringify({
                 type: "MERCHANT_DYNAMIC",
@@ -620,13 +628,16 @@
                 amount: amt
             });
             
-            QRCode.toCanvas(canvas, uniquePayload, { width: 150, margin: 1 }, function(error) {
-                if (!error) {
-                    document.getElementById('merchantQRResult').classList.remove('hidden');
-                } else {
-                    console.error("Dynamic QR Error:", error);
-                }
+            new QRCode(container, {
+                text: uniquePayload,
+                width: 140,
+                height: 140,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
+            
+            document.getElementById('merchantQRResult').classList.remove('hidden');
         }
 
         async function openWorkingScanner() {
@@ -649,7 +660,7 @@
 
         function simulateSuccessfulScan() {
             closeScannerModal();
-            document.getElementById('paymentTargetInfo').textContent = "Scanned Merchant QR Verified Successfully";
+            document.getElementById('paymentTargetInfo').textContent = "Scanned QR Verified Successfully";
             document.getElementById('paymentPopupAmount').value = "";
             document.getElementById('paymentModal').classList.remove('hidden');
         }
