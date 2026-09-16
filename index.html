@@ -75,7 +75,7 @@
     <!-- MAIN APP CONTAINER -->
     <main class="flex-grow flex items-center justify-center p-4">
 
-        <!-- AUTH SCREEN (Default visible on load) -->
+        <!-- AUTH SCREEN -->
         <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
             <div class="text-center mb-5 flex flex-col items-center">
                 <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
@@ -89,7 +89,7 @@
                 <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
             </div>
 
-            <!-- Portal Type Switcher -->
+            <!-- Portal Type Switcher on Registration Page -->
             <div class="mb-4">
                 <label class="block text-xs text-slate-400 mb-1.5">Select Account Role</label>
                 <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
@@ -139,7 +139,7 @@
         <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
             
             <!-- CUSTOMER PORTAL VIEW -->
-            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden">
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
@@ -183,19 +183,21 @@
                 </div>
 
                 <div class="space-y-3">
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+                    <!-- Permanent / Static Shop QR Option -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
-                        <div class="p-3 bg-white inline-block rounded-lg shadow-inner">
+                        <div class="p-2 bg-white inline-block rounded-lg shadow-inner">
                             <canvas id="permanentShopQRCanvas"></canvas>
                         </div>
                     </div>
 
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <!-- Dynamic QR Option -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <h4 class="text-xs font-semibold text-slate-300 mb-1">Dynamic Amount QR Generator</h4>
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
                         <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
-                        <div id="merchantQRResult" class="mt-2 text-center hidden flex flex-col items-center">
+                        <div id="merchantQRResult" class="mt-2 hidden flex flex-col items-center">
                             <canvas id="dynamicQRCanvas" class="p-2 bg-white rounded-lg"></canvas>
                         </div>
                     </div>
@@ -253,7 +255,7 @@
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-center space-y-3">
             <h3 class="text-sm font-bold text-teal-400">Receive Money QR</h3>
             <p class="text-xs text-slate-400">Scan this code with any camera to pay this user.</p>
-            <div class="p-3 bg-white inline-block rounded-xl shadow-inner">
+            <div class="p-2 bg-white inline-block rounded-xl shadow-inner">
                 <canvas id="receiveQRCanvas"></canvas>
             </div>
             <div>
@@ -472,7 +474,6 @@
             });
         }
 
-        // Fix: Do NOT auto-load dashboard on DOM load. Always start at Auth Screen unless Biometric Login is clicked.
         window.addEventListener('DOMContentLoaded', () => {
             populateBankDropdown();
             document.getElementById('authScreen').classList.remove('hidden');
@@ -514,6 +515,7 @@
         function loadDashboard(user) {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.remove('hidden');
 
             document.getElementById('sidebarUserName').textContent = user.full_name;
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
@@ -527,14 +529,17 @@
             if (user.portal_type === 'merchant') {
                 document.getElementById('merchantPortalView').classList.remove('hidden');
                 document.getElementById('customerPortalView').classList.add('hidden');
-                renderPermanentShopQR(user);
+                
+                // Safely render Permanent QR after DOM is visible
+                setTimeout(() => {
+                    renderPermanentShopQR(user);
+                }, 100);
             } else {
                 document.getElementById('customerPortalView').classList.remove('hidden');
                 document.getElementById('merchantPortalView').classList.add('hidden');
             }
 
             renderLinkedBanks(user.id);
-            document.getElementById('dashboardScreen').classList.remove('hidden');
         }
 
         function handleDPChange(event) {
@@ -573,14 +578,17 @@
             alert("Settings updated successfully!");
         }
 
+        // Permanent QR Generator for Merchant
         function renderPermanentShopQR(user) {
             const canvas = document.getElementById('permanentShopQRCanvas');
+            if (!canvas) return;
             const payload = JSON.stringify({ type: "MERCHANT_STATIC", name: user.business_name || user.full_name, id: user.id });
             QRCode.toCanvas(canvas, payload, { width: 140, margin: 1 }, function(error) {
-                if (error) console.error(error);
+                if (error) console.error("QR Error:", error);
             });
         }
 
+        // Dynamic QR Generator for Merchant
         function generateMerchantDynamicQR() {
             const amt = document.getElementById('merchantDynAmt').value;
             if (!amt) {
@@ -589,7 +597,7 @@
             }
             const canvas = document.getElementById('dynamicQRCanvas');
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const payload = JSON.stringify({ type: "MERCHANT_DYNAMIC", amount: amt, merchant: user.business_name });
+            const payload = JSON.stringify({ type: "MERCHANT_DYNAMIC", amount: amt, merchant: user.business_name || user.full_name });
             
             QRCode.toCanvas(canvas, payload, { width: 150, margin: 1 }, function(error) {
                 if (!error) {
@@ -598,13 +606,17 @@
             });
         }
 
+        // Customer Receive QR Generator
         function openCustomerReceiveQR() {
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             const canvas = document.getElementById('receiveQRCanvas');
             const payload = JSON.stringify({ type: "CUSTOMER_RECEIVE", name: user.full_name, id: user.id });
+            
             QRCode.toCanvas(canvas, payload, { width: 160, margin: 1 }, function(error) {
                 if (!error) {
                     document.getElementById('receiveQRModal').classList.remove('hidden');
+                } else {
+                    console.error(error);
                 }
             });
         }
