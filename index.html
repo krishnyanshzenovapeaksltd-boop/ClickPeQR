@@ -815,43 +815,52 @@
         function openAddBankModal() { document.getElementById('addBankModal').classList.remove('hidden'); }
         function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
 
-        async function saveNewBankAccount() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if (!user.id) return;
+    async function saveNewBankAccount() {
+    const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+    if (!user.id) return;
 
-            const dropdown = document.getElementById('bankSelectDropdown');
-            const bankName = dropdown.options[dropdown.selectedIndex]?.text;
-            const accountNumber = document.getElementById('accountNumberInput').value;
-            const accountName = document.getElementById('accountNameInput').value;
+    const dropdown = document.getElementById('bankSelectDropdown');
+    const bankCode = dropdown.value; // Yeh bank ka code hai (jaise '044')
+    const bankName = dropdown.options[dropdown.selectedIndex]?.text;
+    const accountNumber = document.getElementById('accountNumberInput').value;
+    const accountName = document.getElementById('accountNameInput').value;
 
-            if (!bankName || accountNumber.length !== 10 || !accountName) {
-                alert("Please fill in valid 10-digit account details.");
-                return;
-            }
+    if (!bankCode || !bankName || accountNumber.length !== 10 || !accountName) {
+        alert("Please select a bank and fill in valid 10-digit account details.");
+        return;
+    }
 
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
-            const isPrimary = savedAccounts.length === 0;
+    let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
+    const isPrimary = savedAccounts.length === 0;
 
-            savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
-            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+    savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
+    localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
 
-            const newBank = { 
-                user_id: user.id, 
-                bank_name: bankName, 
-                account_number: accountNumber, 
-                account_name: accountName 
-            };
+    const newBank = { 
+        user_id: user.id, 
+        bank_name: bankName, 
+        bank_code: bankCode, // Yahan bank_code pass karna zaroori hai
+        account_number: accountNumber, 
+        account_name: accountName,
+        is_primary: isPrimary
+    };
 
-            try {
-                await supabaseClient.from('linked_accounts').insert([newBank]);
-            } catch (err) {
-                console.warn("Supabase bank sync warning:", err);
-            }
-
-            closeAddBankModal();
-            fetchAndRenderBanks(user.id);
-            alert("Bank account successfully linked and saved!");
+    try {
+        const { error } = await supabaseClient.from('linked_accounts').insert([newBank]);
+        if (error) {
+            console.error("Supabase insert error:", error.message);
+            alert("Database error: " + error.message);
+        } else {
+            console.log("Bank saved to Supabase successfully!");
         }
+    } catch (err) {
+        console.warn("Supabase bank sync warning:", err);
+    }
+
+    closeAddBankModal();
+    fetchAndRenderBanks(user.id);
+    alert("Bank account successfully linked and saved!");
+}  
 
         function showComplaintWhatsApp() {
             const phone = "2349067862223";
