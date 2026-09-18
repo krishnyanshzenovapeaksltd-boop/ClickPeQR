@@ -378,17 +378,7 @@
                 });
             }
 
-            const savedUser = localStorage.getItem('clickpeqr_active_user');
-            if (savedUser) {
-                try {
-                    const user = JSON.parse(savedUser);
-                    if (user && user.id) {
-                        loadDashboard(user);
-                        return;
-                    }
-                } catch (e) {}
-            }
-
+            // Always show Auth Screen first (Removed auto-login cache check)
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.add('hidden');
@@ -410,7 +400,6 @@
                 avatar_url: 'logo.png'
             };
 
-            // Call Backend API Route
             try {
                 await fetch('/api/auth/register', {
                     method: 'POST',
@@ -518,7 +507,6 @@
                     name: user.full_name || "ClickPeQR User",
                 },
                 callback: async function (data) {
-                    // Call Backend API to verify transaction
                     try {
                         await fetch('/api/transactions/verify', {
                             method: 'POST',
@@ -610,8 +598,8 @@
         }
 
         function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
+        function showAboutModal() { document.getElementById('aboutModal').classList.add('hidden'); }
+        function showFAQModal() { document.getElementById('faqModal').classList.add('hidden'); }
         function switchView() {}
         function showTransactionHistory() { document.getElementById('transactionModal').classList.remove('hidden'); }
         function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
