@@ -43,13 +43,13 @@
         <div>
             <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
                 <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
-                    <img id="sidebarUserDP" src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
+                    <img id="sidebarUserDP" src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950 user-profile-dp" alt="DP">
                     <div class="absolute inset-0 bg-slate-950/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] text-teal-300 font-bold">Edit</div>
                 </div>
                 <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
                 <div class="overflow-hidden">
                     <div class="flex items-center space-x-1">
-                        <h4 id="sidebarUserName" class="text-sm font-bold text-white truncate">User Name</h4>
+                        <h4 id="sidebarUserName" class="text-sm font-bold text-white truncate user-profile-name">User Name</h4>
                         <button onclick="openSettingsModal()" class="text-teal-400 text-xs">✏️</button>
                     </div>
                     <p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
@@ -465,6 +465,21 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             populateBankDropdown();
+            
+            // Check if active session already exists to prevent blank visibility states
+            const savedUser = localStorage.getItem('clickpeqr_active_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    if (user && user.id) {
+                        loadDashboard(user);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Session parse error:", e);
+                }
+            }
+
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.add('hidden');
@@ -488,13 +503,15 @@
             const bizName = document.getElementById('businessNameInput')?.value || (fullName + " Store");
             const uniqueId = email.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.floor(Math.random() * 10000);
 
+            let customDp = localStorage.getItem('user_custom_dp') || 'logo.png';
+
             const userData = {
                 id: uniqueId,
                 full_name: fullName,
                 email: email,
                 business_name: bizName,
                 portal_type: currentPortalType,
-                avatar_url: 'logo.png'
+                avatar_url: customDp
             };
 
             try {
@@ -508,12 +525,32 @@
             loadDashboard(userData);
         }
 
-        function loadDashboard(user) {
+        async function loadDashboard(user) {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.remove('hidden');
 
-            document.getElementById('sidebarUserName').textContent = user.full_name;
+            // Pull fresh profile state from Supabase to prevent invisibility bugs after logout/login cycles
+            try {
+                const { data: profileData, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!error && profileData) {
+                    user = { ...user, ...profileData };
+                    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
+                }
+            } catch (err) {
+                console.warn("Profile fetch fallback to local cache:", err);
+            }
+
+            // Update UI elements securely
+            const customDp = localStorage.getItem('user_custom_dp') || user.avatar_url || 'logo.png';
+            document.querySelectorAll('.user-profile-dp').forEach(el => el.src = customDp);
+            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User Name');
+            
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
             document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
             
@@ -541,10 +578,21 @@
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const base64Img = e.target.result;
                     localStorage.setItem('user_custom_dp', base64Img);
-                    document.getElementById('sidebarUserDP').src = base64Img;
+                    document.querySelectorAll('.user-profile-dp').forEach(el => el.src = base64Img);
+                    
+                    let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+                    user.avatar_url = base64Img;
+                    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
+
+                    try {
+                        await supabaseClient.from('profiles').update({ avatar_url: base64Img }).eq('id', user.id);
+                    } catch(err) {
+                        console.warn("DP update sync warning:", err);
+                    }
+
                     alert("Profile Picture updated successfully!");
                 };
                 reader.readAsDataURL(file);
@@ -570,15 +618,22 @@
                 renderPermanentShopQR(user);
                 
                 try {
-                    await supabaseClient.from('merchants').update({ business_name: user.business_name }).eq('id', user.id);
+                    await supabaseClient.from('merchants').upsert([{ id: user.id, business_name: user.business_name }]);
                 } catch (err) {
                     console.warn("Supabase merchant update warning:", err);
                 }
             } else {
                 renderCustomerPermanentQR(user);
             }
+            
+            try {
+                await supabaseClient.from('profiles').update({ full_name: user.full_name, business_name: user.business_name }).eq('id', user.id);
+            } catch (err) {
+                console.warn("Supabase profile update warning:", err);
+            }
+
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-            document.getElementById('sidebarUserName').textContent = user.full_name;
+            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name);
             document.getElementById('settingsModal').classList.add('hidden');
             alert("Settings updated successfully!");
         }
@@ -775,8 +830,10 @@
                     .eq('user_id', userId);
 
                 if (!error && data && data.length > 0) {
+                    // Cache backup locally
+                    localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(data));
                     container.innerHTML = '';
-                    data.forEach((acc, index) => {
+                    data.forEach((acc) => {
                         container.innerHTML += `
                             <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                                 <div>
@@ -800,12 +857,12 @@
             }
 
             container.innerHTML = '';
-            savedAccounts.forEach((acc, index) => {
+            savedAccounts.forEach((acc) => {
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                         <div>
-                            <p class="text-xs font-bold text-white">${acc.bankName}</p>
-                            <p class="text-[10px] text-slate-400 font-mono">${acc.accountNumber} - ${acc.accountName}</p>
+                            <p class="text-xs font-bold text-white">${acc.bank_name || acc.bankName}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${acc.account_number || acc.accountNumber} - ${acc.account_name || acc.accountName}</p>
                         </div>
                     </div>
                 `;
@@ -815,52 +872,50 @@
         function openAddBankModal() { document.getElementById('addBankModal').classList.remove('hidden'); }
         function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
 
-    async function saveNewBankAccount() {
-    const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-    if (!user.id) return;
+        async function saveNewBankAccount() {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            if (!user.id) {
+                alert("Please log in first.");
+                return;
+            }
 
-    const dropdown = document.getElementById('bankSelectDropdown');
-    const bankCode = dropdown.value; // Yeh bank ka code hai (jaise '044')
-    const bankName = dropdown.options[dropdown.selectedIndex]?.text;
-    const accountNumber = document.getElementById('accountNumberInput').value;
-    const accountName = document.getElementById('accountNameInput').value;
+            const dropdown = document.getElementById('bankSelectDropdown');
+            const bankCode = dropdown.value;
+            const bankName = dropdown.options[dropdown.selectedIndex]?.text;
+            const accountNumber = document.getElementById('accountNumberInput').value;
+            const accountName = document.getElementById('accountNameInput').value;
 
-    if (!bankCode || !bankName || accountNumber.length !== 10 || !accountName) {
-        alert("Please select a bank and fill in valid 10-digit account details.");
-        return;
-    }
+            if (!bankCode || !bankName || accountNumber.length !== 10 || !accountName) {
+                alert("Please select a bank and enter valid 10-digit account details.");
+                return;
+            }
 
-    let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
-    const isPrimary = savedAccounts.length === 0;
+            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
+            const isPrimary = savedAccounts.length === 0;
 
-    savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
-    localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+            const newBank = { 
+                user_id: user.id, 
+                bank_name: bankName,
+                bank_code: bankCode,
+                account_number: accountNumber, 
+                account_name: accountName,
+                is_primary: isPrimary,
+                created_at: new Date().toISOString()
+            };
 
-    const newBank = { 
-        user_id: user.id, 
-        bank_name: bankName, 
-        bank_code: bankCode, // Yahan bank_code pass karna zaroori hai
-        account_number: accountNumber, 
-        account_name: accountName,
-        is_primary: isPrimary
-    };
+            savedAccounts.push(newBank);
+            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
 
-    try {
-        const { error } = await supabaseClient.from('linked_accounts').insert([newBank]);
-        if (error) {
-            console.error("Supabase insert error:", error.message);
-            alert("Database error: " + error.message);
-        } else {
-            console.log("Bank saved to Supabase successfully!");
+            try {
+                await supabaseClient.from('linked_accounts').insert([newBank]);
+            } catch (err) {
+                console.warn("Supabase bank sync warning:", err);
+            }
+
+            closeAddBankModal();
+            fetchAndRenderBanks(user.id);
+            alert("Bank account successfully linked and saved!");
         }
-    } catch (err) {
-        console.warn("Supabase bank sync warning:", err);
-    }
-
-    closeAddBankModal();
-    fetchAndRenderBanks(user.id);
-    alert("Bank account successfully linked and saved!");
-}  
 
         function showComplaintWhatsApp() {
             const phone = "2349067862223";
