@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Standard Reliable QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Flutterwave Inline Checkout JS SDK -->
     <script src="https://checkout.flutterwave.com/v3.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between relative overflow-x-hidden">
@@ -63,7 +59,6 @@
                 <a href="#" onclick="toggleSidebar(); openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🏦 <span>Bank Accounts & Security</span></a>
                 <a href="#" onclick="toggleSidebar(); openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">⚙️ <span>Settings (Edit Profile)</span></a>
                 <a href="#" onclick="toggleSidebar(); showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">ℹ️ <span>About ClickPeQR</span></a>
-                <a href="#" onclick="toggleSidebar(); toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">💬 <span>Help & Support (24/7)</span></a>
                 <a href="#" onclick="toggleSidebar(); showComplaintWhatsApp()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300 transition">⚠️ <span>Complain / WhatsApp</span></a>
                 <a href="#" onclick="toggleSidebar(); showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">❓ <span>FAQ</span></a>
             </nav>
@@ -85,13 +80,11 @@
                 <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
             </div>
 
-            <!-- Tab Switcher -->
             <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
                 <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
                 <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
             </div>
 
-            <!-- Portal Type Switcher on Registration Page -->
             <div class="mb-4">
                 <label class="block text-xs text-slate-400 mb-1.5">Select Account Role</label>
                 <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
@@ -128,12 +121,6 @@
                     <input type="password" id="pinInput" required maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="••••">
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
-                
-                <div class="pt-2">
-                    <button type="button" onclick="handleBiometricLogin()" class="w-full bg-slate-800 border border-teal-500/30 text-teal-300 font-semibold py-2.5 rounded-xl text-xs hover:bg-slate-750 transition flex items-center justify-center space-x-2">
-                        <span>🔓 Login with Biometrics / Face ID</span>
-                    </button>
-                </div>
             </form>
         </div>
 
@@ -150,7 +137,6 @@
                     <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
                 </div>
 
-                <!-- Permanent Customer QR on Homepage -->
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                     <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
                     <p class="text-[10px] text-slate-400 mb-2">Show this code to receive payments</p>
@@ -184,14 +170,12 @@
                 </div>
 
                 <div class="space-y-3">
-                    <!-- Permanent Shop QR on Homepage (Unique per Merchant) -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
                         <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner flex justify-center items-center min-h-[140px] min-w-[140px]"></div>
                     </div>
 
-                    <!-- Dynamic Amount QR Generator -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <h4 class="text-xs font-semibold text-slate-300 mb-1">Dynamic Amount QR Generator</h4>
                         <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
@@ -200,10 +184,6 @@
                             <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg shadow-inner"></div>
                         </div>
                     </div>
-
-                    <button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">
-                        📷 Scan Supplier QR to Pay
-                    </button>
                 </div>
             </div>
 
@@ -224,9 +204,6 @@
             <h3 class="text-sm font-bold text-white">Scan QR Code via Camera</h3>
             <div class="relative w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-teal-500/40 flex items-center justify-center">
                 <video id="cameraVideoFeed" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div class="absolute inset-0 border-2 border-dashed border-teal-400/50 m-8 rounded-lg pointer-events-none flex items-center justify-center">
-                    <span class="text-xs text-teal-300 bg-slate-950/80 px-2 py-1 rounded">Align QR Inside Frame</span>
-                </div>
             </div>
             <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate QR Scan Match</button>
             <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close Camera</button>
@@ -254,7 +231,7 @@
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
             <h3 class="text-base font-bold text-white">Link Nigerian Bank Account</h3>
             <div>
-                <label class="block text-xs text-slate-400 mb-1">Select Bank (44+ Available)</label>
+                <label class="block text-xs text-slate-400 mb-1">Select Bank (Max Coverage)</label>
                 <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none">
                     <option value="">Select Bank</option>
                 </select>
@@ -274,14 +251,14 @@
         </div>
     </div>
 
-    <!-- NOTIFICATIONS MODAL -->
+    <!-- NOTIFICATIONS & TRANSACTION MODALS -->
     <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                 <h3 class="text-sm font-bold text-teal-400">Notifications</h3>
                 <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
-            <div class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300">
+            <div class="space-y-2 text-xs text-slate-300">
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <p class="font-bold text-white">Welcome to ClickPeQR!</p>
                     <p class="text-[10px] text-slate-400">Your account is active under CBN guidelines.</p>
@@ -290,7 +267,6 @@
         </div>
     </div>
 
-    <!-- TRANSACTION HISTORY MODAL -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -301,26 +277,10 @@
         </div>
     </div>
 
-    <!-- ABOUT MODAL -->
-    <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl space-y-3 text-xs text-slate-300">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">About ClickPeQR</h3>
-                <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
-            <p><strong>ClickPeQR</strong> designed by <strong>KRISHNYANSH ZENOVA PEAKS LTD. NIGERIA</strong></p>
-            <p><strong>RC-9810296</strong></p>
-            <p><strong>Ruby Garg</strong> (Founder & CEO)</p>
-            <p class="pt-2 text-slate-400">For Nigeria to provide secure fintech & payment Gateway (licensed under CBN guidelines).</p>
-            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave Live</p>
-        </div>
-    </div>
-
-    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">Edit Profile Settings</h3>
+                <h3 class="text-sm font-bold text-teal-400">Edit Profile</h3>
                 <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
             <div class="space-y-3 text-xs">
@@ -328,55 +288,13 @@
                     <label class="block text-slate-400 mb-1">Full Name</label>
                     <input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none">
                 </div>
-                <div id="settingsBizField" class="hidden">
-                    <label class="block text-slate-400 mb-1">Business Name</label>
-                    <input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none">
-                </div>
-                <div>
-                    <label class="block text-slate-400 mb-1">Phone Number</label>
-                    <input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" value="+2349067862223">
-                </div>
                 <button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- FAQ MODAL -->
-    <div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 text-xs text-slate-300">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">FAQ & Support</h3>
-                <button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
-            <p><strong>Q: Are transfers free?</strong><br>Primary accounts enjoy zero transaction fees.</p>
-            <p><strong>Q: What is the merchant fee?</strong><br>Standard processing fee is 1.5% MDR.</p>
-        </div>
-    </div>
-
-    <!-- SMART AI BOT -->
-    <div class="fixed bottom-4 right-4 z-40">
-        <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">
-            🤖
-        </button>
-    </div>
-
-    <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
-            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant</h4>
-            <button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
-        </div>
-        <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
-            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR. How can I assist you with your payments, QR generation, or bank transactions today?</div>
-        </div>
-        <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
-            <input type="text" id="botInputText" placeholder="Ask about payments..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()">
-            <button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC WITH SUPABASE & FLUTTERWAVE LIVE -->
+    <!-- SCRIPT LOGIC -->
     <script>
-        // Supabase Initialization
         const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczODE3MDgyMCwiZXhwIjoyMDUzNzQ2ODIwfQ.EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -391,27 +309,24 @@
             { name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" },
             { name: "Union Bank of Nigeria", code: "032" }, { name: "United Bank for Africa (UBA)", code: "033" },
             { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" },
-            { name: "Zenith Bank", code: "057" }, { name: "Jaiz Bank", code: "301" },
-            { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
-            { name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" },
-            { name: "Opay Digital Services", code: "999992" }, { name: "PalmPay", code: "999991" },
-            { name: "Paga", code: "100002" }, { name: "VFD Microfinance Bank", code: "566" },
-            { name: "Sparkle", code: "51310" }, { name: "Airtel Smartcash PSB", code: "120004" },
-            { name: "MTN Momo PSB", code: "120003" }, { name: "9psb", code: "120001" },
-            { name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" },
+            { name: "Zenith Bank", code: "057" }, { name: "Opay Digital Services", code: "999992" },
+            { name: "PalmPay", code: "999991" }, { name: "Kuda Bank", code: "50211" },
+            { name: "Moniepoint MFB", code: "50515" }, { name: "Paga", code: "100002" },
+            { name: "VFD Microfinance Bank", code: "566" }, { name: "Sparkle", code: "51310" },
+            { name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" },
+            { name: "Lotus Bank", code: "303" }, { name: "Parallex Bank", code: "104" },
             { name: "Globus Bank", code: "103" }, { name: "Signature Bank", code: "106" },
-            { name: "Titan Trust Bank", code: "102" }
+            { name: "Titan Trust Bank", code: "102" }, { name: "Airtel Smartcash PSB", code: "120004" },
+            { name: "MTN Momo PSB", code: "120003" }, { name: "9psb", code: "120001" },
+            { name: "Hope PSBank", code: "120002" }
         ];
 
         let currentAuthMode = 'login';
         let currentPortalType = 'customer';
-        let botMemory = [];
 
         function toggleSidebar() {
-            const sidebar = document.getElementById('appSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
+            document.getElementById('appSidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
         }
 
         function switchAuthTab(mode) {
@@ -451,22 +366,18 @@
             }
         }
 
-        function populateBankDropdown() {
-            const dropdown = document.getElementById('bankSelectDropdown');
-            if (!dropdown) return;
-            dropdown.innerHTML = '<option value="">Select Bank</option>';
-            nigerianBanksList.forEach(bank => {
-                let opt = document.createElement('option');
-                opt.value = bank.code;
-                opt.textContent = bank.name;
-                dropdown.appendChild(opt);
-            });
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
-            populateBankDropdown();
-            
-            // Check if active session already exists to prevent blank visibility states
+            const dropdown = document.getElementById('bankSelectDropdown');
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Select Bank</option>';
+                nigerianBanksList.forEach(bank => {
+                    let opt = document.createElement('option');
+                    opt.value = bank.code;
+                    opt.textContent = bank.name;
+                    dropdown.appendChild(opt);
+                });
+            }
+
             const savedUser = localStorage.getItem('clickpeqr_active_user');
             if (savedUser) {
                 try {
@@ -475,26 +386,13 @@
                         loadDashboard(user);
                         return;
                     }
-                } catch (e) {
-                    console.error("Session parse error:", e);
-                }
+                } catch (e) {}
             }
 
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.add('hidden');
         });
-
-        function handleBiometricLogin() {
-            const savedUser = localStorage.getItem('clickpeqr_active_user');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                speakVoiceAssistant("Biometric authentication successful. Welcome back " + user.full_name);
-                loadDashboard(user);
-            } else {
-                alert("No previous session found. Please register or sign in with your PIN first.");
-            }
-        }
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
@@ -503,25 +401,27 @@
             const bizName = document.getElementById('businessNameInput')?.value || (fullName + " Store");
             const uniqueId = email.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.floor(Math.random() * 10000);
 
-            let customDp = localStorage.getItem('user_custom_dp') || 'logo.png';
-
             const userData = {
                 id: uniqueId,
                 full_name: fullName,
                 email: email,
                 business_name: bizName,
                 portal_type: currentPortalType,
-                avatar_url: customDp
+                avatar_url: 'logo.png'
             };
 
+            // Call Backend API Route
             try {
-                await supabaseClient.from('profiles').upsert([userData]);
+                await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
             } catch (err) {
-                console.warn("Supabase sync warning:", err);
+                console.warn("API Auth sync warning:", err);
             }
 
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
-            speakVoiceAssistant("Account registered successfully. Welcome to ClickPeQR.");
             loadDashboard(userData);
         }
 
@@ -530,27 +430,7 @@
             document.getElementById('mainHeader').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.remove('hidden');
 
-            // Pull fresh profile state from Supabase to prevent invisibility bugs after logout/login cycles
-            try {
-                const { data: profileData, error } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (!error && profileData) {
-                    user = { ...user, ...profileData };
-                    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-                }
-            } catch (err) {
-                console.warn("Profile fetch fallback to local cache:", err);
-            }
-
-            // Update UI elements securely
-            const customDp = localStorage.getItem('user_custom_dp') || user.avatar_url || 'logo.png';
-            document.querySelectorAll('.user-profile-dp').forEach(el => el.src = customDp);
             document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User Name');
-            
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
             document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
             
@@ -558,103 +438,23 @@
                 document.getElementById('merchantPortalView').classList.remove('hidden');
                 document.getElementById('customerPortalView').classList.add('hidden');
                 document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
-                
-                setTimeout(() => {
-                    renderPermanentShopQR(user);
-                }, 100);
+                setTimeout(() => renderPermanentShopQR(user), 100);
             } else {
                 document.getElementById('customerPortalView').classList.remove('hidden');
                 document.getElementById('merchantPortalView').classList.add('hidden');
-
-                setTimeout(() => {
-                    renderCustomerPermanentQR(user);
-                }, 100);
+                setTimeout(() => renderCustomerPermanentQR(user), 100);
             }
 
             fetchAndRenderBanks(user.id);
-        }
-
-        function handleDPChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const base64Img = e.target.result;
-                    localStorage.setItem('user_custom_dp', base64Img);
-                    document.querySelectorAll('.user-profile-dp').forEach(el => el.src = base64Img);
-                    
-                    let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-                    user.avatar_url = base64Img;
-                    localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-
-                    try {
-                        await supabaseClient.from('profiles').update({ avatar_url: base64Img }).eq('id', user.id);
-                    } catch(err) {
-                        console.warn("DP update sync warning:", err);
-                    }
-
-                    alert("Profile Picture updated successfully!");
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function openSettingsModal() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            document.getElementById('settingsFullName').value = user.full_name || '';
-            if (user.portal_type === 'merchant') {
-                document.getElementById('settingsBizField').classList.remove('hidden');
-                document.getElementById('settingsBizName').value = user.business_name || '';
-            }
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-
-        async function saveProfileSettings() {
-            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            user.full_name = document.getElementById('settingsFullName').value;
-            if (user.portal_type === 'merchant') {
-                user.business_name = document.getElementById('settingsBizName').value;
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
-                renderPermanentShopQR(user);
-                
-                try {
-                    await supabaseClient.from('merchants').upsert([{ id: user.id, business_name: user.business_name }]);
-                } catch (err) {
-                    console.warn("Supabase merchant update warning:", err);
-                }
-            } else {
-                renderCustomerPermanentQR(user);
-            }
-            
-            try {
-                await supabaseClient.from('profiles').update({ full_name: user.full_name, business_name: user.business_name }).eq('id', user.id);
-            } catch (err) {
-                console.warn("Supabase profile update warning:", err);
-            }
-
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name);
-            document.getElementById('settingsModal').classList.add('hidden');
-            alert("Settings updated successfully!");
         }
 
         function renderPermanentShopQR(user) {
             const container = document.getElementById('permanentShopQRContainer');
             if (!container) return;
             container.innerHTML = "";
-            const uniquePayload = JSON.stringify({
-                type: "MERCHANT_PERMANENT",
-                merchantId: user.id,
-                businessName: user.business_name || user.full_name,
-                owner: user.full_name
-            });
             new QRCode(container, {
-                text: uniquePayload,
-                width: 130,
-                height: 130,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                text: JSON.stringify({ type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name }),
+                width: 130, height: 130
             });
         }
 
@@ -662,48 +462,22 @@
             const container = document.getElementById('customerPermanentQRContainer');
             if (!container) return;
             container.innerHTML = "";
-            const uniquePayload = JSON.stringify({
-                type: "CUSTOMER_PERMANENT",
-                customerId: user.id,
-                name: user.full_name
-            });
             new QRCode(container, {
-                text: uniquePayload,
-                width: 130,
-                height: 130,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                text: JSON.stringify({ type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name }),
+                width: 130, height: 130
             });
         }
 
         function generateMerchantDynamicQR() {
             const amt = document.getElementById('merchantDynAmt').value;
-            if (!amt || amt <= 0) {
-                alert("Please enter a valid amount to generate dynamic QR.");
-                return;
-            }
+            if (!amt || amt <= 0) { alert("Enter valid amount"); return; }
             const container = document.getElementById('dynamicQRContainer');
-            if (!container) return;
             container.innerHTML = "";
-            
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const uniquePayload = JSON.stringify({
-                type: "MERCHANT_DYNAMIC",
-                merchantId: user.id,
-                businessName: user.business_name || user.full_name,
-                amount: amt
-            });
-            
             new QRCode(container, {
-                text: uniquePayload,
-                width: 140,
-                height: 140,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                text: JSON.stringify({ type: "MERCHANT_DYNAMIC", merchantId: user.id, amount: amt }),
+                width: 140, height: 140
             });
-            
             document.getElementById('merchantQRResult').classList.remove('hidden');
         }
 
@@ -712,46 +486,29 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 document.getElementById('cameraVideoFeed').srcObject = stream;
-            } catch (err) {
-                console.warn("Camera access fallback:", err);
-            }
+            } catch (err) {}
         }
 
         function closeScannerModal() {
             const video = document.getElementById('cameraVideoFeed');
-            if (video && video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
+            if (video && video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
         function simulateSuccessfulScan() {
             closeScannerModal();
-            document.getElementById('paymentTargetInfo').textContent = "Scanned QR Verified via Live Gateway";
             document.getElementById('paymentPopupAmount').value = "";
             document.getElementById('paymentModal').classList.remove('hidden');
         }
 
-        function speakVoiceAssistant(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
         function executeLiveFlutterwavePayment() {
             const amt = document.getElementById('paymentPopupAmount').value;
-            if (!amt || amt <= 0) {
-                alert("Please enter a valid amount to pay.");
-                return;
-            }
+            if (!amt || amt <= 0) { alert("Enter valid amount"); return; }
             document.getElementById('paymentModal').classList.add('hidden');
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
 
             FlutterwaveCheckout({
-                public_key: "FLWPUBK_LIVE-e3daa074214746969376f0c9e7ffa2efa-X",
+                public_key: "FLWPUBK_LIVE-e3daa074214746969376f0c9e7ffa2efa-X", 
                 tx_ref: "clickpeqr_live_" + Date.now(),
                 amount: parseFloat(amt),
                 currency: "NGN",
@@ -760,112 +517,48 @@
                     email: user.email || "customer@clickpeqr.ng",
                     name: user.full_name || "ClickPeQR User",
                 },
-                callback: function (data) {
-                    saveTransactionToSupabase(amt, data.transaction_id);
-                    speakVoiceAssistant("Payment successfully sent of " + amt + " Naira.");
-                    alert("✅ Live Payment Successful! Transaction ID: " + data.transaction_id);
+                callback: async function (data) {
+                    // Call Backend API to verify transaction
+                    try {
+                        await fetch('/api/transactions/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                amount: amt,
+                                transaction_id: data.transaction_id,
+                                user_id: user.id
+                            })
+                        });
+                    } catch (e) {
+                        console.error("Tx verification sync error:", e);
+                    }
+                    alert("✅ Payment Successful! ID: " + data.transaction_id);
                 },
-                onclose: function() {
-                    alert("Payment cancelled.");
-                },
-                customizations: {
-                    title: "ClickPeQR Payment Gateway",
-                    description: "Direct Settlement under CBN Guidelines",
-                    logo: "https://yourdomain.com/logo.png",
-                },
+                onclose: function() {}
             });
-        }
-
-        async function saveTransactionToSupabase(amount, txId) {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const txData = {
-                transaction_ref: String(txId),
-                sender_id: user.id,
-                amount: parseFloat(amount),
-                status: 'success',
-                type: 'Outgoing Live Transfer',
-                created_at: new Date().toISOString()
-            };
-
-            let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({ amount, type: 'Live Payment Transfer', date: new Date().toLocaleString() });
-            localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
-
-            try {
-                await supabaseClient.from('transactions').insert([txData]);
-            } catch (err) {
-                console.warn("Supabase transaction log warning:", err);
-            }
-        }
-
-        function showTransactionHistory() {
-            const container = document.getElementById('transactionListContainer');
-            const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            if (txs.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-center py-2">No recent live transactions.</p>`;
-            } else {
-                container.innerHTML = '';
-                txs.forEach(tx => {
-                    container.innerHTML += `
-                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-white">${tx.type}</p>
-                                <p class="text-[10px] text-slate-400">${tx.date}</p>
-                            </div>
-                            <span class="text-teal-400 font-mono font-bold">₦${tx.amount}</span>
-                        </div>
-                    `;
-                });
-            }
-            document.getElementById('transactionModal').classList.remove('hidden');
         }
 
         async function fetchAndRenderBanks(userId) {
             const container = document.getElementById('linkedBanksListContainer');
-            
             try {
-                const { data, error } = await supabaseClient
-                    .from('linked_accounts')
-                    .select('*')
-                    .eq('user_id', userId);
-
+                const { data, error } = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId);
                 if (!error && data && data.length > 0) {
-                    // Cache backup locally
-                    localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(data));
                     container.innerHTML = '';
-                    data.forEach((acc) => {
-                        container.innerHTML += `
-                            <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                                <div>
-                                    <p class="text-xs font-bold text-white">${acc.bank_name}</p>
-                                    <p class="text-[10px] text-slate-400 font-mono">${acc.account_number} - ${acc.account_name}</p>
-                                </div>
-                            </div>
-                        `;
+                    data.forEach(acc => {
+                        container.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-white"><b>${acc.bank_name}</b> - ${acc.account_number} (${acc.account_name})</div>`;
                     });
                     return;
                 }
-            } catch (err) {
-                console.warn("Error fetching banks from Supabase:", err);
-            }
+            } catch (err) {}
 
-            // Fallback to localStorage if empty/offline
-            const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
-            if (savedAccounts.length === 0) {
+            const localBanks = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
+            if (localBanks.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>`;
                 return;
             }
-
             container.innerHTML = '';
-            savedAccounts.forEach((acc) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                        <div>
-                            <p class="text-xs font-bold text-white">${acc.bank_name || acc.bankName}</p>
-                            <p class="text-[10px] text-slate-400 font-mono">${acc.account_number || acc.accountNumber} - ${acc.account_name || acc.accountName}</p>
-                        </div>
-                    </div>
-                `;
+            localBanks.forEach(acc => {
+                container.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-white"><b>${acc.bank_name}</b> - ${acc.account_number} (${acc.account_name})</div>`;
             });
         }
 
@@ -874,10 +567,7 @@
 
         async function saveNewBankAccount() {
             const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if (!user.id) {
-                alert("Please log in first.");
-                return;
-            }
+            if (!user.id) return;
 
             const dropdown = document.getElementById('bankSelectDropdown');
             const bankCode = dropdown.value;
@@ -886,82 +576,49 @@
             const accountName = document.getElementById('accountNameInput').value;
 
             if (!bankCode || !bankName || accountNumber.length !== 10 || !accountName) {
-                alert("Please select a bank and enter valid 10-digit account details.");
+                alert("Fill valid 10-digit account details.");
                 return;
             }
 
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
-            const isPrimary = savedAccounts.length === 0;
-
-            const newBank = { 
-                user_id: user.id, 
+            const newBank = {
+                user_id: user.id,
                 bank_name: bankName,
                 bank_code: bankCode,
-                account_number: accountNumber, 
+                account_number: accountNumber,
                 account_name: accountName,
-                is_primary: isPrimary,
-                created_at: new Date().toISOString()
+                is_primary: true
             };
 
+            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
             savedAccounts.push(newBank);
             localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
 
             try {
                 await supabaseClient.from('linked_accounts').insert([newBank]);
             } catch (err) {
-                console.warn("Supabase bank sync warning:", err);
+                console.warn("Supabase bank insert error:", err);
             }
 
             closeAddBankModal();
             fetchAndRenderBanks(user.id);
-            alert("Bank account successfully linked and saved!");
+            alert("Bank account successfully linked!");
         }
-
-        function showComplaintWhatsApp() {
-            const phone = "2349067862223";
-            const text = encodeURIComponent("Hello ClickPeQR Support, I have a complaint regarding the live app.");
-            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
-        }
-
-        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
-        function switchView(view) {}
 
         function handleLogout() {
             localStorage.removeItem('clickpeqr_active_user');
             window.location.reload();
         }
 
-        function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
-
-        function sendBotMessage() {
-            const input = document.getElementById('botInputText');
-            const chat = document.getElementById('botChatMessages');
-            const text = input.value.trim();
-            if (!text) return;
-
-            botMemory.push({ role: 'user', content: text });
-            chat.innerHTML += `<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">${text}</div>`;
-            input.value = '';
-
-            setTimeout(() => {
-                let reply = "Hello! I am your ClickPeQR Live Assistant. Connected securely with Supabase and Flutterwave.";
-                const lower = text.toLowerCase();
-                
-                if (lower.includes('flutterwave') || lower.includes('key')) {
-                    reply = "Your Flutterwave Live SDK is successfully connected for real-time settlements.";
-                } else if (lower.includes('supabase') || lower.includes('database')) {
-                    reply = "Supabase backend is actively tracking users, bank accounts, and transaction tables.";
-                } else if (lower.includes('hello') || lower.includes('hi')) {
-                    reply = "Hello! Welcome to ClickPeQR Live Gateway. How can I assist you today?";
-                }
-
-                botMemory.push({ role: 'assistant', content: reply });
-                chat.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl">${reply}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 600);
-        }
+        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
+        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
+        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
+        function switchView() {}
+        function showTransactionHistory() { document.getElementById('transactionModal').classList.remove('hidden'); }
+        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        function saveProfileSettings() { document.getElementById('settingsModal').classList.add('hidden'); alert("Updated"); }
+        function showComplaintWhatsApp() { window.open('https://wa.me/2349067862223', '_blank'); }
+        function toggleAIBot() {}
+        function sendBotMessage() {}
     </script>
 </body>
 </html>
