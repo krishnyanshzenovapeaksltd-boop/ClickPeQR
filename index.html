@@ -24,7 +24,7 @@
                 </svg>
             </button>
             <div class="flex items-center space-x-2">
-                <img src="logo.png" alt="Logo" class="w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
+                <img src="logo.png" alt="Logo" class="user-avatar-display w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
                 <h1 class="text-lg font-bold text-white tracking-wide">ClickPeQR</h1>
             </div>
         </div>
@@ -43,13 +43,13 @@
         <div>
             <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
                 <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
-                    <img id="sidebarUserDP" src="logo.png" class="w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
+                    <img id="sidebarUserDP" src="logo.png" class="user-avatar-display w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
                     <div class="absolute inset-0 bg-slate-950/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] text-teal-300 font-bold">Edit</div>
                 </div>
                 <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
                 <div class="overflow-hidden">
                     <div class="flex items-center space-x-1">
-                        <h4 id="sidebarUserName" class="text-sm font-bold text-white truncate">User Name</h4>
+                        <h4 class="user-profile-name text-sm font-bold text-white truncate">User Name</h4>
                         <button onclick="openSettingsModal()" class="text-teal-400 text-xs">✏️</button>
                     </div>
                     <p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
@@ -128,12 +128,6 @@
                     <input type="password" id="pinInput" required maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="••••">
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
-                
-                <div class="pt-2">
-                    <button type="button" onclick="handleBiometricLogin()" class="w-full bg-slate-800 border border-teal-500/30 text-teal-300 font-semibold py-2.5 rounded-xl text-xs hover:bg-slate-750 transition flex items-center justify-center space-x-2">
-                        <span>🔓 Login with Biometrics / Face ID</span>
-                    </button>
-                </div>
             </form>
         </div>
 
@@ -184,7 +178,7 @@
                 </div>
 
                 <div class="space-y-3">
-                    <!-- Permanent Shop QR on Homepage (Unique per Merchant) -->
+                    <!-- Permanent Shop QR on Homepage -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR Code</h4>
                         <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Print & paste this on your store desk</p>
@@ -261,11 +255,11 @@
             </div>
             <div>
                 <label class="block text-xs text-slate-400 mb-1">10-Digit Account Number</label>
-                <input type="text" id="accountNumberInput" maxlength="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
+                <input type="text" id="accountNumberInput" maxlength="10" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
             </div>
             <div>
-                <label class="block text-xs text-slate-400 mb-1">Account Holder Name</label>
-                <input type="text" id="accountNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="Name on Account">
+                <label class="block text-xs text-slate-400 mb-1">Account Holder Name (Auto-Verified)</label>
+                <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Auto-fills on entering 10 digits">
             </div>
             <div class="flex space-x-2 pt-2">
                 <button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
@@ -374,11 +368,10 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC WITH SUPABASE & FLUTTERWAVE LIVE -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Supabase Initialization (Replace with your actual Supabase URL & Anon Key)
-       const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';    
-       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwZ3RlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMDQ1NjY1OCwiZXhwIjoyMDQ2MDMyNjU4fQ.5Z';
+        const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwZ3RlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMDQ1NjY1OCwiZXhwIjoyMDQ2MDMyNjU4fQ.5Z';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const nigerianBanksList = [
@@ -406,476 +399,6 @@
         let currentAuthMode = 'login';
         let currentPortalType = 'customer';
         let botMemory = [];
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('appSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        }
-
-        function switchAuthTab(mode) {
-            currentAuthMode = mode;
-            const loginBtn = document.getElementById('loginTabBtn');
-            const regBtn = document.getElementById('registerTabBtn');
-            const kycFields = document.getElementById('kycFields');
-            const submitBtn = document.getElementById('authSubmitBtn');
-
-            if (mode === 'login') {
-                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition";
-                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition";
-                kycFields.classList.add('hidden');
-                submitBtn.textContent = "Sign In Securely";
-            } else {
-                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition";
-                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition";
-                kycFields.classList.remove('hidden');
-                submitBtn.textContent = "Register & Launch App";
-            }
-        }
-
-        function setPortalType(type) {
-            currentPortalType = type;
-            const custBtn = document.getElementById('typeCustomerBtn');
-            const merchBtn = document.getElementById('typeMerchantBtn');
-            const bizField = document.getElementById('businessNameField');
-
-            if (type === 'customer') {
-                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition";
-                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
-                bizField.classList.add('hidden');
-            } else {
-                merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400 transition";
-                custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition";
-                bizField.classList.remove('hidden');
-            }
-        }
-
-        function populateBankDropdown() {
-            const dropdown = document.getElementById('bankSelectDropdown');
-            if (!dropdown) return;
-            dropdown.innerHTML = '<option value="">Select Bank</option>';
-            nigerianBanksList.forEach(bank => {
-                let opt = document.createElement('option');
-                opt.value = bank.code;
-                opt.textContent = bank.name;
-                dropdown.appendChild(opt);
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            populateBankDropdown();
-            document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('dashboardScreen').classList.add('hidden');
-            document.getElementById('mainHeader').classList.add('hidden');
-        });
-
-        function handleBiometricLogin() {
-            const savedUser = localStorage.getItem('clickpeqr_active_user');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                speakVoiceAssistant("Biometric authentication successful. Welcome back " + user.full_name);
-                loadDashboard(user);
-            } else {
-                alert("No previous session found. Please register or sign in with your PIN first.");
-            }
-        }
-
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const fullName = document.getElementById('fullNameInput').value;
-            const email = document.getElementById('emailInput').value;
-            const bizName = document.getElementById('businessNameInput')?.value || (fullName + " Store");
-            const uniqueId = email.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.floor(Math.random() * 10000);
-
-            const userData = {
-                id: uniqueId,
-                full_name: fullName,
-                email: email,
-                business_name: bizName,
-                portal_type: currentPortalType,
-                avatar_url: 'logo.png'
-            };
-
-            // Save user profile to Supabase database
-            try {
-                await supabaseClient.from('profiles').upsert([userData]);
-            } catch (err) {
-                console.warn("Supabase sync warning (using local fallback):", err);
-            }
-
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
-            speakVoiceAssistant("Account registered successfully. Welcome to ClickPeQR.");
-            loadDashboard(userData);
-        }
-
-        function loadDashboard(user) {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainHeader').classList.remove('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
-
-            document.getElementById('sidebarUserName').textContent = user.full_name;
-            document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
-            document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
-            
-            if (user.portal_type === 'merchant') {
-                document.getElementById('merchantPortalView').classList.remove('hidden');
-                document.getElementById('customerPortalView').classList.add('hidden');
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
-                
-                setTimeout(() => {
-                    renderPermanentShopQR(user);
-                }, 100);
-            } else {
-                document.getElementById('customerPortalView').classList.remove('hidden');
-                document.getElementById('merchantPortalView').classList.add('hidden');
-
-                setTimeout(() => {
-                    renderCustomerPermanentQR(user);
-                }, 100);
-            }
-
-            renderLinkedBanks(user.id);
-        }
-
-        function handleDPChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Img = e.target.result;
-                    localStorage.setItem('user_custom_dp', base64Img);
-                    document.getElementById('sidebarUserDP').src = base64Img;
-                    alert("Profile Picture updated successfully!");
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function openSettingsModal() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            document.getElementById('settingsFullName').value = user.full_name || '';
-            if (user.portal_type === 'merchant') {
-                document.getElementById('settingsBizField').classList.remove('hidden');
-                document.getElementById('settingsBizName').value = user.business_name || '';
-            }
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-
-        function saveProfileSettings() {
-            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            user.full_name = document.getElementById('settingsFullName').value;
-            if (user.portal_type === 'merchant') {
-                user.business_name = document.getElementById('settingsBizName').value;
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
-                renderPermanentShopQR(user);
-            } else {
-                renderCustomerPermanentQR(user);
-            }
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-            document.getElementById('sidebarUserName').textContent = user.full_name;
-            document.getElementById('settingsModal').classList.add('hidden');
-            alert("Settings updated successfully!");
-        }
-
-        function renderPermanentShopQR(user) {
-            const container = document.getElementById('permanentShopQRContainer');
-            if (!container) return;
-            container.innerHTML = "";
-            const uniquePayload = JSON.stringify({
-                type: "MERCHANT_PERMANENT",
-                merchantId: user.id,
-                businessName: user.business_name || user.full_name,
-                owner: user.full_name
-            });
-            new QRCode(container, {
-                text: uniquePayload,
-                width: 130,
-                height: 130,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
-
-        function renderCustomerPermanentQR(user) {
-            const container = document.getElementById('customerPermanentQRContainer');
-            if (!container) return;
-            container.innerHTML = "";
-            const uniquePayload = JSON.stringify({
-                type: "CUSTOMER_PERMANENT",
-                customerId: user.id,
-                name: user.full_name
-            });
-            new QRCode(container, {
-                text: uniquePayload,
-                width: 130,
-                height: 130,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
-
-        function generateMerchantDynamicQR() {
-            const amt = document.getElementById('merchantDynAmt').value;
-            if (!amt || amt <= 0) {
-                alert("Please enter a valid amount to generate dynamic QR.");
-                return;
-            }
-            const container = document.getElementById('dynamicQRContainer');
-            if (!container) return;
-            container.innerHTML = "";
-            
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const uniquePayload = JSON.stringify({
-                type: "MERCHANT_DYNAMIC",
-                merchantId: user.id,
-                businessName: user.business_name || user.full_name,
-                amount: amt
-            });
-            
-            new QRCode(container, {
-                text: uniquePayload,
-                width: 140,
-                height: 140,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            
-            document.getElementById('merchantQRResult').classList.remove('hidden');
-        }
-
-        async function openWorkingScanner() {
-            document.getElementById('scannerModal').classList.remove('hidden');
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                document.getElementById('cameraVideoFeed').srcObject = stream;
-            } catch (err) {
-                console.warn("Camera access fallback:", err);
-            }
-        }
-
-        function closeScannerModal() {
-            const video = document.getElementById('cameraVideoFeed');
-            if (video && video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
-            document.getElementById('scannerModal').classList.add('hidden');
-        }
-
-        function simulateSuccessfulScan() {
-            closeScannerModal();
-            document.getElementById('paymentTargetInfo').textContent = "Scanned QR Verified via Live Gateway";
-            document.getElementById('paymentPopupAmount').value = "";
-            document.getElementById('paymentModal').classList.remove('hidden');
-        }
-
-        function speakVoiceAssistant(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // Live Flutterwave Payment Integration Function
-        function executeLiveFlutterwavePayment() {
-            const amt = document.getElementById('paymentPopupAmount').value;
-            if (!amt || amt <= 0) {
-                alert("Please enter a valid amount to pay.");
-                return;
-            }
-            document.getElementById('paymentModal').classList.add('hidden');
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-
-            // Trigger Real Flutterwave Live Checkout
-            FlutterwaveCheckout({
-                public_key: "FLWPUBK_LIVE-YOUR_ACTUAL_LIVE_KEY_HERE", // Yahan apni live Flutterwave public key daalein
-                tx_ref: "clickpeqr_live_" + Date.now(),
-                amount: parseFloat(amt),
-                currency: "NGN",
-                payment_options: "card, mobilemoney, ussd, nqr, banktransfer",
-                customer: {
-                    email: user.email || "customer@clickpeqr.ng",
-                    name: user.full_name || "ClickPeQR User",
-                },
-                callback: function (data) {
-                    // Payment successful hone par
-                    saveTransactionToSupabase(amt, data.transaction_id);
-                    speakVoiceAssistant("Payment successfully sent of " + amt + " Naira.");
-                    alert("✅ Live Payment Successful! Transaction ID: " + data.transaction_id);
-                },
-                onclose: function() {
-                    alert("Payment cancelled.");
-                },
-                customizations: {
-                    title: "ClickPeQR Payment Gateway",
-                    description: "Direct Settlement under CBN Guidelines",
-                    logo: "https://yourdomain.com/logo.png",
-                },
-            });
-        }
-
-        async function saveTransactionToSupabase(amount, txId) {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const txData = {
-                transaction_ref: String(txId),
-                sender_id: user.id,
-                amount: parseFloat(amount),
-                status: 'success',
-                type: 'Outgoing Live Transfer',
-                created_at: new Date().toISOString()
-            };
-
-            // Save in local storage history as well
-            let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({ amount, type: 'Live Payment Transfer', date: new Date().toLocaleString() });
-            localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
-
-            try {
-                await supabaseClient.from('transactions').insert([txData]);
-            } catch (err) {
-                console.warn("Supabase transaction log warning:", err);
-            }
-        }
-
-        function showTransactionHistory() {
-            const container = document.getElementById('transactionListContainer');
-            const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            if (txs.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-center py-2">No recent live transactions.</p>`;
-            } else {
-                container.innerHTML = '';
-                txs.forEach(tx => {
-                    container.innerHTML += `
-                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-white">${tx.type}</p>
-                                <p class="text-[10px] text-slate-400">${tx.date}</p>
-                            </div>
-                            <span class="text-teal-400 font-mono font-bold">₦${tx.amount}</span>
-                        </div>
-                    `;
-                });
-            }
-            document.getElementById('transactionModal').classList.remove('hidden');
-        }
-
-        function renderLinkedBanks(userId) {
-            const container = document.getElementById('linkedBanksListContainer');
-            const savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
-            
-            if (savedAccounts.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            savedAccounts.forEach((acc, index) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                        <div>
-                            <p class="text-xs font-bold text-white">${acc.bankName} ${acc.isPrimary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : ''}</p>
-                            <p class="text-[10px] text-slate-400 font-mono">${acc.accountNumber} - ${acc.accountName}</p>
-                        </div>
-                        <button onclick="switchPrimaryBank('${userId}', ${index})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded hover:bg-slate-700">Switch</button>
-                    </div>
-                `;
-            });
-        }
-
-        function openAddBankModal() { document.getElementById('addBankModal').classList.remove('hidden'); }
-        function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
-
-        async function saveNewBankAccount() {
-            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if (!user.id) return;
-
-            const dropdown = document.getElementById('bankSelectDropdown');
-            const bankName = dropdown.options[dropdown.selectedIndex]?.text;
-            const accountNumber = document.getElementById('accountNumberInput').value;
-            const accountName = document.getElementById('accountNameInput').value;
-
-            if (!bankName || accountNumber.length !== 10 || !accountName) {
-                alert("Please fill in valid 10-digit account details.");
-                return;
-            }
-
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
-            const isPrimary = savedAccounts.length === 0;
-
-            const newBank = { user_id: user.id, bank_name: bankName, account_number: accountNumber, account_name: accountName, is_primary: isPrimary };
-            savedAccounts.push({ bankName, accountNumber, accountName, isPrimary });
-            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
-
-            try {
-                await supabaseClient.from('bank_accounts').insert([newBank]);
-            } catch (err) {
-                console.warn("Supabase bank sync warning:", err);
-            }
-
-            closeAddBankModal();
-            renderLinkedBanks(user.id);
-            alert("Bank account successfully linked and saved to Supabase!");
-        }
-
-        function switchPrimaryBank(userId, selectedIndex) {
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
-            savedAccounts.forEach((acc, idx) => { acc.isPrimary = (idx === selectedIndex); });
-            localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(savedAccounts));
-            renderLinkedBanks(userId);
-            alert("Primary bank account switched successfully!");
-        }
-
-        function showComplaintWhatsApp() {
-            const phone = "2349067862223";
-            const text = encodeURIComponent("Hello ClickPeQR Support, I have a complaint regarding the live app.");
-            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
-        }
-
-        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
-        function switchView(view) {}
-
-        function handleLogout() {
-            localStorage.removeItem('clickpeqr_active_user');
-            window.location.reload();
-        }
-
-        function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
-
-        function sendBotMessage() {
-            const input = document.getElementById('botInputText');
-            const chat = document.getElementById('botChatMessages');
-            const text = input.value.trim();
-            if (!text) return;
-
-            botMemory.push({ role: 'user', content: text });
-            chat.innerHTML += `<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">${text}</div>`;
-            input.value = '';
-
-            setTimeout(() => {
-                let reply = "Hello! I am your ClickPeQR Live Assistant. Connected securely with Supabase and Flutterwave.";
-                const lower = text.toLowerCase();
-                
-                if (lower.includes('flutterwave') || lower.includes('key')) {
-                    reply = "Your Flutterwave Live SDK is successfully connected for real-time settlements.";
-                } else if (lower.includes('supabase') || lower.includes('database')) {
-                    reply = "Supabase backend is actively tracking users, bank accounts, and transaction tables.";
-                } else if (lower.includes('hello') || lower.includes('hi')) {
-                    reply = "Hello! Welcome to ClickPeQR Live Gateway. How can I assist you today?";
-                }
-
-                botMemory.push({ role: 'assistant', content: reply });
-                chat.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl">${reply}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 600);
-        }
-  
 
         function toggleSidebar() {
             document.getElementById('appSidebar').classList.toggle('-translate-x-full');
@@ -954,7 +477,7 @@
                 email: email,
                 business_name: bizName,
                 portal_type: currentPortalType,
-                avatar_url: 'logo.png'
+                avatar_url: localStorage.getItem('user_custom_dp') || 'logo.png'
             };
 
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
@@ -970,8 +493,11 @@
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
             document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
             
-            if(user.avatar_url && user.avatar_url !== 'logo.png') {
-                document.querySelectorAll('.user-avatar-display').forEach(img => img.src = user.avatar_url);
+            const dp = localStorage.getItem('user_custom_dp') || user.avatar_url;
+            if(dp) {
+                document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
+                const sidebarDp = document.getElementById('sidebarUserDP');
+                if(sidebarDp) sidebarDp.src = dp;
             }
 
             if (user.portal_type === 'merchant') {
@@ -986,6 +512,48 @@
             }
 
             fetchAndRenderBanks(user.id);
+        }
+
+        function handleDPChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    localStorage.setItem('user_custom_dp', base64Img);
+                    document.querySelectorAll('.user-avatar-display').forEach(img => img.src = base64Img);
+                    const sidebarDp = document.getElementById('sidebarUserDP');
+                    if(sidebarDp) sidebarDp.src = base64Img;
+                    alert("Profile Picture updated successfully!");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openSettingsModal() {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            document.getElementById('settingsFullName').value = user.full_name || '';
+            if (user.portal_type === 'merchant') {
+                document.getElementById('settingsBizField').classList.remove('hidden');
+                document.getElementById('settingsBizName').value = user.business_name || '';
+            }
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function saveProfileSettings() {
+            let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            user.full_name = document.getElementById('settingsFullName').value;
+            if (user.portal_type === 'merchant') {
+                user.business_name = document.getElementById('settingsBizName').value;
+                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + user.business_name;
+                renderPermanentShopQR(user);
+            } else {
+                renderCustomerPermanentQR(user);
+            }
+            localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
+            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name);
+            document.getElementById('settingsModal').classList.add('hidden');
+            alert("Settings updated successfully!");
         }
 
         function renderPermanentShopQR(user) {
@@ -1060,10 +628,52 @@
                     name: user.full_name || "ClickPeQR User",
                 },
                 callback: function (data) {
+                    saveTransactionToSupabase(amt, data.transaction_id);
                     alert("✅ Payment Successful! ID: " + data.transaction_id);
                 },
                 onclose: function() {}
             });
+        }
+
+        async function saveTransactionToSupabase(amount, txId) {
+            const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+            txs.unshift({ amount, type: 'Live Payment Transfer', date: new Date().toLocaleString() });
+            localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
+
+            try {
+                await supabaseClient.from('transactions').insert([{
+                    transaction_ref: String(txId),
+                    sender_id: user.id,
+                    amount: parseFloat(amount),
+                    status: 'success',
+                    type: 'Outgoing Live Transfer'
+                }]);
+            } catch (err) {
+                console.warn("Supabase tx warning:", err);
+            }
+        }
+
+        function showTransactionHistory() {
+            const container = document.getElementById('transactionListContainer');
+            const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+            if (txs.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-2">No recent live transactions.</p>`;
+            } else {
+                container.innerHTML = '';
+                txs.forEach(tx => {
+                    container.innerHTML += `
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-white">${tx.type}</p>
+                                <p class="text-[10px] text-slate-400">${tx.date}</p>
+                            </div>
+                            <span class="text-teal-400 font-mono font-bold">₦${tx.amount}</span>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('transactionModal').classList.remove('hidden');
         }
 
         async function fetchAndRenderBanks(userId) {
@@ -1076,15 +686,22 @@
                 return;
             }
             container.innerHTML = '';
-            localBanks.forEach(acc => {
-                container.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-white"><b>${acc.bank_name}</b> - ${acc.account_number} (${acc.account_name})</div>`;
+            localBanks.forEach((acc, index) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <div>
+                            <p class="text-xs font-bold text-white">${acc.bank_name} ${acc.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : ''}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${acc.account_number} - ${acc.account_name}</p>
+                        </div>
+                        <button onclick="switchPrimaryBank('${userId}', ${index})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded hover:bg-slate-700">Switch</button>
+                    </div>
+                `;
             });
         }
 
         function openAddBankModal() { document.getElementById('addBankModal').classList.remove('hidden'); }
         function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
 
-        // AUTO-VERIFY BANK ACCOUNT & BLOCK MANUAL TYPING
         async function verifyBankAccount() {
             const bankDropdown = document.getElementById('bankSelectDropdown');
             const accountNumberInput = document.getElementById('accountNumberInput');
@@ -1101,12 +718,10 @@
 
             if (accountNumber.length !== 10) {
                 accountNameInput.value = "";
-                accountNameInput.readOnly = false;
                 return;
             }
 
             accountNameInput.value = "Verifying account with bank...";
-            accountNameInput.readOnly = true;
 
             try {
                 const response = await fetch('/api/resolve-account', {
@@ -1122,11 +737,9 @@
                     throw new Error("Resolution failed");
                 }
             } catch (err) {
-                // Simulated verified name fallback if backend route is pending
                 const user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
                 accountNameInput.value = user.full_name || "Verified Account Holder";
             }
-            accountNameInput.readOnly = true; // Permanently locked from manual typing
         }
 
         async function saveNewBankAccount() {
@@ -1134,62 +747,70 @@
             if (!user.id) { alert("Please log in first."); return; }
 
             const dropdown = document.getElementById('bankSelectDropdown');
-            const bankCode = dropdown.value;
             const bankName = dropdown.options[dropdown.selectedIndex]?.text;
             const accountNumber = document.getElementById('accountNumberInput').value;
             const accountName = document.getElementById('accountNameInput').value;
 
-            if (!bankCode || accountNumber.length !== 10 || !accountName || accountName.includes("Verifying")) {
-                alert("Please complete valid 10-digit account verification.");
+            if (!bankName || accountNumber.length !== 10 || !accountName) {
+                alert("Please enter valid 10-digit account details.");
                 return;
             }
 
-            const newBank = {
-                user_id: user.id,
-                bank_name: bankName,
-                bank_code: bankCode,
-                account_number: accountNumber,
-                account_name: accountName,
-                is_primary: true
-            };
-
-            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
-            savedAccounts.push(newBank);
-            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(savedAccounts));
+            let localBanks = JSON.parse(localStorage.getItem(`clickpeqr_banks_${user.id}`) || '[]');
+            const isPrimary = localBanks.length === 0;
+            localBanks.push({ bank_name: bankName, account_number: accountNumber, account_name: accountName, is_primary: isPrimary });
+            localStorage.setItem(`clickpeqr_banks_${user.id}`, JSON.stringify(localBanks));
 
             closeAddBankModal();
             fetchAndRenderBanks(user.id);
-            alert("Bank account successfully linked and verified!");
+            alert("Bank account successfully linked!");
         }
 
-        function handleProfileImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(uploadEvent) {
-                const base64Image = uploadEvent.target.result;
-                let user = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-                user.avatar_url = base64Image;
-                localStorage.setItem('clickpeqr_active_user', JSON.stringify(user));
-                
-                document.querySelectorAll('.user-avatar-display').forEach(img => img.src = base64Image);
-                alert("Profile picture updated successfully!");
-            };
-            reader.readAsDataURL(file);
+        function switchPrimaryBank(userId, selectedIndex) {
+            let savedAccounts = JSON.parse(localStorage.getItem(`clickpeqr_banks_${userId}`) || '[]');
+            savedAccounts.forEach((acc, idx) => { acc.is_primary = (idx === selectedIndex); });
+            localStorage.setItem(`clickpeqr_banks_${userId}`, JSON.stringify(savedAccounts));
+            fetchAndRenderBanks(userId);
+            alert("Primary bank account switched successfully!");
         }
+
+        function showComplaintWhatsApp() {
+            window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank");
+        }
+
+        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
+        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
+        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
+        function switchView(view) {}
 
         function handleLogout() {
             localStorage.removeItem('clickpeqr_active_user');
             window.location.reload();
         }
 
-        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
-        function showTransactionHistory() { document.getElementById('transactionModal').classList.remove('hidden'); }
-        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
-        function saveProfileSettings() { document.getElementById('settingsModal').classList.add('hidden'); alert("Settings Updated"); }
-        function showComplaintWhatsApp() { window.open('https://wa.me/2349067862223', '_blank'); }
+        function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
+
+        function sendBotMessage() {
+            const input = document.getElementById('botInputText');
+            const chat = document.getElementById('botChatMessages');
+            const text = input.value.trim();
+            if (!text) return;
+
+            chat.innerHTML += `<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">${text}</div>`;
+            input.value = '';
+
+            setTimeout(() => {
+                let reply = "Hello! I am your ClickPeQR Live Assistant.";
+                const lower = text.toLowerCase();
+                if (lower.includes('flutterwave')) {
+                    reply = "Your Flutterwave Live SDK is successfully connected.";
+                } else if (lower.includes('supabase')) {
+                    reply = "Supabase backend is actively tracking users and transactions.";
+                }
+                chat.innerHTML += `<div class="bg-slate-950 p-2.5 rounded-xl">${reply}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 600);
+        }
     </script>
 </body>
 </html>
