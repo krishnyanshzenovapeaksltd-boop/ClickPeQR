@@ -12,12 +12,13 @@ app.use(cors());
 // Serve static frontend files directly from Render root folder
 app.use(express.static(path.join(__dirname)));
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpzteqexkc.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
+const SUPABASE_URL = process.env.SUPABASE_URL; "https://pkzyvyfdgcpzteqexkc.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY; "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || "FLWSECK_LIVE-xxx";
-const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X
+const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
+const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY; "0666bafa3b0455d5f5060549fe805be5-X";
+const FLUTTERWAVE_ENCRYPTION_KEY= process.env.FLUTTERWAVE_ENCRYPTION_KEY; "08c6c7d371d48bb9ea3ac404";
 ";
 
 // ==========================================
