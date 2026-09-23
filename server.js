@@ -19,7 +19,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY; "0666bafa3b0455d5f5060549fe805be5-X";
 const FLUTTERWAVE_ENCRYPTION_KEY= process.env.FLUTTERWAVE_ENCRYPTION_KEY; "08c6c7d371d48bb9ea3ac404";
-";
 
 // ==========================================
 // --- API Routes ---
