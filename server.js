@@ -17,7 +17,8 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIs
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || "FLWSECK_TEST-xxx";
-const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_LIVE-e3daa074214746969376f0c9e7ffa2efa-X";
+const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_LIVE-FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X
+";
 
 // ==========================================
 // --- API Routes ---
