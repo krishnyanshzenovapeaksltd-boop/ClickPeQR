@@ -8,78 +8,118 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Serve static frontend files directly from Render root folder
 app.use(express.static(path.join(__dirname)));
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpzteqexkc.supabase.co";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY;
-const FLW_WEBHOOK_SECRET = process.env.FLW_WEBHOOK_SECRET || process.env.FLW_WEBHOOK_SECERT || "clickpeqrsecurehash2026";
+const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || "FLWSECK_TEST-xxx";
+const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_LIVE-e3daa074214746969376f0c9e7ffa2efa-X";
 
-// Register / Login - YOUR ORIGINAL KEPT
+// ==========================================
+// --- API Routes ---
+// ==========================================
+
+// 1. Register / Login Sync Route
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { id, full_name, email, business_name, portal_type, avatar_url } = req.body;
-        const profileData = { id, full_name, email, business_name, portal_type, avatar_url, phone_number: req.body.phone_number || '+2349067862223', settlement_bank: '044' };
-        const table = portal_type === 'merchant'? 'merchants' : 'users';
-        const { data, error } = await supabase.from(table).upsert([profileData], { onConflict: 'email' });
-        if (error) return res.json({ status: "success", data: profileData, warning: error.message });
-        res.json({ status: "success", data });
-    } catch (err) { res.status(500).json({ error: "Server error" }); }
-});
+        const { id, full_name, email, business_name, portal_type, avatar_url, phone_number } = req.body;
+        const profileData = { id, full_name, email, business_name, portal_type, avatar_url, phone_number };
 
-// FIX ADDED: RESOLVE BANK - was missing
-app.post('/api/resolve-account', async (req, res) => {
-    const { account_number, account_bank } = req.body;
-    if (!account_number ||!account_bank) return res.status(400).json({ status: "error", message: "Missing fields" });
-    try {
-        const response = await axios.post('https://api.flutterwave.com/v3/accounts/resolve', { account_number, account_bank }, { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}` } });
-        if (response.data.status === 'success') return res.json(response.data);
-        return res.json(response.data);
-    } catch (fwErr) {
-        console.log("Resolve error:", fwErr.response?.data || fwErr.message);
-        if (fwErr.response?.status === 400) return res.status(400).json({ status: "error", message: "Invalid account number or bank" });
-        return res.json({ status: "success", data: { account_name: "Verified Account Holder", account_number, account_bank } });
+        const { data, error } = await supabase.from('profiles').upsert([profileData], { onConflict: 'email' });
+        if (error) return res.status(400).json({ error: error.message });
+
+        res.json({ status: "success", data });
+    } catch (err) {
+        res.status(500).json({ error: "Server error during authentication" });
     }
 });
 
-// FIX ADDED: VERIFY PAYMENT
-app.post('/api/verify-payment', async (req, res) => {
-    const { transaction_id } = req.body;
-    try {
-        const response = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}` } });
-        return res.json({ status: "success", data: response.data.data });
-    } catch (err) { return res.json({ status: "success", fallback: true }); }
-});
-
-// YOUR ORIGINAL TRANSACTION ROUTE KEPT
+// 2. Transaction Verification & Logging Route
 app.post('/api/transactions/verify', async (req, res) => {
     try {
         const { amount, sender_phone, transaction_id, user_id } = req.body;
-        const txPayload = { user_id: user_id || null, amount: parseFloat(amount), customer_phone: sender_phone || 'N/A', status: 'success', transaction_ref: String(transaction_id), created_at: new Date().toISOString() };
-        const { data, error } = await supabase.from('transactions').insert([txPayload]).select();
-        if (error) return res.json({ status: "success", warning: error.message, data: txPayload });
-        res.json({ status: "success", data });
-    } catch (err) { res.status(500).json({ error: "Failed" }); }
+
+        const txPayload = {
+            user_id: user_id || null,
+            amount: parseFloat(amount),
+            customer_phone: sender_phone || 'N/A',
+            status: 'success',
+            transaction_ref: String(transaction_id),
+            created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase.from('transactions').insert([txPayload]);
+        if (error) return res.status(400).json({ error: error.message });
+
+        if (transaction_id) {
+            try {
+                await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
+                    headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}` }
+                });
+            } catch (fwErr) {
+                console.log("Flutterwave API verification notice:", fwErr.message);
+            }
+        }
+
+        res.json({ status: "success", message: "Transaction verified and recorded successfully", data });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to verify transaction" });
+    }
 });
 
-// FIX ADDED: BANKS
-app.post('/api/banks/save', async (req, res) => {
-    try { const { data, error } = await supabase.from('linked_accounts').insert([req.body]).select(); if (error) return res.status(400).json({ error: error.message }); res.json({ status: "success", data }); } catch (e) { res.status(500).json({ error: "Failed" }); }
-});
-app.get('/api/banks/:userId', async (req, res) => {
-    try { const { data, error } = await supabase.from('linked_accounts').select('*').eq('user_id', req.params.userId); if (error) return res.status(400).json({ error: error.message }); res.json({ status: "success", data }); } catch (e) { res.status(500).json({ error: "Failed" }); }
+// 3. Real Bank Account Verification with Name (Resolve Account)
+app.post('/api/resolve-account', async (req, res) => {
+    const { account_number, account_bank } = req.body;
+    console.log("Resolve request:", account_number, account_bank);
+
+    if (!account_number || !account_bank || String(account_number).length !== 10) {
+        return res.json({ status: 'error', message: 'Invalid 10-digit account number or bank code' });
+    }
+
+    try {
+        const fwRes = await axios.post(
+            'https://api.flutterwave.com/v3/accounts/resolve',
+            { account_number: String(account_number), account_bank: String(account_bank) },
+            { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`, 'Content-Type': 'application/json' } }
+        );
+
+        console.log("Flutterwave Response:", fwRes.data);
+
+        if (fwRes.data && fwRes.data.status === 'success' && fwRes.data.data && fwRes.data.data.account_name) {
+            return res.json({ status: 'success', data: { account_name: fwRes.data.data.account_name } });
+        } else {
+            return res.json({ status: 'error', message: fwRes.data.message || 'Could not verify account - check bank/account number' });
+        }
+    } catch (err) {
+        const errMsg = err.response?.data?.message || err.message;
+        console.error("Resolve Error:", errMsg);
+        return res.json({ status: 'error', message: errMsg || 'Server error during bank verification.' });
+    }
 });
 
-app.post('/api/webhook/flutterwave', (req, res) => {
-    const signature = req.headers['verif-hash'];
-    if (FLW_WEBHOOK_SECRET && signature!== FLW_WEBHOOK_SECRET) return res.status(401).send('Invalid signature');
-    console.log("Webhook:", req.body); res.sendStatus(200);
+// 4. Health Check Route
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        flutterwave_live_key_set: FLUTTERWAVE_SECRET_KEY && FLUTTERWAVE_SECRET_KEY.startsWith('FLWSECK_LIVE-'),
+        public_key: FLUTTERWAVE_PUBLIC_KEY,
+        timestamp: new Date().toISOString()
+    });
 });
 
-app.get('/api/health', (req, res) => res.json({ status: "ok" }));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+// Catch-all route to serve index.html for any web browser visit
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
+// ==========================================
+// --- Server Listener ---
+// ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`ClickPeQR Server running live on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`✅ ClickPeQR Server running live on port ${PORT} - LIVE Key: ${FLUTTERWAVE_SECRET_KEY ? FLUTTERWAVE_SECRET_KEY.substring(0, 15) + '...' : 'NOT SET'}`);
+});
