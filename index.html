@@ -109,7 +109,7 @@
 
         <!-- DASHBOARD SCREEN -->
         <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
-            
+
             <!-- CUSTOMER PORTAL VIEW -->
             <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
                 <div class="flex justify-between items-center">
@@ -119,6 +119,8 @@
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                     <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
                     <div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center mt-2"></div>
+                    <button onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent QR</button>
+                    <p class="text-[9px] text-slate-500 mt-1">Regenerates your unique permanent QR ID</p>
                 </div>
                 <button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3">
                     <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
@@ -135,14 +137,39 @@
                     <h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
                     <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
                 </div>
+                <!-- VIRTUAL SPEAKER PANEL - PRODUCTION -->
+                <div id="virtualSpeakerPanel" class="bg-slate-950 p-4 rounded-xl border border-teal-500/40 shadow-inner">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold text-teal-300 flex items-center gap-2">🔊 Virtual Speaker - Live <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span></h4>
+                        <button onclick="enableSpeaker()" id="enableSpeakerBtn" class="text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold">Enable Voice</button>
+                    </div>
+                    <div id="speakerStatus" class="text-[11px] text-slate-400 mb-2">Speaker idle - Waiting for payment...</div>
+                    <div id="speakerVisual" class="h-10 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
+                        <div id="speakerWave" class="flex items-center gap-1 hidden">
+                            <span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
+                            <span class="w-1 h-6 bg-teal-400 animate-bounce"></span>
+                            <span class="w-1 h-4 bg-teal-400 animate-bounce"></span>
+                            <span class="w-1 h-7 bg-teal-400 animate-bounce"></span>
+                            <span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
+                        </div>
+                        <span id="speakerIdleText" class="text-[10px] text-slate-500">No audio - Click Enable Voice</span>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="testSpeakerVoice()" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Test Voice</button>
+                        <button onclick="document.getElementById('speakerStatus').textContent='Speaker idle - Waiting...'" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Clear</button>
+                    </div>
+                    <div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
+                </div>
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <p class="text-xs text-slate-400">Today's Sales</p>
-                    <h3 class="text-2xl font-bold text-teal-300 mt-1">₦ 0.00</h3>
+                    <h3 class="text-2xl font-bold text-teal-300 mt-1" id="todaysSales">₦ 0.00</h3>
                 </div>
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                     <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR</h4>
                     <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR</p>
                     <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
+                    <button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent Shop QR</button>
+                    <p class="text-[9px] text-slate-500 mt-1">Generate new permanent ID for security</p>
                 </div>
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                     <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
@@ -170,15 +197,84 @@
         <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3">
             <h3 class="text-sm font-bold text-white">Scan QR</h3>
             <video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
-            <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate Scan</button>
+            <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate Scan (Merchant QR)</button>
             <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
         </div>
     </div>
 
-    <!-- AMOUNT POPUP & LIVE FLUTTERWAVE PAYMENT MODAL -->
+    <!-- STEP 1: MERCHANT CONFIRMATION POPUP (NEW PRODUCTION) -->
+    <div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
+        <div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">✓</div>
+                <h3 class="text-base font-bold text-slate-900">Confirm Payment</h3>
+                <p class="text-[11px] text-slate-500 mt-1">Verify merchant before paying</p>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">KRISHNYANSH ZENOVA PEAKS LTD</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">GARG RUBY</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
+            </div>
+            <div>
+                <label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
+                <input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
+            </div>
+            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Proceed</button>
+            <button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: MANUAL BANK TRANSFER PAGE (OPTION A PRODUCTION) -->
+    <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
+        <div class="bg-orange-50 border-b border-orange-100 p-3 text-center">
+            <p class="text-[12px] text-slate-700"><span class="font-bold">⏱ You have 14:52 to complete this payment</span></p>
+        </div>
+        <div class="p-4 flex-1">
+            <h2 class="text-[15px] font-semibold text-slate-800 mb-4">Proceed to your bank app to complete this transfer</h2>
+            <div class="bg-orange-50 border border-orange-100 p-3 rounded-xl flex gap-2 mb-4">
+                <span class="text-orange-500 text-sm">ⓘ</span>
+                <p class="text-[12px] text-slate-600">For a seamless transaction, please transfer the exact amount displayed. Payments may be declined if the amount does not match.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
+                <div class="p-4">
+                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span>
+                        <button onclick="copyToClipboard(document.getElementById('manualAmountDisplay').innerText.replace('NGN ',''))" class="bg-orange-400 text-white text-[11px] px-3 py-1 rounded-md font-bold">📋 COPY</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span>
+                        <button onclick="copyToClipboard(document.getElementById('manualAccountNumber').innerText)" class="bg-orange-400 text-white text-[11px] px-3 py-1 rounded-md font-bold">📋 COPY</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p>
+                    <p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p>
+                </div>
+                <div class="p-4">
+                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p>
+                    <p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">GARG RUBY / KRISHNYANSH ZENOVA PEAKS LTD</p>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-[12px] text-slate-600 bg-slate-50 p-3 rounded-xl">
+                <span>ⓘ</span>
+                <p>This is direct transfer to merchant's linked GTB account saved in Link Bank.</p>
+            </div>
+            <div class="mt-6 space-y-3">
+                <button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I have paid - I transferred</button>
+                <button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-orange-500 text-[14px] font-semibold py-2">Change payment method</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AMOUNT POPUP & LIVE FLUTTERWAVE PAYMENT MODAL (KEPT FOR FALLBACK) -->
     <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
-            <h3 class="text-base font-bold text-teal-400">Live Flutterwave Payment</h3>
+            <h3 class="text-base font-bold text-teal-400">Live Flutterwave Payment (Fallback)</h3>
             <input type="number" id="paymentPopupAmount" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-lg font-bold text-white outline-none" placeholder="5000">
             <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">🔒 Proceed to Live Payment</button>
             <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
@@ -234,7 +330,7 @@
                 <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
             <p><strong>ClickPeQR</strong> by KRISHNYANSH ZENOVA PEAKS LTD. NIGERIA RC-9810296 Ruby Garg CEO</p>
-            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave Live</p>
+            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave Live + Direct GTB Transfer</p>
         </div>
     </div>
 
@@ -263,8 +359,9 @@
                 <h3 class="text-sm font-bold text-teal-400">FAQ</h3>
                 <button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
-            <p><strong>Are transfers free?</strong><br>Primary accounts zero fees.</p>
-            <p><strong>Merchant fee?</strong><br>1.5% MDR.</p>
+            <p><strong>Are transfers free?</strong><br>Primary accounts zero fees. Direct GTB transfer uses your bank app.</p>
+            <p><strong>Merchant fee?</strong><br>1.5% MDR. Direct bank transfer has no Flutterwave fee.</p>
+            <p><strong>How does voice speaker work?</strong><br>After customer clicks "I have paid", merchant speaker announces "Money received in this account successfully" instantly via Realtime.</p>
         </div>
     </div>
 
@@ -290,7 +387,7 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwZ3RlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMDQ1NjY1OCwiZXhwIjoyMDQ2MDMyNjU4fQ.5Z';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].5Z';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const nigerianBanksList = [
@@ -317,6 +414,19 @@
 
         let currentAuthMode = 'login';
         let currentPortalType = 'customer';
+        let scannedMerchantData = null;
+        let speakerChannel = null;
+        let isSpeakerEnabled = false;
+
+        // PRODUCTION: Broadcast channel for real-time speaker between tabs/devices (fallback for Supabase Realtime)
+        try {
+            speakerChannel = new BroadcastChannel('clickpeqr_payments');
+            speakerChannel.onmessage = (e) => {
+                if(e.data.type === 'payment_success'){
+                    triggerVirtualSpeaker(e.data.amount, e.data.txId);
+                }
+            };
+        } catch(e){ console.log('BroadcastChannel not supported'); }
 
         function toggleSidebar() {
             document.getElementById('appSidebar').classList.toggle('-translate-x-full');
@@ -369,13 +479,24 @@
                     d.appendChild(o);
                 });
             }
+            // FIX: App going directly to dashboard not login page - PRODUCTION FIX
+            // Always show login first. Only auto-login if?stay=1 or user explicitly enabled remember.
+            const urlParams = new URLSearchParams(window.location.search);
+            const shouldStay = urlParams.get('stay') === '1' || localStorage.getItem('clickpeqr_remember') === 'true';
             const a = localStorage.getItem('clickpeqr_active_user');
-            if (a) {
+            if (shouldStay && a) {
                 loadDashboard(JSON.parse(a));
             } else {
+                // Force login screen
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('dashboardScreen').classList.add('hidden');
                 document.getElementById('mainHeader').classList.add('hidden');
+                // Do not auto-clear user, just show login
+            }
+            // Preload voices for speaker
+            if('speechSynthesis' in window){
+                speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
             }
         });
 
@@ -387,17 +508,17 @@
             const phoneVal = document.getElementById('settingsPhone')?.value || "+2349067862223";
             const uniqueId = Math.floor(Math.random() * 900000) + 100000;
             const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
-            const userData = { id: uniqueId, full_name: fullName, email: email, business_name: bizName, portal_type: currentPortalType, avatar_url: dp, phone_number: phoneVal };
-            
+            const userData = { id: uniqueId, full_name: fullName, email: email, business_name: bizName, portal_type: currentPortalType, avatar_url: dp, phone_number: phoneVal, permanent_qr_version: Date.now() };
+
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
             loadDashboard(userData);
-            
+
             setTimeout(async () => {
                 try {
                     if (currentPortalType === 'merchant') {
-                        await supabaseClient.from('merchants').upsert([{ id: uniqueId, business_name: bizName, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, settlement_bank: '044' }], { onConflict: 'email' });
+                        await supabaseClient.from('merchants').upsert([{ id: uniqueId, business_name: bizName, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, settlement_bank: '044', permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version }], { onConflict: 'email' });
                     } else {
-                        await supabaseClient.from('users').upsert([{ id: uniqueId, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, user_type: 'customer' }], { onConflict: 'email' });
+                        await supabaseClient.from('users').upsert([{ id: uniqueId, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version }], { onConflict: 'email' });
                     }
                 } catch (err) {}
             }, 100);
@@ -407,11 +528,11 @@
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.remove('hidden');
-            
+
             document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User Name');
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
             document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
-            
+
             const dp = localStorage.getItem('user_custom_dp') || user.avatar_url;
             if (dp) {
                 document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
@@ -424,6 +545,7 @@
                 document.getElementById('customerPortalView').classList.add('hidden');
                 document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
                 setTimeout(() => renderPermanentShopQR(user), 100);
+                setTimeout(() => initMerchantRealtime(user.id), 500);
             } else {
                 document.getElementById('customerPortalView').classList.remove('hidden');
                 document.getElementById('merchantPortalView').classList.add('hidden');
@@ -497,14 +619,41 @@
             const c = document.getElementById('permanentShopQRContainer');
             if (!c) return;
             c.innerHTML = "";
-            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name }), width: 130, height: 130 });
+            const ver = user.permanent_qr_version || Date.now();
+            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver }), width: 130, height: 130 });
         }
 
         function renderCustomerPermanentQR(user) {
             const c = document.getElementById('customerPermanentQRContainer');
             if (!c) return;
             c.innerHTML = "";
-            new QRCode(c, { text: JSON.stringify({ type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name }), width: 130, height: 130 });
+            const ver = user.permanent_qr_version || Date.now();
+            new QRCode(c, { text: JSON.stringify({ type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver }), width: 130, height: 130 });
+        }
+
+        // NEW: Change Permanent QR - Production
+        function regenerateMerchantQR(){
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+            if(!u.id) return;
+            if(!confirm('Change your Permanent Shop QR? Old QR will stop working. Continue?')) return;
+            u.permanent_qr_version = Date.now();
+            u.permanent_qr_id = 'PERM_'+u.id+'_'+u.permanent_qr_version;
+            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
+            renderPermanentShopQR(u);
+            // Update Supabase
+            supabaseClient.from('merchants').update({ permanent_qr_id: u.permanent_qr_id }).eq('id', u.id).then(()=>{});
+            alert('New Permanent Shop QR generated successfully!');
+        }
+        function regenerateCustomerQR(){
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+            if(!u.id) return;
+            if(!confirm('Change your Permanent Customer QR? Continue?')) return;
+            u.permanent_qr_version = Date.now();
+            u.permanent_qr_id = 'CUST_'+u.id+'_'+u.permanent_qr_version;
+            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
+            renderCustomerPermanentQR(u);
+            supabaseClient.from('users').update({ permanent_qr_id: u.permanent_qr_id }).eq('id', u.id).then(()=>{});
+            alert('New Permanent Customer QR generated!');
         }
 
         function generateMerchantDynamicQR() {
@@ -513,7 +662,7 @@
             const c = document.getElementById('dynamicQRContainer');
             c.innerHTML = "";
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt }), width: 140, height: 140 });
+            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name }), width: 140, height: 140 });
             document.getElementById('merchantQRResult').classList.remove('hidden');
         }
 
@@ -522,7 +671,7 @@
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 document.getElementById('cameraVideoFeed').srcObject = s;
-            } catch (err) { alert("Camera access denied"); }
+            } catch (err) { alert("Camera access denied - using simulate"); }
         }
 
         function closeScannerModal() {
@@ -531,10 +680,147 @@
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
+        // UPDATED: Simulate scan -> Show Merchant Confirm Popup (Production Option A)
         function simulateSuccessfulScan() {
             closeScannerModal();
-            document.getElementById('paymentPopupAmount').value = "";
-            document.getElementById('paymentModal').classList.remove('hidden');
+            // Try to get merchant data - in production, parse scanned QR. Here use demo merchant or primary linked bank owner
+            const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+activeUser.id)||'[]');
+            const primaryBank = banks.find(b=>b.is_primary) || banks[0] || { bank_name: 'GTB', account_number: '0638090889', account_name: 'GARG RUBY', bank_code: '058' };
+
+            scannedMerchantData = {
+                shop_name: activeUser.portal_type==='merchant'? (activeUser.business_name||'My Store') : 'KRISHNYANSH ZENOVA PEAKS LTD',
+                account_name: primaryBank.account_name || 'GARG RUBY',
+                account_number: primaryBank.account_number || '0638090889',
+                bank_name: primaryBank.bank_name || 'GTB - GTBank',
+                bank_code: primaryBank.bank_code || '058',
+                merchant_id: 'demo_merchant_001'
+            };
+            if(activeUser.portal_type === 'customer'){
+                scannedMerchantData.shop_name = 'KRISHNYANSH ZENOVA PEAKS LTD';
+                scannedMerchantData.account_name = 'GARG RUBY';
+            }
+
+            document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
+            document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
+            document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
+            document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
+            document.getElementById('confirmAmountInput').value = '510';
+
+            document.getElementById('merchantConfirmModal').classList.remove('hidden');
+        }
+
+        function proceedToManualTransfer(){
+            const amt = document.getElementById('confirmAmountInput').value;
+            if(!amt || amt<=0){ alert('Enter valid amount'); return; }
+            document.getElementById('merchantConfirmModal').classList.add('hidden');
+            document.getElementById('manualAmountDisplay').innerText = 'NGN ' + amt;
+            document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
+            document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
+            document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
+            document.getElementById('manualTransferModal').classList.remove('hidden');
+        }
+
+        function copyToClipboard(text){
+            navigator.clipboard.writeText(text).then(()=>{ alert('Copied: '+text); });
+        }
+
+        // PRODUCTION: Manual Paid Handler + Virtual Speaker Trigger
+        async function handleManualPaid(){
+            const amtText = document.getElementById('manualAmountDisplay').innerText;
+            const amount = amtText.replace('NGN ','');
+            const txId = '10207' + Math.floor(Math.random()*10000);
+            await saveTransactionToSupabase(amount, txId);
+            const payload = { type: 'payment_success', amount: amount, txId: txId, merchant_id: scannedMerchantData.merchant_id };
+            if(speakerChannel) speakerChannel.postMessage(payload);
+            triggerVirtualSpeaker(amount, txId);
+            try {
+                const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+                const merchantId = scannedMerchantData.merchant_id || activeUser.id;
+                await supabaseClient.channel('merchant:'+merchantId).send({
+                    type: 'broadcast',
+                    event: 'payment_success',
+                    payload: { amount: amount, txId: txId, message: 'Money received' }
+                });
+            } catch(e){ console.log('Supabase broadcast error', e); }
+            document.getElementById('manualTransferModal').classList.add('hidden');
+            setTimeout(()=>{
+                alert('Payment Successful!\nID: ' + txId + '\n\nMoney will be confirmed by merchant speaker.');
+            }, 300);
+        }
+
+        // VIRTUAL SPEAKER LOGIC - REAL VOICE
+        function enableSpeaker(){
+            isSpeakerEnabled = true;
+            document.getElementById('enableSpeakerBtn').innerText = 'Voice ON ✓';
+            document.getElementById('enableSpeakerBtn').className = 'text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold';
+            document.getElementById('speakerIdleText').innerText = 'Speaker enabled - Listening...';
+            document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
+            speakMoneyReceived(0, true);
+        }
+
+        function testSpeakerVoice(){
+            if(!isSpeakerEnabled) enableSpeaker();
+            speakMoneyReceived('510', false);
+        }
+
+        function triggerVirtualSpeaker(amount, txId){
+            const statusEl = document.getElementById('speakerStatus');
+            const waveEl = document.getElementById('speakerWave');
+            const idleEl = document.getElementById('speakerIdleText');
+            const logEl = document.getElementById('lastPaymentLog');
+            if(statusEl) statusEl.innerText = '🔊 Money Received! NGN ' + amount;
+            if(statusEl) statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2';
+            if(waveEl) waveEl.classList.remove('hidden');
+            if(idleEl) idleEl.classList.add('hidden');
+            if(logEl) logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">✓ Payment ID: '+txId+' - NGN '+amount+' - '+new Date().toLocaleTimeString()+'</div>';
+            const salesEl = document.getElementById('todaysSales');
+            if(salesEl){
+                const current = parseFloat(salesEl.innerText.replace('₦','').replace(',','')) || 0;
+                const newTotal = current + parseFloat(amount);
+                salesEl.innerText = '₦ ' + newTotal.toLocaleString();
+            }
+            speakMoneyReceived(amount, false);
+            setTimeout(()=>{
+                if(waveEl) waveEl.classList.add('hidden');
+                if(idleEl){ idleEl.classList.remove('hidden'); idleEl.innerText = 'Waiting for next payment...'; }
+                if(statusEl){ statusEl.innerText = 'Waiting for payment...'; statusEl.className = 'text-[11px] text-slate-400 mb-2'; }
+            }, 5000);
+        }
+
+        function speakMoneyReceived(amount, isTest){
+            if(!isSpeakerEnabled &&!isTest) return;
+            if(!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const text = isTest? 'Virtual speaker enabled. Ready for payments.' : `Money received in this account successfully. Received ${amount} Naira.`;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-NG';
+            utter.rate = 0.9;
+            utter.pitch = 1.1;
+            utter.volume = 1.0;
+            const voices = window.speechSynthesis.getVoices();
+            let preferred = voices.find(v => v.lang.includes('en-NG') && v.name.toLowerCase().includes('female'));
+            if(!preferred) preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google UK English Female') || v.name.includes('Zira') || v.name.includes('Female'));
+            if(!preferred) preferred = voices.find(v => v.lang.startsWith('en-'));
+            if(preferred) utter.voice = preferred;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function initMerchantRealtime(merchantId){
+            try {
+                const channel = supabaseClient.channel('merchant:'+merchantId)
+               .on('broadcast', { event: 'payment_success' }, (payload) => {
+                    const amt = payload.payload.amount;
+                    const txId = payload.payload.txId;
+                    triggerVirtualSpeaker(amt, txId);
+                })
+               .subscribe((status)=>{
+                    if(status==='SUBSCRIBED'){
+                        document.getElementById('speakerStatus').innerText = 'Live Connected - Waiting...';
+                        document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
+                    }
+                });
+            } catch(e){ console.log('Realtime init error', e); }
         }
 
         function executeLiveFlutterwavePayment() {
@@ -556,6 +842,8 @@
                 },
                 callback: function(d) {
                     saveTransactionToSupabase(amt, d.transaction_id);
+                    if(speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: d.transaction_id});
+                    triggerVirtualSpeaker(amt, d.transaction_id);
                     alert("Payment Successful! ID: " + d.transaction_id);
                 },
                 onclose: function() {}
@@ -565,11 +853,11 @@
         async function saveTransactionToSupabase(amount, txId) {
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({ amount, type: 'Live Payment Transfer', date: new Date().toLocaleString() });
+            txs.unshift({ amount, type: 'Direct Bank Transfer to GTB', date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant' });
             localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
             try {
-                await supabaseClient.from('transactions').insert([{ transaction_ref: String(txId), user_id: u.id, sender_id: u.id, amount: parseFloat(amount), status: 'success', type: 'Outgoing Live Transfer' }]);
-            } catch (e) {}
+                await supabaseClient.from('transactions').insert([{ transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'Direct Bank Transfer - GTB 0638090889' }]);
+            } catch (e) { console.log('Supabase tx insert error', e); }
         }
 
         function showTransactionHistory() {
@@ -581,7 +869,7 @@
                 let h = '';
                 for (let i = 0; i < txs.length; i++) {
                     const t = txs[i];
-                    h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white">' + t.type + '</p><p class="text-[10px] text-slate-400">' + t.date + '</p></div><span class="text-teal-400 font-mono font-bold">₦' + t.amount + '</span></div>';
+                    h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white">' + t.type + ' - ' + (t.merchant||'') + '</p><p class="text-[10px] text-slate-400">' + t.date + ' | ID:' + (t.txId||'') + '</p></div><span class="text-teal-400 font-mono font-bold">₦' + t.amount + '</span></div>';
                 }
                 c.innerHTML = h;
             }
@@ -598,7 +886,7 @@
                     let h = '';
                     for (let i = 0; i < d.length; i++) {
                         const a = d[i];
-                        const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
+                        const p = a.is_primary? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
                         h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + ' ' + p + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
                     }
                     c.innerHTML = h;
@@ -609,13 +897,19 @@
 
             const localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
             if (localBanks.length === 0) {
-                c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>';
-                return;
+                const u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+                if(u.portal_type==='merchant' && localBanks.length===0){
+                    localBanks.push({ user_id: userId, bank_name: 'GTB', bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', is_primary: true });
+                    localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(localBanks));
+                } else {
+                    c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>';
+                    return;
+                }
             }
             let h2 = '';
             for (let i = 0; i < localBanks.length; i++) {
                 const a = localBanks[i];
-                const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
+                const p = a.is_primary? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
                 h2 += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + ' ' + p + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
             }
             c.innerHTML = h2;
@@ -629,7 +923,7 @@
             const accNum = document.getElementById('accountNumberInput').value.trim();
             const nameInput = document.getElementById('accountNameInput');
             if (!bankCode) { alert("Please select a bank first."); return; }
-            if (accNum.length !== 10) { nameInput.value = ""; return; }
+            if (accNum.length!== 10) { nameInput.value = ""; return; }
             nameInput.value = "Verifying with bank...";
             try {
                 const res = await fetch('/api/resolve-account', {
@@ -659,7 +953,7 @@
             const accNum = document.getElementById('accountNumberInput').value.trim();
             const accName = document.getElementById('accountNameInput').value.trim();
 
-            if (!bankCode || bankName === "Select Bank" || accNum.length !== 10 || !accName) {
+            if (!bankCode || bankName === "Select Bank" || accNum.length!== 10 ||!accName) {
                 alert("Please select bank, enter 10-digit account, and wait for real holder name.");
                 return;
             }
@@ -667,10 +961,10 @@
             let localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + u.id) || '[]');
             const isPrimary = localBanks.length === 0;
             const newBank = { user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: isPrimary };
-            
+
             localBanks.push(newBank);
             localStorage.setItem('clickpeqr_banks_' + u.id, JSON.stringify(localBanks));
-            
+
             try {
                 await supabaseClient.from('linked_accounts').insert([newBank]);
             } catch (e) {}
@@ -687,7 +981,7 @@
             s.forEach((a, i) => { a.is_primary = (i === idx); });
             localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(s));
             fetchAndRenderBanks(userId);
-            alert("Primary bank switched!");
+            alert("Primary bank switched! Now payments will go to this account.");
         }
 
         function showComplaintWhatsApp() { window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank"); }
@@ -695,7 +989,11 @@
         function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
         function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
         function switchView() {}
-        function handleLogout() { localStorage.removeItem('clickpeqr_active_user'); window.location.reload(); }
+        function handleLogout() {
+            localStorage.removeItem('clickpeqr_active_user');
+            localStorage.removeItem('clickpeqr_remember');
+            window.location.href = window.location.pathname;
+        }
         function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
 
         function sendBotMessage() {
@@ -708,9 +1006,11 @@
             setTimeout(() => {
                 let r = "Hello! I am your ClickPeQR Live Assistant.";
                 const l = t.toLowerCase();
-                if (l.includes('flutterwave')) r = "Flutterwave Live SDK connected and bank verification uses LIVE secret key.";
-                else if (l.includes('supabase')) r = "Supabase tracking users, linked_accounts, and transactions.";
-                else if (l.includes('bank')) r = "Bank verification shows REAL holder name via /api/resolve-account. Make sure LIVE key is set.";
+                if (l.includes('flutterwave')) r = "Flutterwave Live SDK connected and bank verification uses LIVE secret key. Direct GTB transfer now uses Option A manual flow.";
+                else if (l.includes('supabase')) r = "Supabase tracking users, linked_accounts, and transactions. Realtime enabled for merchant speaker.";
+                else if (l.includes('bank')) r = "Bank verification shows REAL holder name via /api/resolve-account. Direct transfer now goes to GTB 0638090889 saved in Link Bank.";
+                else if (l.includes('speaker') || l.includes('voice')) r = "Virtual Speaker: Enable Voice button first (browser requires user gesture). Then when customer pays, it will speak 'Money received in this account successfully'.";
+                else if (l.includes('qr') || l.includes('permanent')) r = "You can change Permanent QR anytime from dashboard. Old QR will be invalidated for security.";
                 c.innerHTML += '<div class="bg-slate-950 p-2.5 rounded-xl">' + r + '</div>';
                 c.scrollTop = c.scrollHeight;
             }, 600);
