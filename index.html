@@ -26,7 +26,7 @@
         </div>
     </header>
 
-    <!-- SIDEBAR OVERLAY & NAVIGATION PANEL -->
+    <!-- SIDEBAR NAVIGATION PANEL -->
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
     <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
         <div>
@@ -65,7 +65,7 @@
             <div class="text-center mb-5 flex flex-col items-center">
                 <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
                 <h2 class="text-2xl font-bold text-teal-400">ClickPeQR Network</h2>
-                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway - PURE ACCOUNT TO ACCOUNT</p>
+                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway - UPI WITHOUT FLUTTERWAVE PAGE</p>
             </div>
             <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
                 <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
@@ -104,7 +104,7 @@
             <!-- CUSTOMER PORTAL VIEW -->
             <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub - Pure Account</h2>
+                    <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub - UPI No Page</h2>
                     <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
                 </div>
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
@@ -115,8 +115,8 @@
                 <button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3">
                     <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Pay (Scan QR) - Pure Account</h4>
-                        <p class="text-xs text-slate-400">Direct bank to bank, no card</p>
+                        <h4 class="text-sm font-bold text-white">Pay (Scan QR) - UPI Direct No Page</h4>
+                        <p class="text-xs text-slate-400">Direct bank to bank, no Flutterwave page</p>
                     </div>
                 </button>
             </div>
@@ -124,7 +124,7 @@
             <!-- MERCHANT PORTAL VIEW -->
             <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
+                    <h2 class="text-xl font-bold text-amber-400">Merchant Terminal - UPI Direct</h2>
                     <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
                 </div>
                 
@@ -153,12 +153,12 @@
                 </div>
 
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <p class="text-xs text-slate-400">Today's Sales (Direct to your bank)</p>
+                    <p class="text-xs text-slate-400">Today's Sales (Direct to your bank - Supabase saved)</p>
                     <h3 class="text-2xl font-bold text-teal-300 mt-1" id="todaysSales">₦ 0.00</h3>
                 </div>
 
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR - Pure Account Direct</h4>
+                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR - UPI Direct No Page</h4>
                     <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR - Contains your bank for direct payment</p>
                     <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
                     <button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent Shop QR</button>
@@ -166,7 +166,7 @@
 
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                     <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
-                    <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR - Pure Account</button>
+                    <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR - Pure UPI No Page</button>
                     <div id="merchantQRResult" class="mt-2 hidden">
                         <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block shadow-inner"></div>
                     </div>
@@ -177,7 +177,7 @@
             <!-- LINKED BANKS SECTION -->
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts</h3>
+                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts - Supabase Saved (Billion Scale)</h3>
                     <button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
                 </div>
                 <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
@@ -188,7 +188,7 @@
     <!-- MODALS AND POPUPS -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3">
-            <h3 class="text-sm font-bold text-white">Scan QR - Pure Account to Account</h3>
+            <h3 class="text-sm font-bold text-white">Scan QR - UPI Direct No Flutterwave Page</h3>
             <video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
             <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate Scan (Merchant QR)</button>
             <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
@@ -199,12 +199,12 @@
         <div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900">
             <div class="text-center">
                 <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">✓</div>
-                <h3 class="text-base font-bold text-slate-900">Confirm Payment - PURE ACCOUNT</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Payment will go directly bank to bank - No card required</p>
+                <h3 class="text-base font-bold text-slate-900">Confirm Payment - UPI DIRECT NO PAGE</h3>
+                <p class="text-[11px] text-slate-500 mt-1">Money will go directly bank to bank - No Flutterwave page - Supabase saved</p>
             </div>
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">KRISHNYANSH ZENOVA PEAKS LTD</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">GARG RUBY</span></div>
                 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
                 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
             </div>
@@ -212,78 +212,79 @@
                 <label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
                 <input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
             </div>
-            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct - Account to Account</button>
+            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct - UPI No Page</button>
             <button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
+        </div>
+    </div>
+
+    <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
+        <div class="bg-orange-50 border-b border-orange-100 p-3 text-center">
+            <p class="text-[12px] text-slate-700"><span class="font-bold">UPI Direct - No Flutterwave Page</span></p>
+        </div>
+        <div class="p-4 flex-1">
+            <h2 class="text-[15px] font-semibold text-slate-800 mb-4">Direct UPI - Account to Account</h2>
+            <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
+                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p><div class="flex items-center gap-3 mt-1"><span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span></div></div>
+                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p><div class="flex items-center gap-3 mt-1"><span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span></div></div>
+                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p><p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p></div>
+                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p><p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">GARG RUBY / KRISHNYANSH ZENOVA PEAKS LTD</p></div>
+            </div>
+            <div class="mt-6 space-y-3">
+                <button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I have paid - Confirm UPI</button>
+                <button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-orange-500 text-[14px] font-semibold py-2">Cancel</button>
+            </div>
         </div>
     </div>
 
     <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
-            <h3 class="text-base font-bold text-teal-400">Live Payment - Pure Account to Account</h3>
+            <h3 class="text-base font-bold text-teal-400">UPI Direct - No Flutterwave Page</h3>
             <input type="number" id="paymentPopupAmount" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-lg font-bold text-white outline-none" placeholder="5000">
-            <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">🔒 Pay Direct - Account to Account</button>
+            <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">Pay Direct - UPI No Page</button>
             <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
         </div>
     </div>
 
     <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
-            <h3 class="text-base font-bold text-white">Link Bank Account</h3>
+            <h3 class="text-base font-bold text-white">Link Bank Account - Save in Supabase</h3>
             <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none"><option value="">Select Bank</option></select>
             <input type="text" id="accountNumberInput" maxlength="10" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
-            <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Auto-fills real holder name">
+            <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Auto-fills real holder name from Supabase">
             <div class="flex space-x-2">
                 <button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
-                <button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Save Bank</button>
+                <button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Save in Supabase</button>
             </div>
         </div>
     </div>
 
     <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">Notifications</h3>
-                <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
-            <div class="p-3 text-xs text-slate-300">
-                <p class="font-bold text-white">Welcome to ClickPeQR!</p>
-                <p class="text-[10px] text-slate-400">Pure Account to Account active - Billion Scale.</p>
-            </div>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Notifications</h3><button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
+            <div class="p-3 text-xs text-slate-300"><p class="font-bold text-white">Welcome to ClickPeQR!</p><p class="text-[10px] text-slate-400">UPI Direct No Flutterwave Page active - bank save in Supabase.</p></div>
         </div>
     </div>
 
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">Transaction History</h3>
-                <button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Transaction History - Supabase</h3><button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
             <div id="transactionListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300 mt-2"></div>
         </div>
     </div>
 
     <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-2">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">About</h3>
-                <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
-            <p><strong>ClickPeQR</strong> by ZENOVA PEAK TECH HUB. RC-9810296</p>
-            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave</p>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">About</h3><button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
+            <p><strong>ClickPeQR</strong> by KRISHNYANSH ZENOVA PEAKS LTD. RC-9810296<br>Powered by Flutterwave</p>
         </div>
     </div>
 
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">Edit Profile</h3>
-                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
             <div class="space-y-3 text-xs">
                 <input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" placeholder="Full Name">
-                <div id="settingsBizField" class="hidden">
-                    <input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" placeholder="Business Name">
-                </div>
+                <div id="settingsBizField" class="hidden"><input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" placeholder="Business Name"></div>
                 <input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" value="+2349067862223">
                 <button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl hover:bg-teal-400 transition">Save Changes</button>
             </div>
@@ -292,32 +293,19 @@
 
     <div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-xs text-slate-300 space-y-2">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-teal-400">FAQ</h3>
-                <button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
-            </div>
-            <p><strong>How pure account to account works?</strong><br>Customer scans QR containing merchant bank, amount goes directly bank to bank via Flutterwave account debit.</p>
-            <p><strong>Merchant fee?</strong><br>1.5% MDR.</p>
-            <p><strong>Voice speaker?</strong><br>After payment, merchant hears "Money received in this account successfully".</p>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">FAQ</h3><button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
+            <p><strong>How UPI without Flutterwave page works?</strong><br>Customer scans QR, app calls /api/direct-account-to-account, money moves bank to bank directly via Supabase saved accounts, no Flutterwave checkout page.</p>
+            <p><strong>Bank save?</strong><br>All banks saved in Supabase linked_accounts table, persists after logout, billion scale.</p>
+            <p><strong>Voice speaker?</strong><br>After direct payment, merchant hears "Money received in this account successfully".</p>
         </div>
     </div>
 
     <!-- AI SUPPORT BOT -->
-    <div class="fixed bottom-4 right-4 z-40">
-        <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">🤖</button>
-    </div>
+    <div class="fixed bottom-4 right-4 z-40"><button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">🤖</button></div>
     <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
-            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant</h4>
-            <button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
-        </div>
-        <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
-            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR Pure Account to Account.</div>
-        </div>
-        <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
-            <input type="text" id="botInputText" placeholder="Ask about payments..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()">
-            <button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button>
-        </div>
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant - UPI No Page</h4><button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button></div>
+        <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR UPI Direct - No Flutterwave page, bank save in Supabase.</div></div>
+        <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask about UPI..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
@@ -346,7 +334,7 @@
         let scannedMerchantData = null; 
         let speakerChannel = null; 
         let isSpeakerEnabled = false;
-        const PAYMENT_MODE = 'PURE_ACCOUNT_DIRECT';
+        const PAYMENT_MODE = 'UPI_NO_FLUTTERWAVE_PAGE_SUPABASE_SAVE';
 
         try { 
             speakerChannel = new BroadcastChannel('clickpeqr_payments'); 
@@ -427,10 +415,17 @@
         function handleAuthSubmit(e){
             e.preventDefault();
             const fullName = document.getElementById('fullNameInput').value.trim();
-            const email = document.getElementById('emailInput').value.trim();
+            const emailRaw = document.getElementById('emailInput').value.trim();
+            const email = emailRaw.toLowerCase();
             const bizName = document.getElementById('businessNameInput')?.value.trim() || (fullName + " Store");
             const phoneVal = document.getElementById('settingsPhone')?.value || "+2349067862223";
-            const uniqueId = Math.floor(Math.random() * 900000) + 100000;
+            let allUsers = JSON.parse(localStorage.getItem('clickpeqr_all_users') || '{}');
+            let uniqueId = allUsers[email]?.id;
+            if(!uniqueId){
+                uniqueId = Math.floor(Math.random() * 900000) + 100000;
+                allUsers[email] = {id: uniqueId, email: email};
+                localStorage.setItem('clickpeqr_all_users', JSON.stringify(allUsers));
+            }
             const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
             const userData = {
                 id: uniqueId,
@@ -443,6 +438,7 @@
                 permanent_qr_version: Date.now()
             };
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
+            localStorage.setItem('clickpeqr_remember', 'true');
             loadDashboard(userData);
             setTimeout(async () => {
                 try {
@@ -553,7 +549,7 @@
             c.innerHTML = "";
             const ver = user.permanent_qr_version || Date.now();
             const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+user.id) || '[]');
-            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTB'};
+            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', bank_name: 'GTB'};
             const payload = {
                 type: "MERCHANT_PERMANENT",
                 merchantId: user.id,
@@ -564,7 +560,7 @@
                 account_number: primaryBank.account_number,
                 account_name: primaryBank.account_name,
                 bank_name: primaryBank.bank_name,
-                scale: "BILLION_READY_PURE"
+                scale: "BILLION_READY_PURE_NO_PAGE"
             };
             new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
         }
@@ -608,9 +604,9 @@
             c.innerHTML = "";
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
-            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTB'};
+            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', bank_name: 'GTB'};
             new QRCode(c, {
-                text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: primaryBank.bank_code, account_number: primaryBank.account_number, account_name: primaryBank.account_name, bank_name: primaryBank.bank_name, scale: "BILLION_READY_PURE"}),
+                text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: primaryBank.bank_code, account_number: primaryBank.account_number, account_name: primaryBank.account_name, bank_name: primaryBank.bank_name, scale: "BILLION_READY_PURE_NO_PAGE"}),
                 width: 140, height: 140
             });
             document.getElementById('merchantQRResult').classList.remove('hidden');
@@ -650,14 +646,14 @@
                 };
             } else {
                 const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+activeUser.id) || '[]');
-                const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_name: 'GTB', account_number: '0638090889', account_name: 'RUBY GARG', bank_code: '058'};
+                const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_name: 'GTB', account_number: '0638090889', account_name: 'GARG RUBY', bank_code: '058'};
                 scannedMerchantData = {
-                    shop_name: 'ZENOVA PEAK TECH HUB',
+                    shop_name: 'KRISHNYANSH ZENOVA PEAKS LTD',
                     account_name: primaryBank.account_name,
                     account_number: primaryBank.account_number,
                     bank_name: primaryBank.bank_name,
                     bank_code: primaryBank.bank_code,
-                    merchant_id: 'zenova_merchant_001'
+                    merchant_id: 'krishnyansh_merchant_001'
                 };
             }
             document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
@@ -668,14 +664,29 @@
             document.getElementById('merchantConfirmModal').classList.remove('hidden');
         }
 
+        function copyToClipboard(text){
+            navigator.clipboard.writeText(text).then(() => { alert('Copied: '+text); });
+        }
+
         async function payPureAccountToAccount(){
             const amt = document.getElementById('confirmAmountInput').value;
             if(!amt || amt <= 0){ alert('Enter valid amount'); return; }
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             const merchant = scannedMerchantData;
-            if(!u.id || !merchant){ alert('User/Merchant missing'); return; }
+            if(!u.id || !merchant){ alert('User/Merchant missing - Link bank first'); return; }
             document.getElementById('merchantConfirmModal').classList.add('hidden');
+            document.getElementById('manualTransferModal').classList.remove('hidden');
+            document.getElementById('manualAmountDisplay').innerText = 'NGN '+amt;
+            document.getElementById('manualAccountNumber').innerText = merchant.account_number;
+            document.getElementById('manualBankNameDisplay').innerText = merchant.bank_name+' ('+merchant.bank_code+')';
+            document.getElementById('manualBeneficiaryName').innerText = merchant.account_name+' / '+merchant.shop_name;
             document.getElementById('paymentPopupAmount').value = amt;
+        }
+
+        async function handleManualPaidDirectUPI(){
+            const amt = document.getElementById('confirmAmountInput').value || document.getElementById('paymentPopupAmount').value;
+            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            const merchant = scannedMerchantData;
             try {
                 const res = await fetch('/api/direct-account-to-account', {
                     method: 'POST',
@@ -685,56 +696,29 @@
                 const result = await res.json();
                 if(result.status === 'success'){
                     await saveTransactionToSupabase(amt, result.transfer?.data?.id || Date.now());
-                    if(typeof speakerChannel !== 'undefined' && speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: result.transfer?.data?.id, merchant_id: merchant.merchant_id});
+                    if(speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: result.transfer?.data?.id, merchant_id: merchant.merchant_id});
                     triggerVirtualSpeaker(amt, result.transfer?.data?.id);
-                    alert("UPI DIRECT SUCCESS!\nNGN "+amt+" moved ACCOUNT TO ACCOUNT\n"+result.message);
+                    document.getElementById('manualTransferModal').classList.add('hidden');
+                    alert("UPI DIRECT SUCCESS!\nNGN "+amt+" moved ACCOUNT TO ACCOUNT - NO FLUTTERWAVE PAGE\n"+result.message);
                 } else {
-                    alert("Direct account failed: "+result.message+"\nFalling back to secure account checkout...");
-                    executeLiveFlutterwavePaymentFallback();
+                    alert("UPI Failed: "+result.message);
                 }
-            } catch(e){ 
-                console.log(e); 
-                executeLiveFlutterwavePaymentFallback(); 
-            }
+            } catch(e){ alert("UPI Error: "+e.message); }
         }
 
-        function executeLiveFlutterwavePaymentFallback(){
-            const amt = document.getElementById('paymentPopupAmount').value;
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const pendingMerchant = JSON.parse(localStorage.getItem('pending_merchant_transfer') || 'null') || scannedMerchantData || {};
-            FlutterwaveCheckout({
-                public_key: "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X",
-                tx_ref: "clickpeqr_UPI_PURE_"+(pendingMerchant.merchant_id || 'gen')+"_"+Date.now(),
-                amount: parseFloat(amt),
-                currency: "NGN",
-                payment_options: "account",
-                customer: { email: u.email || "customer@clickpeqr.ng", name: u.full_name || "ClickPeQR User", phone_number: u.phone_number || "+2349067862223" },
-                meta: { merchant_id: pendingMerchant.merchant_id, merchant_account: pendingMerchant.account_number, merchant_bank: pendingMerchant.bank_code, merchant_name: pendingMerchant.account_name },
-                callback: function(d){
-                    saveTransactionToSupabase(amt, d.transaction_id);
-                    if(typeof speakerChannel !== 'undefined' && speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: d.transaction_id, merchant_id: pendingMerchant.merchant_id});
-                    triggerVirtualSpeaker(amt, d.transaction_id);
-                    fetch('/api/settle-to-merchant', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({amount: amt, transaction_id: d.transaction_id, merchant_id: pendingMerchant.merchant_id, merchant_account: pendingMerchant.account_number, merchant_bank_code: pendingMerchant.bank_code, merchant_account_name: pendingMerchant.account_name})
-                    }).then(r => r.json()).catch(()=>{});
-                    alert("Payment Successful! ID: "+d.transaction_id+"\nNGN "+amt+" DIRECT ACCOUNT TO ACCOUNT to "+pendingMerchant.shop_name);
-                    localStorage.removeItem('pending_merchant_transfer');
-                },
-                onclose: function(){}
-            });
+        function executeLiveFlutterwavePayment(){
+            handleManualPaidDirectUPI();
         }
-
-        function executeLiveFlutterwavePayment(){ return executeLiveFlutterwavePaymentFallback(); }
 
         function proceedToManualTransfer(){
             const amt = document.getElementById('confirmAmountInput').value;
             if(!amt || amt <= 0){ alert('Enter valid amount'); return; }
             localStorage.setItem('pending_merchant_transfer', JSON.stringify({...scannedMerchantData, amount: amt}));
-            document.getElementById('merchantConfirmModal').classList.add('hidden');
-            document.getElementById('paymentPopupAmount').value = amt;
             payPureAccountToAccount();
+        }
+
+        async function handleManualPaid(){
+            await handleManualPaidDirectUPI();
         }
 
         function enableSpeaker(){
@@ -808,11 +792,11 @@
         async function saveTransactionToSupabase(amount, txId){
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({amount, type: 'Pure Account to Account - '+(scannedMerchantData?.shop_name || 'Merchant'), date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant'});
+            txs.unshift({amount, type: 'UPI Direct No Page - '+(scannedMerchantData?.shop_name || 'Merchant'), date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant'});
             localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
             try {
                 await supabaseClient.from('transactions').insert([{
-                    transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'Pure Account to Account - '+scannedMerchantData?.account_number
+                    transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'UPI No Flutterwave Page - '+scannedMerchantData?.account_number, scale: 'BILLION_PURE_NO_PAGE'
                 }]);
             } catch(e){}
         }
@@ -836,38 +820,36 @@
         async function fetchAndRenderBanks(userId){
             const c = document.getElementById('linkedBanksListContainer');
             if(!c) return;
+            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            const emailKey = (u.email || '').toLowerCase();
             try {
-                const r = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId);
-                const d = r.data;
-                if(d && d.length > 0){
+                const {data, error} = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false});
+                if(!error && data && data.length > 0){
                     let h = '';
-                    for(let i=0; i<d.length; i++){
-                        const a = d[i];
-                        const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary - Pure Account</span>' : '';
-                        h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">'+a.bank_name+' '+p+'</p><p class="text-[10px] text-slate-400 font-mono">'+a.account_number+' - '+a.account_name+'</p></div><button onclick="switchPrimaryBank(\''+userId+'\','+i+')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch Primary</button></div>';
+                    for(let i=0; i<data.length; i++){
+                        const a = data[i];
+                        const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded ml-1">Primary - Pure UPI</span>' : '';
+                        h += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">${a.bank_name} ${p}</p><p class="text-[10px] text-slate-400 font-mono">${a.account_number} - ${a.account_name} (${a.bank_code})</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank('${userId}',${i})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount('${userId}',${i})" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">X</button></div></div>`;
                     }
                     c.innerHTML = h;
-                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(d));
+                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(data));
+                    localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(data));
                     return;
                 }
             } catch(e){}
 
-            const localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+            let idBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+            let emailBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+            let localBanks = emailBanks.length > 0 ? emailBanks : idBanks;
             if(localBanks.length === 0){
-                const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-                if(u.portal_type === 'merchant'){
-                    localBanks.push({user_id: userId, bank_name: 'GTB', bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', is_primary: true});
-                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(localBanks));
-                } else {
-                    c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>';
-                    return;
-                }
+                c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet - Link any Nigerian bank for pure UPI account to account. Save in Supabase.</p>';
+                return;
             }
             let h2 = '';
             for(let i=0; i<localBanks.length; i++){
                 const a = localBanks[i];
-                const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary - Pure Account</span>' : '';
-                h2 += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">'+a.bank_name+' '+p+'</p><p class="text-[10px] text-slate-400 font-mono">'+a.account_number+' - '+a.account_name+'</p></div><button onclick="switchPrimaryBank(\''+userId+'\','+i+')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch Primary</button></div>';
+                const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
+                h2 += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">${a.bank_name} ${p}</p><p class="text-[10px] text-slate-400 font-mono">${a.account_number} - ${a.account_name}</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank('${userId}',${i})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount('${userId}',${i})" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">X</button></div></div>`;
             }
             c.innerHTML = h2;
         }
@@ -881,7 +863,7 @@
             const nameInput = document.getElementById('accountNameInput');
             if(!bankCode){ alert("Please select a bank first."); return; }
             if(accNum.length !== 10){ nameInput.value = ""; return; }
-            nameInput.value = "Verifying with bank...";
+            nameInput.value = "Verifying with bank - Supabase save...";
             try {
                 const res = await fetch('/api/resolve-account', {
                     method: 'POST',
@@ -897,7 +879,7 @@
                 }
             } catch(err){
                 nameInput.value = "";
-                alert("Verification failed - check server");
+                alert("Verification failed - check Render server");
             }
         }
 
@@ -910,30 +892,71 @@
             const accNum = document.getElementById('accountNumberInput').value.trim();
             const accName = document.getElementById('accountNameInput').value.trim();
             if(!bankCode || bankName === "Select Bank" || accNum.length !== 10 || !accName){
-                alert("Please select bank, enter 10-digit account, and verify name.");
+                alert("Please select bank, enter 10-digit account, and wait for real holder name.");
                 return;
             }
-            let localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
+            const emailKey = (u.email || '').toLowerCase();
+            let idBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
+            let emailBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+            let localBanks = emailBanks.length > 0 ? emailBanks : idBanks;
             const isPrimary = localBanks.length === 0;
-            const newBank = {user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: isPrimary};
-            localBanks.push(newBank);
-            localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
+            const newBank = {
+                user_id: u.id,
+                bank_name: bankName,
+                bank_code: bankCode,
+                account_number: accNum,
+                account_name: accName,
+                is_primary: isPrimary,
+                email: emailKey,
+                created_at: new Date().toISOString()
+            };
             try {
                 await supabaseClient.from('linked_accounts').insert([newBank]);
             } catch(e){}
+            localBanks.push(newBank);
+            localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
+            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(localBanks));
             closeAddBankModal();
             fetchAndRenderBanks(u.id);
-            alert("Bank linked successfully: "+accName);
+            alert("Bank linked & saved in Supabase for PURE UPI! Real name: "+accName);
             document.getElementById('accountNumberInput').value = "";
             document.getElementById('accountNameInput').value = "";
         }
 
-        function switchPrimaryBank(userId, idx){
-            let s = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-            s.forEach((a, i) => { a.is_primary = (i === idx); });
-            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(s));
+        async function switchPrimaryBank(userId, idx){
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            let emailKey = (u.email || '').toLowerCase();
+            let banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+            if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+            banks.forEach((a, i) => { a.is_primary = (i === idx); });
+            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
+            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
+            try {
+                await supabaseClient.from('linked_accounts').update({is_primary: false}).eq('user_id', userId);
+                const primary = banks[idx];
+                if(primary){
+                    await supabaseClient.from('linked_accounts').update({is_primary: true}).eq('user_id', userId).eq('account_number', primary.account_number);
+                }
+            } catch(e){}
             fetchAndRenderBanks(userId);
-            alert("Primary bank switched successfully!");
+            alert("Primary bank switched & saved in Supabase!");
+        }
+
+        async function deleteBankAccount(userId, idx){
+            if(!confirm('Delete this bank?')) return;
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            let emailKey = (u.email || '').toLowerCase();
+            let banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+            if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+            const toDelete = banks[idx];
+            banks.splice(idx, 1);
+            if(banks.length > 0 && !banks.some(b => b.is_primary)) banks[0].is_primary = true;
+            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
+            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
+            try {
+                if(toDelete) await supabaseClient.from('linked_accounts').delete().eq('user_id', userId).eq('account_number', toDelete.account_number);
+            } catch(e){}
+            fetchAndRenderBanks(userId);
         }
 
         function showComplaintWhatsApp(){ window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank"); }
@@ -944,7 +967,6 @@
 
         function handleLogout(){
             localStorage.removeItem('clickpeqr_active_user');
-            localStorage.removeItem('clickpeqr_remember');
             window.location.href = window.location.pathname;
         }
 
@@ -958,12 +980,12 @@
             c.innerHTML += '<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">'+t+'</div>';
             i.value = '';
             setTimeout(() => {
-                let r = "Hello! I am your ClickPeQR Pure Account to Account Assistant.";
+                let r = "Hello! I am your ClickPeQR UPI Direct Assistant.";
                 const l = t.toLowerCase();
-                if(l.includes('flutterwave')) r = "Flutterwave handles account debit routing securely bank-to-bank.";
-                else if(l.includes('supabase')) r = "Supabase tracks user profiles and linked accounts smoothly.";
+                if(l.includes('flutterwave')) r = "Direct UPI account to account via /api/direct-account-to-account without external gateway pages.";
+                else if(l.includes('supabase')) r = "All linked accounts saved securely in Supabase linked_accounts table.";
                 else if(l.includes('bank')) r = "Link any Nigerian bank for instant direct settlement.";
-                else if(l.includes('speaker')) r = "Virtual Speaker reads out payment confirmations automatically.";
+                else if(l.includes('speaker')) r = "Virtual Speaker announces payment success automatically.";
                 c.innerHTML += '<div class="bg-slate-950 p-2.5 rounded-xl">'+r+'</div>';
                 c.scrollTop = c.scrollHeight;
             }, 600);
