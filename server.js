@@ -117,7 +117,6 @@ app.post('/api/resolve-account', async (req, res) => {
 
 /**
  * UPI DIRECT - BILLION SCALE (All Banks to All Banks)
- * Customer pays -> Flutterwave collects -> Direct transfer to merchant's own bank
  */
 app.post('/api/settle-to-merchant', async (req, res) => {
     const { amount, transaction_id, merchant_id, merchant_account, merchant_bank_code, merchant_account_name } = req.body;
@@ -128,7 +127,6 @@ app.post('/api/settle-to-merchant', async (req, res) => {
     }
 
     try {
-        // Step 1: Verify transaction on Flutterwave
         if (transaction_id) {
             try {
                 await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
@@ -139,10 +137,8 @@ app.post('/api/settle-to-merchant', async (req, res) => {
             }
         }
 
-        // Step 2: Calculate settlement (1.5% MDR deduction)
         const settlementAmount = parseFloat(amount) * 0.985;
 
-        // Step 3: Direct Transfer to Merchant's Bank Account
         const transferPayload = {
             account_bank: String(merchant_bank_code),
             account_number: String(merchant_account),
@@ -161,7 +157,6 @@ app.post('/api/settle-to-merchant', async (req, res) => {
             { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`, 'Content-Type': 'application/json' } }
         );
 
-        // Step 4: Log transaction in Supabase
         try {
             await supabase.from('transactions').insert([{
                 transaction_ref: String(transaction_id || Date.now()),
@@ -200,29 +195,124 @@ app.post('/api/settle-to-merchant', async (req, res) => {
     }
 });
 
+/**
+ * PURE ACCOUNT TO ACCOUNT - ZERO PAGE - ONE CLICK UPI
+ */
+app.post('/api/direct-account-to-account', async (req, res) => {
+    const { customer_id, merchant_id, amount, transaction_id } = req.body;
+    console.log("PURE ACCOUNT TO ACCOUNT REQUEST:", { customer_id, merchant_id, amount, transaction_id });
+
+    if (!customer_id || !merchant_id || !amount) {
+        return res.status(400).json({ status: 'error', message: 'Missing customer_id, merchant_id or amount' });
+    }
+
+    try {
+        let custBank = null;
+        let merchBank = null;
+
+        try {
+            const { data: custPrimary } = await supabase.from('linked_accounts').select('*').eq('user_id', customer_id).eq('is_primary', true).limit(1).maybeSingle();
+            const { data: merchPrimary } = await supabase.from('linked_accounts').select('*').eq('user_id', merchant_id).eq('is_primary', true).limit(1).maybeSingle();
+            custBank = custPrimary;
+            merchBank = merchPrimary;
+        } catch (e) { console.log("Primary fetch warning:", e.message); }
+
+        if (!custBank) {
+            const { data: custAny } = await supabase.from('linked_accounts').select('*').eq('user_id', customer_id).limit(1).maybeSingle();
+            custBank = custAny;
+        }
+        if (!merchBank) {
+            const { data: merchAny } = await supabase.from('linked_accounts').select('*').eq('user_id', merchant_id).limit(1).maybeSingle();
+            merchBank = merchAny;
+        }
+
+        if (!custBank || !merchBank) {
+            return res.status(400).json({ status: 'error', message: 'Customer or merchant bank not linked.' });
+        }
+
+        const settlementAmount = parseFloat(amount) * 0.985;
+
+        const transferPayload = {
+            account_bank: String(merchBank.bank_code),
+            account_number: String(merchBank.account_number),
+            amount: settlementAmount,
+            currency: "NGN",
+            beneficiary_name: merchBank.account_name || "Merchant",
+            reference: `PURE_UPI_${Date.now()}_${merchant_id}_${customer_id}_BILLION`,
+            callback_url: "https://clickpeqr.onrender.com/webhook",
+            narration: `ClickPeQR Pure UPI ${custBank.bank_name} -> ${merchBank.bank_name}`,
+            debit_currency: "NGN"
+        };
+
+        const transferRes = await axios.post(
+            'https://api.flutterwave.com/v3/transfers',
+            transferPayload,
+            { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`, 'Content-Type': 'application/json' } }
+        );
+
+        try {
+            await supabase.from('transactions').insert([{
+                transaction_ref: String(transaction_id || Date.now()),
+                user_id: customer_id,
+                merchant_id: merchant_id,
+                amount: parseFloat(amount),
+                settlement_amount: settlementAmount,
+                customer_account: String(custBank.account_number),
+                customer_bank_code: String(custBank.bank_code),
+                customer_account_name: custBank.account_name,
+                merchant_account: String(merchBank.account_number),
+                merchant_bank_code: String(merchBank.bank_code),
+                merchant_account_name: merchBank.account_name,
+                status: 'success',
+                type: 'Pure Account to Account - Billion Scale',
+                scale: 'BILLION_READY_PURE',
+                created_at: new Date().toISOString()
+            }]);
+        } catch (logErr) {
+            console.log("Supabase log warning:", logErr.message);
+        }
+
+        return res.json({
+            status: "success",
+            message: `NGN ${amount} moved PURE ACCOUNT TO ACCOUNT: ${custBank.bank_name} -> ${merchBank.bank_name}`,
+            transfer: transferRes.data,
+            settlement_amount: settlementAmount,
+            scale: "BILLION_READY_PURE"
+        });
+
+    } catch (err) {
+        const errData = err.response?.data;
+        const errMsg = errData?.message || err.message;
+        console.error("Pure Account Error:", errData || errMsg);
+        return res.status(500).json({
+            status: 'error',
+            message: errMsg || 'Pure account to account failed',
+            details: errData || null
+        });
+    }
+});
+
 // ==========================================
 // 4. SYSTEM HEALTH & WEBHOOKS
 // ==========================================
 
-// Health Check Route
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
-        mode: 'UPI DIRECT BILLION SCALE - ALL BANKS TO ALL BANKS',
+        mode: 'UPI PURE ACCOUNT TO ACCOUNT - BILLION SCALE',
         flutterwave_live_key_set: FLUTTERWAVE_SECRET_KEY && FLUTTERWAVE_SECRET_KEY.startsWith('FLWSECK'),
         public_key: FLUTTERWAVE_PUBLIC_KEY,
-        scale: 'MILLION/BILLION READY - NO LIMIT',
+        scale: 'MILLION/BILLION READY - PURE ACCOUNT TO ACCOUNT',
+        endpoints: ['/api/resolve-account', '/api/settle-to-merchant', '/api/direct-account-to-account'],
         timestamp: new Date().toISOString()
     });
 });
 
-// Webhook for Flutterwave transfer status
 app.post('/webhook', (req, res) => {
     console.log("Webhook received:", req.body);
     res.sendStatus(200);
 });
 
-// Catch-all route to serve index.html for frontend routing
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -232,5 +322,5 @@ app.get('*', (req, res) => {
 // ==========================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`✅ Zenova Peak Tech Hub - ClickPeQR Server running live on port ${PORT} - LIVE Key: ${FLUTTERWAVE_SECRET_KEY ? FLUTTERWAVE_SECRET_KEY.substring(0, 15) + '...' : 'NOT SET'}`);
+    console.log(`✅ Zenova Peak Tech Hub - ClickPeQR Server running live on port ${PORT}`);
 });
