@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Standard Reliable QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Flutterwave Inline Checkout JS SDK -->
     <script src="https://checkout.flutterwave.com/v3.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between relative overflow-x-hidden">
 
-    <!-- TOP HEADER NAVBAR -->
+    <!-- HEADER NAVIGATION -->
     <header id="mainHeader" class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
         <div class="flex items-center space-x-3">
             <button onclick="toggleSidebar()" class="text-teal-400 focus:outline-none p-1 rounded-lg hover:bg-slate-800 transition">☰</button>
@@ -30,7 +26,7 @@
         </div>
     </header>
 
-    <!-- SIDEBAR / HAMBURGER MENU -->
+    <!-- SIDEBAR OVERLAY & NAVIGATION PANEL -->
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
     <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
         <div>
@@ -61,31 +57,26 @@
         </div>
     </aside>
 
-    <!-- MAIN APP CONTAINER -->
+    <!-- MAIN BODY SECTION -->
     <main class="flex-grow flex items-center justify-center p-4">
-
-        <!-- AUTH SCREEN -->
+        
+        <!-- AUTHENTICATION SCREEN -->
         <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
             <div class="text-center mb-5 flex flex-col items-center">
                 <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
                 <h2 class="text-2xl font-bold text-teal-400">ClickPeQR Network</h2>
-                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
+                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway - UPI Direct</p>
             </div>
-
-            <!-- Tab Switcher -->
             <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
                 <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
                 <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
             </div>
-
-            <!-- Portal Type Switcher -->
             <div class="mb-4">
                 <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
                     <button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
                     <button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
                 </div>
             </div>
-
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
                 <div id="businessNameField" class="hidden">
                     <input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Store Name">
@@ -107,37 +98,37 @@
             </form>
         </div>
 
-        <!-- DASHBOARD SCREEN -->
+        <!-- DASHBOARD CONTAINER -->
         <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
-
-            <!-- CUSTOMER PORTAL VIEW -->
+            
+            <!-- CUSTOMER PORTAL -->
             <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
+                    <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub - UPI Direct</h2>
                     <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
                 </div>
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
                     <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
                     <div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center mt-2"></div>
                     <button onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent QR</button>
-                    <p class="text-[9px] text-slate-500 mt-1">Regenerates your unique permanent QR ID</p>
                 </div>
                 <button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3">
                     <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Pay (Scan QR)</h4>
-                        <p class="text-xs text-slate-400">Open live camera</p>
+                        <h4 class="text-sm font-bold text-white">Pay (Scan QR) - UPI Direct</h4>
+                        <p class="text-xs text-slate-400">Direct to merchant linked account</p>
                     </div>
                 </button>
             </div>
 
-            <!-- MERCHANT PORTAL VIEW -->
+            <!-- MERCHANT PORTAL -->
             <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
+                    <h2 class="text-xl font-bold text-amber-400">Merchant Terminal - UPI</h2>
                     <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
                 </div>
-                <!-- VIRTUAL SPEAKER PANEL - PRODUCTION -->
+                
+                <!-- VIRTUAL SPEAKER PANEL -->
                 <div id="virtualSpeakerPanel" class="bg-slate-950 p-4 rounded-xl border border-teal-500/40 shadow-inner">
                     <div class="flex justify-between items-center mb-2">
                         <h4 class="text-xs font-bold text-teal-300 flex items-center gap-2">🔊 Virtual Speaker - Live <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span></h4>
@@ -160,20 +151,22 @@
                     </div>
                     <div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
                 </div>
+
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <p class="text-xs text-slate-400">Today's Sales</p>
+                    <p class="text-xs text-slate-400">Today's Sales (Direct to your bank)</p>
                     <h3 class="text-2xl font-bold text-teal-300 mt-1" id="todaysSales">₦ 0.00</h3>
                 </div>
+
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR</h4>
-                    <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR</p>
+                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR - UPI Direct</h4>
+                    <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR - Contains your bank for direct payment</p>
                     <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
                     <button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent Shop QR</button>
-                    <p class="text-[9px] text-slate-500 mt-1">Generate new permanent ID for security</p>
                 </div>
+
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                     <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
-                    <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
+                    <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR - UPI Direct</button>
                     <div id="merchantQRResult" class="mt-2 hidden">
                         <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block shadow-inner"></div>
                     </div>
@@ -181,10 +174,10 @@
                 <button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">📷 Scan Supplier QR</button>
             </div>
 
-            <!-- LINKED BANKS SECTION -->
+            <!-- LINKED BANK ACCOUNTS -->
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts</h3>
+                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts - For Direct Settlement</h3>
                     <button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
                 </div>
                 <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
@@ -192,27 +185,26 @@
         </div>
     </main>
 
-    <!-- LIVE CAMERA SCANNER MODAL -->
+    <!-- POPUPS & MODALS -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3">
-            <h3 class="text-sm font-bold text-white">Scan QR</h3>
+            <h3 class="text-sm font-bold text-white">Scan QR - UPI Direct Pay</h3>
             <video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
             <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate Scan (Merchant QR)</button>
             <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
         </div>
     </div>
 
-    <!-- STEP 1: MERCHANT CONFIRMATION POPUP (NEW PRODUCTION) -->
     <div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
         <div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900">
             <div class="text-center">
                 <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">✓</div>
-                <h3 class="text-base font-bold text-slate-900">Confirm Payment</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Verify merchant before paying</p>
+                <h3 class="text-base font-bold text-slate-900">Confirm Payment - UPI Direct</h3>
+                <p class="text-[11px] text-slate-500 mt-1">Payment will go directly to merchant's linked account</p>
             </div>
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">KRISHNYANSH ZENOVA PEAKS LTD</span></div>
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">GARG RUBY</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
+                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
                 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
                 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
             </div>
@@ -220,74 +212,24 @@
                 <label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
                 <input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
             </div>
-            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Proceed</button>
+            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct</button>
             <button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
         </div>
     </div>
 
-    <!-- STEP 2: MANUAL BANK TRANSFER PAGE (OPTION A PRODUCTION) -->
-    <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
-        <div class="bg-orange-50 border-b border-orange-100 p-3 text-center">
-            <p class="text-[12px] text-slate-700"><span class="font-bold">⏱ You have 14:52 to complete this payment</span></p>
-        </div>
-        <div class="p-4 flex-1">
-            <h2 class="text-[15px] font-semibold text-slate-800 mb-4">Proceed to your bank app to complete this transfer</h2>
-            <div class="bg-orange-50 border border-orange-100 p-3 rounded-xl flex gap-2 mb-4">
-                <span class="text-orange-500 text-sm">ⓘ</span>
-                <p class="text-[12px] text-slate-600">For a seamless transaction, please transfer the exact amount displayed. Payments may be declined if the amount does not match.</p>
-            </div>
-            <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
-                <div class="p-4">
-                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p>
-                    <div class="flex items-center gap-3 mt-1">
-                        <span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span>
-                        <button onclick="copyToClipboard(document.getElementById('manualAmountDisplay').innerText.replace('NGN ',''))" class="bg-orange-400 text-white text-[11px] px-3 py-1 rounded-md font-bold">📋 COPY</button>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p>
-                    <div class="flex items-center gap-3 mt-1">
-                        <span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span>
-                        <button onclick="copyToClipboard(document.getElementById('manualAccountNumber').innerText)" class="bg-orange-400 text-white text-[11px] px-3 py-1 rounded-md font-bold">📋 COPY</button>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p>
-                    <p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p>
-                </div>
-                <div class="p-4">
-                    <p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p>
-                    <p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">GARG RUBY / KRISHNYANSH ZENOVA PEAKS LTD</p>
-                </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2 text-[12px] text-slate-600 bg-slate-50 p-3 rounded-xl">
-                <span>ⓘ</span>
-                <p>This is direct transfer to merchant's linked GTB account saved in Link Bank.</p>
-            </div>
-            <div class="mt-6 space-y-3">
-                <button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I have paid - I transferred</button>
-                <button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-orange-500 text-[14px] font-semibold py-2">Change payment method</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AMOUNT POPUP & LIVE FLUTTERWAVE PAYMENT MODAL (KEPT FOR FALLBACK) -->
     <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
-            <h3 class="text-base font-bold text-teal-400">Live Flutterwave Payment (Fallback)</h3>
+            <h3 class="text-base font-bold text-teal-400">Live Payment - UPI Direct to Merchant</h3>
             <input type="number" id="paymentPopupAmount" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-lg font-bold text-white outline-none" placeholder="5000">
-            <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">🔒 Proceed to Live Payment</button>
+            <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">🔒 Pay Direct to Merchant Account</button>
             <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
         </div>
     </div>
 
-    <!-- ADD BANK MODAL -->
     <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
             <h3 class="text-base font-bold text-white">Link Bank Account</h3>
-            <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none">
-                <option value="">Select Bank</option>
-            </select>
+            <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none"><option value="">Select Bank</option></select>
             <input type="text" id="accountNumberInput" maxlength="10" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
             <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Auto-fills">
             <div class="flex space-x-2">
@@ -297,7 +239,6 @@
         </div>
     </div>
 
-    <!-- NOTIFICATIONS MODAL -->
     <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -306,12 +247,11 @@
             </div>
             <div class="p-3 text-xs text-slate-300">
                 <p class="font-bold text-white">Welcome to ClickPeQR!</p>
-                <p class="text-[10px] text-slate-400">Active under CBN guidelines.</p>
+                <p class="text-[10px] text-slate-400">UPI Direct active for all merchants.</p>
             </div>
         </div>
     </div>
 
-    <!-- TRANSACTION HISTORY MODAL -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -322,19 +262,17 @@
         </div>
     </div>
 
-    <!-- ABOUT MODAL -->
     <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-2">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                 <h3 class="text-sm font-bold text-teal-400">About</h3>
                 <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
-            <p><strong>ClickPeQR</strong> by KRISHNYANSH ZENOVA PEAKS LTD. NIGERIA RC-9810296 Ruby Garg CEO</p>
-            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave Live + Direct GTB Transfer</p>
+            <p><strong>ClickPeQR</strong> by ZENOVA PEAK TECH HUB. RC-9810296</p>
+            <p class="pt-2 text-teal-300 font-semibold">Powered by Flutterwave</p>
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -352,31 +290,29 @@
         </div>
     </div>
 
-    <!-- FAQ MODAL -->
     <div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-xs text-slate-300 space-y-2">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                 <h3 class="text-sm font-bold text-teal-400">FAQ</h3>
                 <button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button>
             </div>
-            <p><strong>Are transfers free?</strong><br>Primary accounts zero fees. Direct GTB transfer uses your bank app.</p>
-            <p><strong>Merchant fee?</strong><br>1.5% MDR. Direct bank transfer has no Flutterwave fee.</p>
-            <p><strong>How does voice speaker work?</strong><br>After customer clicks "I have paid", merchant speaker announces "Money received in this account successfully" instantly via Realtime.</p>
+            <p><strong>How UPI direct works?</strong><br>Customer scans QR containing merchant bank, amount goes directly to that bank via Flutterwave.</p>
+            <p><strong>Merchant fee?</strong><br>1.5% MDR.</p>
+            <p><strong>Voice speaker?</strong><br>After direct payment, merchant hears "Money received in this account successfully".</p>
         </div>
     </div>
 
-    <!-- SMART AI BOT -->
+    <!-- AI SUPPORT BOT -->
     <div class="fixed bottom-4 right-4 z-40">
         <button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">🤖</button>
     </div>
-
     <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
-            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant</h4>
+            <h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant - UPI Direct</h4>
             <button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
         </div>
         <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
-            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR. How can I assist you?</div>
+            <div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR UPI Direct Pay.</div>
         </div>
         <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
             <input type="text" id="botInputText" placeholder="Ask about payments..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()">
@@ -389,57 +325,50 @@
         const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].5Z';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        
         const nigerianBanksList = [
-            { name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" },
-            { name: "Ecobank Nigeria", code: "050" }, { name: "Fidelity Bank", code: "070" },
-            { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
-            { name: "GTB", code: "058" }, { name: "Heritage Bank", code: "030" },
-            { name: "Keystone Bank", code: "082" }, { name: "Polaris Bank", code: "076" },
-            { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
-            { name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" },
-            { name: "Union Bank", code: "032" }, { name: "UBA", code: "033" },
-            { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" },
-            { name: "Zenith Bank", code: "057" }, { name: "Jaiz Bank", code: "301" },
-            { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
-            { name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" },
-            { name: "Opay", code: "999992" }, { name: "PalmPay", code: "999991" },
-            { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" },
-            { name: "Sparkle", code: "51310" }, { name: "Airtel Smartcash PSB", code: "120004" },
-            { name: "MTN Momo PSB", code: "120003" }, { name: "9psb", code: "120001" },
-            { name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" },
-            { name: "Globus Bank", code: "103" }, { name: "Signature Bank", code: "106" },
-            { name: "Titan Trust Bank", code: "102" }
+            { name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "Ecobank Nigeria", code: "050" },
+            { name: "Fidelity Bank", code: "070" }, { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
+            { name: "GTB", code: "058" }, { name: "Heritage Bank", code: "030" }, { name: "Keystone Bank", code: "082" },
+            { name: "Polaris Bank", code: "076" }, { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
+            { name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" }, { name: "Union Bank", code: "032" },
+            { name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "Zenith Bank", code: "057" },
+            { name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
+            { name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" }, { name: "Opay", code: "999992" },
+            { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }, { name: "Sparkle", code: "51310" },
+            { name: "Airtel Smartcash PSB", code: "120004" }, { name: "MTN Momo PSB", code: "120003" }, { name: "9psb", code: "120001" },
+            { name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" }, { name: "Globus Bank", code: "103" },
+            { name: "Signature Bank", code: "106" }, { name: "Titan Trust Bank", code: "102" }
         ];
 
-        let currentAuthMode = 'login';
-        let currentPortalType = 'customer';
-        let scannedMerchantData = null;
-        let speakerChannel = null;
+        let currentAuthMode = 'login'; 
+        let currentPortalType = 'customer'; 
+        let scannedMerchantData = null; 
+        let speakerChannel = null; 
         let isSpeakerEnabled = false;
+        const PAYMENT_MODE = 'DIRECT';
 
-        // PRODUCTION: Broadcast channel for real-time speaker between tabs/devices (fallback for Supabase Realtime)
-        try {
-            speakerChannel = new BroadcastChannel('clickpeqr_payments');
-            speakerChannel.onmessage = (e) => {
-                if(e.data.type === 'payment_success'){
-                    triggerVirtualSpeaker(e.data.amount, e.data.txId);
-                }
-            };
-        } catch(e){ console.log('BroadcastChannel not supported'); }
+        try { 
+            speakerChannel = new BroadcastChannel('clickpeqr_payments'); 
+            speakerChannel.onmessage = (e) => { 
+                if(e.data.type === 'payment_success'){ 
+                    triggerVirtualSpeaker(e.data.amount, e.data.txId); 
+                } 
+            }; 
+        } catch(e){}
 
-        function toggleSidebar() {
+        function toggleSidebar(){
             document.getElementById('appSidebar').classList.toggle('-translate-x-full');
             document.getElementById('sidebarOverlay').classList.toggle('hidden');
         }
 
-        function switchAuthTab(m) {
+        function switchAuthTab(m){
             currentAuthMode = m;
             const l = document.getElementById('loginTabBtn');
             const r = document.getElementById('registerTabBtn');
             const k = document.getElementById('kycFields');
             const s = document.getElementById('authSubmitBtn');
-            if (m === 'login') {
+            if(m === 'login'){
                 l.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
                 r.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
                 k.classList.add('hidden');
@@ -452,12 +381,12 @@
             }
         }
 
-        function setPortalType(t) {
+        function setPortalType(t){
             currentPortalType = t;
             const c = document.getElementById('typeCustomerBtn');
             const m = document.getElementById('typeMerchantBtn');
             const b = document.getElementById('businessNameField');
-            if (t === 'customer') {
+            if(t === 'customer'){
                 c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400";
                 m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
                 b.classList.add('hidden');
@@ -470,7 +399,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const d = document.getElementById('bankSelectDropdown');
-            if (d) {
+            if(d){
                 d.innerHTML = '<option value="">Select Bank</option>';
                 nigerianBanksList.forEach(b => {
                     let o = document.createElement('option');
@@ -479,28 +408,23 @@
                     d.appendChild(o);
                 });
             }
-            // FIX: App going directly to dashboard not login page - PRODUCTION FIX
-            // Always show login first. Only auto-login if?stay=1 or user explicitly enabled remember.
             const urlParams = new URLSearchParams(window.location.search);
             const shouldStay = urlParams.get('stay') === '1' || localStorage.getItem('clickpeqr_remember') === 'true';
             const a = localStorage.getItem('clickpeqr_active_user');
-            if (shouldStay && a) {
+            if(shouldStay && a){
                 loadDashboard(JSON.parse(a));
             } else {
-                // Force login screen
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('dashboardScreen').classList.add('hidden');
                 document.getElementById('mainHeader').classList.add('hidden');
-                // Do not auto-clear user, just show login
             }
-            // Preload voices for speaker
             if('speechSynthesis' in window){
                 speechSynthesis.getVoices();
                 window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
             }
         });
 
-        function handleAuthSubmit(e) {
+        function handleAuthSubmit(e){
             e.preventDefault();
             const fullName = document.getElementById('fullNameInput').value.trim();
             const email = document.getElementById('emailInput').value.trim();
@@ -508,39 +432,47 @@
             const phoneVal = document.getElementById('settingsPhone')?.value || "+2349067862223";
             const uniqueId = Math.floor(Math.random() * 900000) + 100000;
             const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
-            const userData = { id: uniqueId, full_name: fullName, email: email, business_name: bizName, portal_type: currentPortalType, avatar_url: dp, phone_number: phoneVal, permanent_qr_version: Date.now() };
-
+            const userData = {
+                id: uniqueId,
+                full_name: fullName,
+                email: email,
+                business_name: bizName,
+                portal_type: currentPortalType,
+                avatar_url: dp,
+                phone_number: phoneVal,
+                permanent_qr_version: Date.now()
+            };
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
             loadDashboard(userData);
-
             setTimeout(async () => {
                 try {
-                    if (currentPortalType === 'merchant') {
-                        await supabaseClient.from('merchants').upsert([{ id: uniqueId, business_name: bizName, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, settlement_bank: '044', permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version }], { onConflict: 'email' });
+                    if(currentPortalType === 'merchant'){
+                        await supabaseClient.from('merchants').upsert([{
+                            id: uniqueId, business_name: bizName, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, settlement_bank: '044', permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version
+                        }], {onConflict: 'email'});
                     } else {
-                        await supabaseClient.from('users').upsert([{ id: uniqueId, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version }], { onConflict: 'email' });
+                        await supabaseClient.from('users').upsert([{
+                            id: uniqueId, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version
+                        }], {onConflict: 'email'});
                     }
-                } catch (err) {}
+                } catch(err){}
             }, 100);
         }
 
-        function loadDashboard(user) {
+        function loadDashboard(user){
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainHeader').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.remove('hidden');
-
             document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User Name');
             document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
             document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
-
             const dp = localStorage.getItem('user_custom_dp') || user.avatar_url;
-            if (dp) {
+            if(dp){
                 document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
                 const s = document.getElementById('sidebarUserDP');
-                if (s) s.src = dp;
+                if(s) s.src = dp;
             }
-
-            if (user.portal_type === 'merchant') {
+            if(user.portal_type === 'merchant'){
                 document.getElementById('merchantPortalView').classList.remove('hidden');
                 document.getElementById('customerPortalView').classList.add('hidden');
                 document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
@@ -554,60 +486,60 @@
             fetchAndRenderBanks(user.id);
         }
 
-        function handleDPChange(event) {
+        function handleDPChange(event){
             const file = event.target.files[0];
-            if (file) {
+            if(file){
                 const r = new FileReader();
-                r.onload = async function(e) {
+                r.onload = async function(e){
                     const b = e.target.result;
                     localStorage.setItem('user_custom_dp', b);
                     document.querySelectorAll('.user-avatar-display').forEach(img => img.src = b);
                     const s = document.getElementById('sidebarUserDP');
-                    if (s) s.src = b;
+                    if(s) s.src = b;
                     try {
                         const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-                        if (u.id) {
-                            if (u.portal_type === 'merchant') {
-                                await supabaseClient.from('merchants').update({ avatar_url: b }).eq('id', u.id);
+                        if(u.id){
+                            if(u.portal_type === 'merchant'){
+                                await supabaseClient.from('merchants').update({avatar_url: b}).eq('id', u.id);
                             } else {
-                                await supabaseClient.from('users').update({ avatar_url: b }).eq('id', u.id);
+                                await supabaseClient.from('users').update({avatar_url: b}).eq('id', u.id);
                             }
                             u.avatar_url = b;
                             localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
                         }
-                    } catch (err) {}
+                    } catch(err){}
                     alert("Profile Picture updated successfully!");
                 };
                 r.readAsDataURL(file);
             }
         }
 
-        function openSettingsModal() {
+        function openSettingsModal(){
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             document.getElementById('settingsFullName').value = u.full_name || '';
-            if (u.portal_type === 'merchant') {
+            if(u.portal_type === 'merchant'){
                 document.getElementById('settingsBizField').classList.remove('hidden');
                 document.getElementById('settingsBizName').value = u.business_name || '';
             }
             document.getElementById('settingsModal').classList.remove('hidden');
         }
 
-        async function saveProfileSettings() {
+        async function saveProfileSettings(){
             let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             u.full_name = document.getElementById('settingsFullName').value.trim();
             u.phone_number = document.getElementById('settingsPhone').value.trim();
-            if (u.portal_type === 'merchant') {
+            if(u.portal_type === 'merchant'){
                 u.business_name = document.getElementById('settingsBizName').value.trim();
                 document.getElementById('merchantStoreNameLabel').textContent = "Store: " + u.business_name;
                 renderPermanentShopQR(u);
                 try {
-                    await supabaseClient.from('merchants').update({ business_name: u.business_name, full_name: u.full_name, phone_number: u.phone_number }).eq('id', u.id);
-                } catch (e) {}
+                    await supabaseClient.from('merchants').update({business_name: u.business_name, full_name: u.full_name, phone_number: u.phone_number}).eq('id', u.id);
+                } catch(e){}
             } else {
                 renderCustomerPermanentQR(u);
                 try {
-                    await supabaseClient.from('users').update({ full_name: u.full_name, phone_number: u.phone_number }).eq('id', u.id);
-                } catch (e) {}
+                    await supabaseClient.from('users').update({full_name: u.full_name, phone_number: u.phone_number}).eq('id', u.id);
+                } catch(e){}
             }
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
             document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = u.full_name);
@@ -615,141 +547,141 @@
             alert("Settings updated successfully!");
         }
 
-        function renderPermanentShopQR(user) {
+        function renderPermanentShopQR(user){
             const c = document.getElementById('permanentShopQRContainer');
-            if (!c) return;
+            if(!c) return;
             c.innerHTML = "";
             const ver = user.permanent_qr_version || Date.now();
-            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver }), width: 130, height: 130 });
+            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+user.id) || '[]');
+            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTB'};
+            const payload = {
+                type: "MERCHANT_PERMANENT",
+                merchantId: user.id,
+                businessName: user.business_name || user.full_name,
+                version: ver,
+                permanent_id: 'PERM_'+user.id+'_'+ver,
+                bank_code: primaryBank.bank_code,
+                account_number: primaryBank.account_number,
+                account_name: primaryBank.account_name,
+                bank_name: primaryBank.bank_name
+            };
+            new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
         }
 
-        function renderCustomerPermanentQR(user) {
+        function renderCustomerPermanentQR(user){
             const c = document.getElementById('customerPermanentQRContainer');
-            if (!c) return;
+            if(!c) return;
             c.innerHTML = "";
             const ver = user.permanent_qr_version || Date.now();
-            new QRCode(c, { text: JSON.stringify({ type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver }), width: 130, height: 130 });
+            new QRCode(c, {text: JSON.stringify({type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver}), width: 130, height: 130});
         }
 
-        // NEW: Change Permanent QR - Production
         function regenerateMerchantQR(){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             if(!u.id) return;
             if(!confirm('Change your Permanent Shop QR? Old QR will stop working. Continue?')) return;
             u.permanent_qr_version = Date.now();
             u.permanent_qr_id = 'PERM_'+u.id+'_'+u.permanent_qr_version;
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
             renderPermanentShopQR(u);
-            // Update Supabase
-            supabaseClient.from('merchants').update({ permanent_qr_id: u.permanent_qr_id }).eq('id', u.id).then(()=>{});
+            supabaseClient.from('merchants').update({permanent_qr_id: u.permanent_qr_id}).eq('id', u.id).then(()=>{});
             alert('New Permanent Shop QR generated successfully!');
         }
+
         function regenerateCustomerQR(){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
+            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             if(!u.id) return;
             if(!confirm('Change your Permanent Customer QR? Continue?')) return;
             u.permanent_qr_version = Date.now();
             u.permanent_qr_id = 'CUST_'+u.id+'_'+u.permanent_qr_version;
             localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
             renderCustomerPermanentQR(u);
-            supabaseClient.from('users').update({ permanent_qr_id: u.permanent_qr_id }).eq('id', u.id).then(()=>{});
+            supabaseClient.from('users').update({permanent_qr_id: u.permanent_qr_id}).eq('id', u.id).then(()=>{});
             alert('New Permanent Customer QR generated!');
         }
 
-        function generateMerchantDynamicQR() {
+        function generateMerchantDynamicQR(){
             const amt = document.getElementById('merchantDynAmt').value;
-            if (!amt || amt <= 0) { alert("Enter valid amount"); return; }
+            if(!amt || amt <= 0){ alert("Enter valid amount"); return; }
             const c = document.getElementById('dynamicQRContainer');
             c.innerHTML = "";
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            new QRCode(c, { text: JSON.stringify({ type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name }), width: 140, height: 140 });
+            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
+            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTB'};
+            new QRCode(c, {
+                text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: primaryBank.bank_code, account_number: primaryBank.account_number, account_name: primaryBank.account_name, bank_name: primaryBank.bank_name}),
+                width: 140, height: 140
+            });
             document.getElementById('merchantQRResult').classList.remove('hidden');
         }
 
-        async function openWorkingScanner() {
+        async function openWorkingScanner(){
             document.getElementById('scannerModal').classList.remove('hidden');
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
                 document.getElementById('cameraVideoFeed').srcObject = s;
-            } catch (err) { alert("Camera access denied - using simulate"); }
+            } catch(err){ alert("Camera access denied - using simulate"); }
         }
 
-        function closeScannerModal() {
+        function closeScannerModal(){
             const v = document.getElementById('cameraVideoFeed');
-            if (v && v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
+            if(v && v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
-        // UPDATED: Simulate scan -> Show Merchant Confirm Popup (Production Option A)
-        function simulateSuccessfulScan() {
+        function simulateSuccessfulScan(){
             closeScannerModal();
-            // Try to get merchant data - in production, parse scanned QR. Here use demo merchant or primary linked bank owner
-            const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
-            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+activeUser.id)||'[]');
-            const primaryBank = banks.find(b=>b.is_primary) || banks[0] || { bank_name: 'GTB', account_number: '0638090889', account_name: 'GARG RUBY', bank_code: '058' };
-
-            scannedMerchantData = {
-                shop_name: activeUser.portal_type==='merchant'? (activeUser.business_name||'My Store') : 'KRISHNYANSH ZENOVA PEAKS LTD',
-                account_name: primaryBank.account_name || 'GARG RUBY',
-                account_number: primaryBank.account_number || '0638090889',
-                bank_name: primaryBank.bank_name || 'GTB - GTBank',
-                bank_code: primaryBank.bank_code || '058',
-                merchant_id: 'demo_merchant_001'
-            };
-            if(activeUser.portal_type === 'customer'){
-                scannedMerchantData.shop_name = 'KRISHNYANSH ZENOVA PEAKS LTD';
-                scannedMerchantData.account_name = 'GARG RUBY';
+            const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+            let qrData = null;
+            try {
+                const lastScanned = localStorage.getItem('last_scanned_qr_payload');
+                if(lastScanned) qrData = JSON.parse(lastScanned);
+            } catch(e){}
+            if(qrData && qrData.account_number){
+                scannedMerchantData = {
+                    shop_name: qrData.businessName || qrData.shop_name || 'Merchant Store',
+                    account_name: qrData.account_name,
+                    account_number: qrData.account_number,
+                    bank_name: qrData.bank_name || qrData.bank_code,
+                    bank_code: qrData.bank_code,
+                    merchant_id: qrData.merchantId || qrData.merchant_id || 'merchant_'+Date.now(),
+                    amount: qrData.amount
+                };
+            } else {
+                const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+activeUser.id) || '[]');
+                const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_name: 'GTB', account_number: '0638090889', account_name: 'RUBY GARG', bank_code: '058'};
+                scannedMerchantData = {
+                    shop_name: 'ZENOVA PEAK TECH HUB',
+                    account_name: primaryBank.account_name,
+                    account_number: primaryBank.account_number,
+                    bank_name: primaryBank.bank_name,
+                    bank_code: primaryBank.bank_code,
+                    merchant_id: 'zenova_merchant_001'
+                };
             }
-
             document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
             document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
             document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
             document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
-            document.getElementById('confirmAmountInput').value = '510';
-
+            document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '510';
             document.getElementById('merchantConfirmModal').classList.remove('hidden');
         }
 
         function proceedToManualTransfer(){
             const amt = document.getElementById('confirmAmountInput').value;
-            if(!amt || amt<=0){ alert('Enter valid amount'); return; }
+            if(!amt || amt <= 0){ alert('Enter valid amount'); return; }
             document.getElementById('merchantConfirmModal').classList.add('hidden');
-            document.getElementById('manualAmountDisplay').innerText = 'NGN ' + amt;
-            document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
-            document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
-            document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
-            document.getElementById('manualTransferModal').classList.remove('hidden');
+            if(PAYMENT_MODE === 'DIRECT'){
+                document.getElementById('paymentPopupAmount').value = amt;
+                localStorage.setItem('pending_merchant_transfer', JSON.stringify({...scannedMerchantData, amount: amt}));
+                executeLiveFlutterwavePayment();
+            }
         }
 
         function copyToClipboard(text){
-            navigator.clipboard.writeText(text).then(()=>{ alert('Copied: '+text); });
+            navigator.clipboard.writeText(text).then(() => { alert('Copied: '+text); });
         }
 
-        // PRODUCTION: Manual Paid Handler + Virtual Speaker Trigger
-        async function handleManualPaid(){
-            const amtText = document.getElementById('manualAmountDisplay').innerText;
-            const amount = amtText.replace('NGN ','');
-            const txId = '10207' + Math.floor(Math.random()*10000);
-            await saveTransactionToSupabase(amount, txId);
-            const payload = { type: 'payment_success', amount: amount, txId: txId, merchant_id: scannedMerchantData.merchant_id };
-            if(speakerChannel) speakerChannel.postMessage(payload);
-            triggerVirtualSpeaker(amount, txId);
-            try {
-                const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
-                const merchantId = scannedMerchantData.merchant_id || activeUser.id;
-                await supabaseClient.channel('merchant:'+merchantId).send({
-                    type: 'broadcast',
-                    event: 'payment_success',
-                    payload: { amount: amount, txId: txId, message: 'Money received' }
-                });
-            } catch(e){ console.log('Supabase broadcast error', e); }
-            document.getElementById('manualTransferModal').classList.add('hidden');
-            setTimeout(()=>{
-                alert('Payment Successful!\nID: ' + txId + '\n\nMoney will be confirmed by merchant speaker.');
-            }, 300);
-        }
-
-        // VIRTUAL SPEAKER LOGIC - REAL VOICE
         function enableSpeaker(){
             isSpeakerEnabled = true;
             document.getElementById('enableSpeakerBtn').innerText = 'Voice ON ✓';
@@ -769,8 +701,7 @@
             const waveEl = document.getElementById('speakerWave');
             const idleEl = document.getElementById('speakerIdleText');
             const logEl = document.getElementById('lastPaymentLog');
-            if(statusEl) statusEl.innerText = '🔊 Money Received! NGN ' + amount;
-            if(statusEl) statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2';
+            if(statusEl){ statusEl.innerText = '🔊 Money Received! NGN '+amount; statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2'; }
             if(waveEl) waveEl.classList.remove('hidden');
             if(idleEl) idleEl.classList.add('hidden');
             if(logEl) logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">✓ Payment ID: '+txId+' - NGN '+amount+' - '+new Date().toLocaleTimeString()+'</div>';
@@ -781,7 +712,7 @@
                 salesEl.innerText = '₦ ' + newTotal.toLocaleString();
             }
             speakMoneyReceived(amount, false);
-            setTimeout(()=>{
+            setTimeout(() => {
                 if(waveEl) waveEl.classList.add('hidden');
                 if(idleEl){ idleEl.classList.remove('hidden'); idleEl.innerText = 'Waiting for next payment...'; }
                 if(statusEl){ statusEl.innerText = 'Waiting for payment...'; statusEl.className = 'text-[11px] text-slate-400 mb-2'; }
@@ -789,10 +720,10 @@
         }
 
         function speakMoneyReceived(amount, isTest){
-            if(!isSpeakerEnabled &&!isTest) return;
+            if(!isSpeakerEnabled && !isTest) return;
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
-            const text = isTest? 'Virtual speaker enabled. Ready for payments.' : `Money received in this account successfully. Received ${amount} Naira.`;
+            const text = isTest ? 'Virtual speaker enabled. Ready for payments.' : `Money received in this account successfully. Received ${amount} Naira.`;
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'en-NG';
             utter.rate = 0.9;
@@ -808,210 +739,207 @@
 
         function initMerchantRealtime(merchantId){
             try {
-                const channel = supabaseClient.channel('merchant:'+merchantId)
-               .on('broadcast', { event: 'payment_success' }, (payload) => {
-                    const amt = payload.payload.amount;
-                    const txId = payload.payload.txId;
-                    triggerVirtualSpeaker(amt, txId);
-                })
-               .subscribe((status)=>{
-                    if(status==='SUBSCRIBED'){
+                supabaseClient.channel('merchant:'+merchantId).on('broadcast', {event: 'payment_success'}, (payload) => {
+                    triggerVirtualSpeaker(payload.payload.amount, payload.payload.txId);
+                }).subscribe((status) => {
+                    if(status === 'SUBSCRIBED'){
                         document.getElementById('speakerStatus').innerText = 'Live Connected - Waiting...';
                         document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
                     }
                 });
-            } catch(e){ console.log('Realtime init error', e); }
+            } catch(e){}
         }
 
-        function executeLiveFlutterwavePayment() {
+        function executeLiveFlutterwavePayment(){
             const amt = document.getElementById('paymentPopupAmount').value;
-            if (!amt || amt <= 0) { alert("Enter valid amount"); return; }
+            if(!amt || amt <= 0){ alert("Enter valid amount"); return; }
             document.getElementById('paymentModal').classList.add('hidden');
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-
+            const pendingMerchant = JSON.parse(localStorage.getItem('pending_merchant_transfer') || 'null') || scannedMerchantData || {};
             FlutterwaveCheckout({
                 public_key: "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X",
-                tx_ref: "clickpeqr_live_" + Date.now(),
+                tx_ref: "clickpeqr_live_"+(pendingMerchant.merchant_id || 'gen')+"_"+Date.now(),
                 amount: parseFloat(amt),
                 currency: "NGN",
                 payment_options: "card, mobilemoney, ussd, nqr, banktransfer",
-                customer: {
-                    email: u.email || "customer@clickpeqr.ng",
-                    name: u.full_name || "ClickPeQR User",
-                    phone_number: u.phone_number || "+2349067862223"
-                },
-                callback: function(d) {
+                customer: { email: u.email || "customer@clickpeqr.ng", name: u.full_name || "ClickPeQR User", phone_number: u.phone_number || "+2349067862223" },
+                meta: { merchant_id: pendingMerchant.merchant_id, merchant_account: pendingMerchant.account_number, merchant_bank: pendingMerchant.bank_code, merchant_name: pendingMerchant.account_name },
+                callback: function(d){
                     saveTransactionToSupabase(amt, d.transaction_id);
-                    if(speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: d.transaction_id});
+                    if(speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: d.transaction_id, merchant_id: pendingMerchant.merchant_id});
                     triggerVirtualSpeaker(amt, d.transaction_id);
-                    alert("Payment Successful! ID: " + d.transaction_id);
+                    fetch('/api/settle-to-merchant', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({amount: amt, transaction_id: d.transaction_id, merchant_id: pendingMerchant.merchant_id, merchant_account: pendingMerchant.account_number, merchant_bank_code: pendingMerchant.bank_code, merchant_account_name: pendingMerchant.account_name})
+                    }).then(r => r.json()).catch(()=>{});
+                    alert("Payment Successful! ID: "+d.transaction_id+"\nNGN "+amt+" direct to "+pendingMerchant.shop_name+" ("+pendingMerchant.account_number+")");
+                    localStorage.removeItem('pending_merchant_transfer');
                 },
-                onclose: function() {}
+                onclose: function(){}
             });
         }
 
-        async function saveTransactionToSupabase(amount, txId) {
+        async function saveTransactionToSupabase(amount, txId){
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
             let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({ amount, type: 'Direct Bank Transfer to GTB', date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant' });
+            txs.unshift({amount, type: 'UPI Direct to '+(scannedMerchantData?.shop_name || 'Merchant'), date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant'});
             localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
             try {
-                await supabaseClient.from('transactions').insert([{ transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'Direct Bank Transfer - GTB 0638090889' }]);
-            } catch (e) { console.log('Supabase tx insert error', e); }
+                await supabaseClient.from('transactions').insert([{
+                    transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'UPI Direct - '+scannedMerchantData?.account_number
+                }]);
+            } catch(e){}
         }
 
-        function showTransactionHistory() {
+        function showTransactionHistory(){
             const c = document.getElementById('transactionListContainer');
             const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            if (txs.length === 0) {
+            if(txs.length === 0){
                 c.innerHTML = '<p class="text-slate-500 text-center py-2">No recent live transactions.</p>';
             } else {
                 let h = '';
-                for (let i = 0; i < txs.length; i++) {
+                for(let i=0; i<txs.length; i++){
                     const t = txs[i];
-                    h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white">' + t.type + ' - ' + (t.merchant||'') + '</p><p class="text-[10px] text-slate-400">' + t.date + ' | ID:' + (t.txId||'') + '</p></div><span class="text-teal-400 font-mono font-bold">₦' + t.amount + '</span></div>';
+                    h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white">'+t.type+' - '+(t.merchant || '')+'</p><p class="text-[10px] text-slate-400">'+t.date+' | ID:'+(t.txId || '')+'</p></div><span class="text-teal-400 font-mono font-bold">₦'+t.amount+'</span></div>';
                 }
                 c.innerHTML = h;
             }
             document.getElementById('transactionModal').classList.remove('hidden');
         }
 
-        async function fetchAndRenderBanks(userId) {
+        async function fetchAndRenderBanks(userId){
             const c = document.getElementById('linkedBanksListContainer');
-            if (!c) return;
+            if(!c) return;
             try {
                 const r = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId);
                 const d = r.data;
-                if (d && d.length > 0) {
+                if(d && d.length > 0){
                     let h = '';
-                    for (let i = 0; i < d.length; i++) {
+                    for(let i=0; i<d.length; i++){
                         const a = d[i];
-                        const p = a.is_primary? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
-                        h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + ' ' + p + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
+                        const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
+                        h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">'+a.bank_name+' '+p+'</p><p class="text-[10px] text-slate-400 font-mono">'+a.account_number+' - '+a.account_name+'</p></div><button onclick="switchPrimaryBank(\''+userId+'\','+i+')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
                     }
                     c.innerHTML = h;
-                    localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(d));
+                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(d));
                     return;
                 }
-            } catch (e) {}
+            } catch(e){}
 
-            const localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
-            if (localBanks.length === 0) {
-                const u = JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}');
-                if(u.portal_type==='merchant' && localBanks.length===0){
-                    localBanks.push({ user_id: userId, bank_name: 'GTB', bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', is_primary: true });
-                    localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(localBanks));
+            const localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+            if(localBanks.length === 0){
+                const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+                if(u.portal_type === 'merchant'){
+                    localBanks.push({user_id: userId, bank_name: 'GTB', bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', is_primary: true});
+                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(localBanks));
                 } else {
                     c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet.</p>';
                     return;
                 }
             }
             let h2 = '';
-            for (let i = 0; i < localBanks.length; i++) {
+            for(let i=0; i<localBanks.length; i++){
                 const a = localBanks[i];
-                const p = a.is_primary? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
-                h2 += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + ' ' + p + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
+                const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
+                h2 += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">'+a.bank_name+' '+p+'</p><p class="text-[10px] text-slate-400 font-mono">'+a.account_number+' - '+a.account_name+'</p></div><button onclick="switchPrimaryBank(\''+userId+'\','+i+')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Switch</button></div>';
             }
             c.innerHTML = h2;
         }
 
-        function openAddBankModal() { document.getElementById('addBankModal').classList.remove('hidden'); }
-        function closeAddBankModal() { document.getElementById('addBankModal').classList.add('hidden'); }
+        function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
+        function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
 
-        async function verifyBankAccount() {
+        async function verifyBankAccount(){
             const bankCode = document.getElementById('bankSelectDropdown').value;
             const accNum = document.getElementById('accountNumberInput').value.trim();
             const nameInput = document.getElementById('accountNameInput');
-            if (!bankCode) { alert("Please select a bank first."); return; }
-            if (accNum.length!== 10) { nameInput.value = ""; return; }
+            if(!bankCode){ alert("Please select a bank first."); return; }
+            if(accNum.length !== 10){ nameInput.value = ""; return; }
             nameInput.value = "Verifying with bank...";
             try {
                 const res = await fetch('/api/resolve-account', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account_number: accNum, account_bank: bankCode })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({account_number: accNum, account_bank: bankCode})
                 });
                 const result = await res.json();
-                if (result && result.status === 'success' && result.data && result.data.account_name) {
+                if(result && result.status === 'success' && result.data && result.data.account_name){
                     nameInput.value = result.data.account_name;
                 } else {
                     nameInput.value = "";
-                    alert("Bank verification failed: " + (result.message || "Invalid account or LIVE key missing"));
+                    alert("Bank verification failed: "+(result.message || "Invalid account"));
                 }
-            } catch (err) {
+            } catch(err){
                 nameInput.value = "";
-                alert("Verification failed - check Render server");
+                alert("Verification failed - check server");
             }
         }
 
-        async function saveNewBankAccount() {
+        async function saveNewBankAccount(){
             const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if (!u.id) { alert("Please log in first."); return; }
+            if(!u.id){ alert("Please log in first."); return; }
             const dd = document.getElementById('bankSelectDropdown');
             const bankName = dd.options[dd.selectedIndex]?.text;
             const bankCode = dd.value;
             const accNum = document.getElementById('accountNumberInput').value.trim();
             const accName = document.getElementById('accountNameInput').value.trim();
-
-            if (!bankCode || bankName === "Select Bank" || accNum.length!== 10 ||!accName) {
-                alert("Please select bank, enter 10-digit account, and wait for real holder name.");
+            if(!bankCode || bankName === "Select Bank" || accNum.length !== 10 || !accName){
+                alert("Please select bank, enter 10-digit account, and verify name.");
                 return;
             }
-
-            let localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + u.id) || '[]');
+            let localBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
             const isPrimary = localBanks.length === 0;
-            const newBank = { user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: isPrimary };
-
+            const newBank = {user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: isPrimary};
             localBanks.push(newBank);
-            localStorage.setItem('clickpeqr_banks_' + u.id, JSON.stringify(localBanks));
-
+            localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
             try {
                 await supabaseClient.from('linked_accounts').insert([newBank]);
-            } catch (e) {}
-
+            } catch(e){}
             closeAddBankModal();
             fetchAndRenderBanks(u.id);
-            alert("Bank linked! Real name: " + accName);
+            alert("Bank linked successfully: "+accName);
             document.getElementById('accountNumberInput').value = "";
             document.getElementById('accountNameInput').value = "";
         }
 
-        function switchPrimaryBank(userId, idx) {
-            let s = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
+        function switchPrimaryBank(userId, idx){
+            let s = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
             s.forEach((a, i) => { a.is_primary = (i === idx); });
-            localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(s));
+            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(s));
             fetchAndRenderBanks(userId);
-            alert("Primary bank switched! Now payments will go to this account.");
+            alert("Primary bank switched successfully!");
         }
 
-        function showComplaintWhatsApp() { window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank"); }
-        function showNotificationModal() { document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal() { document.getElementById('faqModal').classList.remove('hidden'); }
-        function switchView() {}
-        function handleLogout() {
+        function showComplaintWhatsApp(){ window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank"); }
+        function showNotificationModal(){ document.getElementById('notificationModal').classList.remove('hidden'); }
+        function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
+        function showFAQModal(){ document.getElementById('faqModal').classList.remove('hidden'); }
+        function switchView(){}
+
+        function handleLogout(){
             localStorage.removeItem('clickpeqr_active_user');
             localStorage.removeItem('clickpeqr_remember');
             window.location.href = window.location.pathname;
         }
-        function toggleAIBot() { document.getElementById('aiBotModal').classList.toggle('hidden'); }
 
-        function sendBotMessage() {
+        function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
+
+        function sendBotMessage(){
             const i = document.getElementById('botInputText');
             const c = document.getElementById('botChatMessages');
             const t = i.value.trim();
-            if (!t) return;
-            c.innerHTML += '<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">' + t + '</div>';
+            if(!t) return;
+            c.innerHTML += '<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">'+t+'</div>';
             i.value = '';
             setTimeout(() => {
-                let r = "Hello! I am your ClickPeQR Live Assistant.";
+                let r = "Hello! I am your ClickPeQR Assistant - UPI Direct active.";
                 const l = t.toLowerCase();
-                if (l.includes('flutterwave')) r = "Flutterwave Live SDK connected and bank verification uses LIVE secret key. Direct GTB transfer now uses Option A manual flow.";
-                else if (l.includes('supabase')) r = "Supabase tracking users, linked_accounts, and transactions. Realtime enabled for merchant speaker.";
-                else if (l.includes('bank')) r = "Bank verification shows REAL holder name via /api/resolve-account. Direct transfer now goes to GTB 0638090889 saved in Link Bank.";
-                else if (l.includes('speaker') || l.includes('voice')) r = "Virtual Speaker: Enable Voice button first (browser requires user gesture). Then when customer pays, it will speak 'Money received in this account successfully'.";
-                else if (l.includes('qr') || l.includes('permanent')) r = "You can change Permanent QR anytime from dashboard. Old QR will be invalidated for security.";
-                c.innerHTML += '<div class="bg-slate-950 p-2.5 rounded-xl">' + r + '</div>';
+                if(l.includes('flutterwave')) r = "Flutterwave Live SDK in DIRECT mode ensures payment flows directly to merchant's linked account.";
+                else if(l.includes('supabase')) r = "Supabase handles user profiles, bank linking, and secure transaction tracking.";
+                else if(l.includes('bank')) r = "Link your account via Bank Accounts so your QR embeds your exact details.";
+                else if(l.includes('speaker') || l.includes('voice')) r = "Virtual Speaker reads out payment confirmations automatically when enabled.";
+                c.innerHTML += '<div class="bg-slate-950 p-2.5 rounded-xl">'+r+'</div>';
                 c.scrollTop = c.scrollHeight;
             }, 600);
         }
