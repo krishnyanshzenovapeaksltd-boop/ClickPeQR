@@ -1,6 +1,6 @@
 /**
  * ClickPeQR - UPI Direct Billion Scale Backend Server
- * Company: ZENOVA PEAK TECH HUB (RC-9810296)
+ * Company: KRISHNYANSH ZENOVA PEAKS LTD (RC-9810296)
  * CEO: Ruby Garg
  */
 
