@@ -1,995 +1,1086 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://checkout.flutterwave.com/v3.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,191,.35)}50%{box-shadow:0 0 0 10px rgba(45,212,191,0)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.anim-fadeUp{animation:fadeUp.45s ease both}
+.live-dot{width:8px;height:8px;border-radius:9999px;background:#34d399;animation:glowPulse 1.8s infinite}
+.grad-text{background:linear-gradient(90deg,#2dd4bf,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card-hover{transition:transform.2s ease,box-shadow.2s ease}
+.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px rgba(45,212,191,.25)}
+.shimmer{background:linear-gradient(90deg,#0f172a 25%,#1e293b 50%,#0f172a 75%);background-size:800px 100%;animation:shimmer 1.6s infinite linear}
+.faq-a{max-height:0;overflow:hidden;transition:max-height.3s ease}
+.faq-open .faq-a{max-height:220px}
+</style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between relative overflow-x-hidden">
 
-    <!-- HEADER NAVIGATION -->
-    <header id="mainHeader" class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
-        <div class="flex items-center space-x-3">
-            <button onclick="toggleSidebar()" class="text-teal-400 focus:outline-none p-1 rounded-lg hover:bg-slate-800 transition">☰</button>
-            <div class="flex items-center space-x-2">
-                <img src="logo.png" alt="Logo" class="user-avatar-display w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
-                <h1 class="text-lg font-bold text-white tracking-wide">ClickPeQR</h1>
-            </div>
-        </div>
-        <div class="flex items-center space-x-3">
-            <button onclick="showNotificationModal()" class="relative p-2 text-slate-300 hover:text-teal-400 transition">🔔</button>
-            <span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full font-semibold uppercase">Customer</span>
-        </div>
-    </header>
+<header id="mainHeader" class="w-full bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
+<div class="flex items-center space-x-3">
+<button onclick="toggleSidebar()" class="text-teal-400 p-1 rounded-lg hover:bg-slate-800 transition text-xl">&#9776;</button>
+<div class="flex items-center space-x-2">
+<img src="logo.png" alt="Logo" class="user-avatar-display w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
+<h1 class="text-lg font-bold tracking-wide"><span class="grad-text">ClickPeQR</span></h1>
+<span class="live-dot" title="Live"></span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<button onclick="openPointsModal()" class="flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-full hover:bg-amber-500/25 transition">&#11088; <span id="headerPoints">0</span> pts</button>
+<button onclick="showNotificationModal()" class="relative p-2 text-slate-300 hover:text-teal-400 transition">&#128276;<span id="notifBadge" class="hidden absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span></button>
+<span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full font-semibold uppercase">Customer</span>
+</div>
+</header>
 
-    <!-- SIDEBAR NAVIGATION PANEL -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
-    <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
-        <div>
-            <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
-                <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
-                    <img id="sidebarUserDP" src="logo.png" class="user-avatar-display w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
-                </div>
-                <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
-                <div class="overflow-hidden">
-                    <h4 class="user-profile-name text-sm font-bold text-white truncate">User Name</h4>
-                    <p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
-                </div>
-            </div>
-            <nav class="space-y-1.5 text-sm">
-                <a href="#" onclick="toggleSidebar(); switchView('home')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🏠 <span>Home</span></a>
-                <a href="#" onclick="toggleSidebar(); showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🔔 <span>Notifications</span></a>
-                <a href="#" onclick="toggleSidebar(); showTransactionHistory()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">📊 <span>Transaction History</span></a>
-                <a href="#" onclick="toggleSidebar(); openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">🏦 <span>Bank Accounts</span></a>
-                <a href="#" onclick="toggleSidebar(); openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">⚙️ <span>Settings</span></a>
-                <a href="#" onclick="toggleSidebar(); showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">ℹ️ <span>About</span></a>
-                <a href="#" onclick="toggleSidebar(); toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">💬 <span>Help & Support (24/7)</span></a>
-                <a href="#" onclick="toggleSidebar(); showComplaintWhatsApp()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300 transition">⚠️ <span>Complain</span></a>
-                <a href="#" onclick="toggleSidebar(); showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">❓ <span>FAQ</span></a>
-            </nav>
-        </div>
-        <div class="pt-4 border-t border-slate-800">
-            <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
-        </div>
-    </aside>
+<div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
+<aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
+<div>
+<div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
+<div class="relative cursor-pointer" onclick="document.getElementById('dpFileInput').click()" title="Change picture">
+<img id="sidebarUserDP" src="logo.png" class="user-avatar-display w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
+<span class="absolute bottom-0 right-0 bg-teal-500 text-slate-950 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">+</span>
+</div>
+<input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
+<div class="overflow-hidden">
+<h4 class="user-profile-name text-sm font-bold text-white truncate">User Name</h4>
+<p id="sidebarUserEmail" class="text-[10px] text-slate-400 truncate">email@example.com</p>
+<p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
+</div>
+</div>
+<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-3 mb-4 flex justify-between items-center card-hover cursor-pointer" onclick="toggleSidebar();openPointsModal()">
+<div><p class="text-[10px] text-slate-400 uppercase tracking-wide">Reward Points</p><p class="text-lg font-bold text-amber-300">&#11088; <span id="sidebarPoints">0</span></p></div>
+<span class="text-[10px] text-teal-300 font-semibold">View &rarr;</span>
+</div>
+<nav class="space-y-1.5 text-sm">
+<a href="#" onclick="toggleSidebar();switchView('home')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#127968; <span>Home</span></a>
+<a href="#" onclick="toggleSidebar();openPointsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#11088; <span>Points & Rewards</span></a>
+<a href="#" onclick="toggleSidebar();showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128276; <span>Notifications</span></a>
+<a href="#" onclick="toggleSidebar();showTransactionHistory()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128202; <span>Transaction History</span></a>
+<a href="#" onclick="toggleSidebar();openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#127974; <span>Bank Accounts</span></a>
+<a href="#" onclick="toggleSidebar();openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#9881;&#65039; <span>Settings</span></a>
+<a href="#" onclick="toggleSidebar();showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#8505;&#65039; <span>About ClickPeQR</span></a>
+<a href="#" onclick="toggleSidebar();toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128172; <span>Help & Support (24/7)</span></a>
+<a href="#" onclick="toggleSidebar();showComplaintModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300 transition">&#9888;&#65039; <span>Complaints</span></a>
+<a href="#" onclick="toggleSidebar();showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#10067; <span>FAQ</span></a>
+</nav>
+</div>
+<div class="pt-4 border-t border-slate-800 space-y-2">
+<p class="text-center text-[10px] text-slate-500">Powered by <span class="text-teal-400 font-semibold">Zenova Peak Tech Hub</span></p>
+<button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
+</div>
+</aside>
 
-    <!-- MAIN BODY CONTAINER -->
-    <main class="flex-grow flex items-center justify-center p-4">
-        
-        <!-- AUTHENTICATION SCREEN -->
-        <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl">
-            <div class="text-center mb-5 flex flex-col items-center">
-                <img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
-                <h2 class="text-2xl font-bold text-teal-400">ClickPeQR Network</h2>
-                <p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway - UPI WITHOUT FLUTTERWAVE PAGE</p>
-            </div>
-            <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
-                <button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
-                <button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
-            </div>
-            <div class="mb-4">
-                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                    <button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
-                    <button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
-                </div>
-            </div>
-            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
-                <div id="businessNameField" class="hidden">
-                    <input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Store Name">
-                </div>
-                <div>
-                    <input type="text" id="fullNameInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Enter Full Name">
-                </div>
-                <div>
-                    <input type="text" id="emailInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="name@example.com">
-                </div>
-                <div id="kycFields" class="space-y-3 hidden">
-                    <input type="text" id="ninInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="NIN Number">
-                    <input type="text" id="bvnInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="BVN Number">
-                </div>
-                <div>
-                    <input type="password" id="pinInput" required maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="PIN">
-                </div>
-                <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
-            </form>
-        </div>
+<main class="flex-grow flex items-center justify-center p-4">
+<div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl anim-fadeUp">
+<div class="text-center mb-5 flex flex-col items-center">
+<img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
+<h2 class="text-2xl font-bold"><span class="grad-text">ClickPeQR</span> <span class="text-teal-400">Network</span></h2>
+<p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
+<div class="flex items-center gap-1 mt-2 text-[10px] text-teal-300"><span class="live-dot"></span> Live & Secure</div>
+</div>
+<div class="flex bg-slate-950 p-1 rounded-xl mb-4">
+<button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
+<button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
+</div>
+<div class="mb-4">
+<div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+<button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
+<button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
+</div>
+</div>
+<form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+<div id="businessNameField" class="hidden">
+<input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Store / Business Name">
+</div>
+<div><input type="text" id="fullNameInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Enter Full Name"></div>
+<div><input type="email" id="emailInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="name@example.com"></div>
+<div id="kycFields" class="space-y-3 hidden">
+<input type="text" id="ninInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="NIN Number (11 digits)">
+<input type="text" id="bvnInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="BVN Number (11 digits)">
+</div>
+<div><input type="password" id="pinInput" required maxlength="6" inputmode="numeric" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="6-digit PIN"></div>
+<button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
+</form>
+<p class="text-center text-[10px] text-slate-500 mt-4">Powered by <span class="text-teal-400 font-semibold"> MONNIFY </span> &bull; RC-9810296</p>
+</div>
 
-        <!-- DASHBOARD CONTAINER -->
-        <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4">
-            
-            <!-- CUSTOMER PORTAL VIEW -->
-            <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub - UPI No Page</h2>
-                    <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
-                </div>
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
-                    <div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center mt-2"></div>
-                    <button onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent QR</button>
-                </div>
-                <button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3">
-                    <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
-                    <div>
-                        <h4 class="text-sm font-bold text-white">Pay (Scan QR) - UPI Direct No Page</h4>
-                        <p class="text-xs text-slate-400">Direct bank to bank, no Flutterwave page</p>
-                    </div>
-                </button>
-            </div>
+<div id="dashboardScreen" class="w-full max-w-md hidden space-y-4 anim-fadeUp">
 
-            <!-- MERCHANT PORTAL VIEW -->
-            <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-amber-400">Merchant Terminal - UPI Direct</h2>
-                    <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
-                </div>
-                
-                <!-- VIRTUAL SOUNDBOX SPEAKER -->
-                <div id="virtualSpeakerPanel" class="bg-slate-950 p-4 rounded-xl border border-teal-500/40 shadow-inner">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-xs font-bold text-teal-300 flex items-center gap-2">🔊 Virtual Speaker - Live <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span></h4>
-                        <button onclick="enableSpeaker()" id="enableSpeakerBtn" class="text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold">Enable Voice</button>
-                    </div>
-                    <div id="speakerStatus" class="text-[11px] text-slate-400 mb-2">Speaker idle - Waiting for payment...</div>
-                    <div id="speakerVisual" class="h-10 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
-                        <div id="speakerWave" class="flex items-center gap-1 hidden">
-                            <span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
-                            <span class="w-1 h-6 bg-teal-400 animate-bounce"></span>
-                            <span class="w-1 h-4 bg-teal-400 animate-bounce"></span>
-                            <span class="w-1 h-7 bg-teal-400 animate-bounce"></span>
-                            <span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
-                        </div>
-                        <span id="speakerIdleText" class="text-[10px] text-slate-500">No audio - Click Enable Voice</span>
-                    </div>
-                    <div class="flex gap-2 mt-2">
-                        <button onclick="testSpeakerVoice()" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Test Voice</button>
-                        <button onclick="document.getElementById('speakerStatus').textContent='Speaker idle - Waiting...'" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Clear</button>
-                    </div>
-                    <div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
-                </div>
+<div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
+<span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
+</div>
+<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-4 rounded-xl flex justify-between items-center card-hover cursor-pointer" onclick="openPointsModal()">
+<div><p class="text-[10px] text-slate-400 uppercase tracking-wide">My Reward Points</p><p class="text-xl font-bold text-amber-300">&#11088; <span class="customerPointsVal">0</span> pts</p><p class="text-[10px] text-slate-500">Earn on every payment</p></div>
+<span class="text-[11px] bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-full">Rewards</span>
+</div>
+<div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
+<h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
+<div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center mt-2"></div>
+<button onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">&#128260; Change Permanent QR</button>
+</div>
+<button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3 card-hover">
+<div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">&#128247;</div>
+<div><h4 class="text-sm font-bold text-white">Pay (Scan QR) - Direct Bank to Bank</h4><p class="text-xs text-slate-400">Instant settlement, no extra pages</p></div>
+</button>
+</div>
 
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <p class="text-xs text-slate-400">Today's Sales (Direct to your bank - Supabase saved)</p>
-                    <h3 class="text-2xl font-bold text-teal-300 mt-1" id="todaysSales">₦ 0.00</h3>
-                </div>
+<div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
+<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
+</div>
+<div id="virtualSpeakerPanel" class="bg-slate-950 p-4 rounded-xl border border-teal-500/40 shadow-inner">
+<div class="flex justify-between items-center mb-2">
+<h4 class="text-xs font-bold text-teal-300 flex items-center gap-2">&#128266; Virtual Speaker - Live <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span></h4>
+<button onclick="enableSpeaker()" id="enableSpeakerBtn" class="text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold">Enable Voice</button>
+</div>
+<div id="speakerStatus" class="text-[11px] text-slate-400 mb-2">Speaker idle - Waiting for payment...</div>
+<div id="speakerVisual" class="h-10 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
+<div id="speakerWave" class="hidden items-center gap-1">
+<span class="w-1 h-3 bg-teal-400 animate-bounce"></span><span class="w-1 h-6 bg-teal-400 animate-bounce"></span><span class="w-1 h-4 bg-teal-400 animate-bounce"></span><span class="w-1 h-7 bg-teal-400 animate-bounce"></span><span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
+</div>
+<span id="speakerIdleText" class="text-[10px] text-slate-500">No audio - Click Enable Voice</span>
+</div>
+<div class="flex gap-2 mt-2">
+<button onclick="testSpeakerVoice()" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Test Voice</button>
+<button onclick="document.getElementById('speakerStatus').textContent='Speaker idle - Waiting...'" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Clear</button>
+</div>
+<div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+<p class="text-[10px] text-slate-400 uppercase">Today&apos;s Sales</p>
+<h3 class="text-xl font-bold text-teal-300 mt-1" id="todaysSales">&#8358; 0.00</h3>
+</div>
+<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-3 rounded-xl card-hover cursor-pointer" onclick="openPointsModal()">
+<p class="text-[10px] text-slate-400 uppercase">Reward Points</p>
+<p class="text-xl font-bold text-amber-300">&#11088; <span class="merchantPointsVal">0</span></p>
+</div>
+</div>
+<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
+<h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR</h4>
+<p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR - Contains your bank for direct payment</p>
+<div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
+<button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">&#128260; Change Permanent Shop QR</button>
+</div>
+<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+<input type="number" id="merchantDynAmt" placeholder="Enter Amount (&#8358;)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
+<button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
+<div id="merchantQRResult" class="mt-2 hidden"><div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block shadow-inner"></div></div>
+</div>
+<button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-700 transition">&#128247; Scan Supplier QR</button>
+</div>
 
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-                    <h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR - UPI Direct No Page</h4>
-                    <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR - Contains your bank for direct payment</p>
-                    <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
-                    <button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">🔄 Change Permanent Shop QR</button>
-                </div>
+<div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+<div class="flex justify-between items-center mb-3">
+<h3 class="text-sm font-bold text-white">Linked Bank Accounts</h3>
+<button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
+</div>
+<div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
+</div>
 
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                    <input type="number" id="merchantDynAmt" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
-                    <button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR - Pure UPI No Page</button>
-                    <div id="merchantQRResult" class="mt-2 hidden">
-                        <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block shadow-inner"></div>
-                    </div>
-                </div>
-                <button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-750 transition">📷 Scan Supplier QR</button>
-            </div>
+</div>
+</main>
 
-            <!-- LINKED BANKS SECTION -->
-            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-white">Linked Bank Accounts - Supabase Saved (Billion Scale)</h3>
-                    <button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
-                </div>
-                <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
-            </div>
-        </div>
-    </main>
+<footer class="w-full text-center py-4 px-4">
+<p class="text-[11px] text-slate-500">Powered by <span class="text-teal-400 font-semibold"> MONNIFY </span> &bull; </p>
+<p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd(9810296) </p>
+<p class="text-[10px] text-slate-600 mt-1">All Rights Reserved &copy; 2026 &bull; Secure Fintech & AI Payment Gateway</p>
+</footer>
 
-    <!-- MODALS AND POPUPS -->
-    <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
-        <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3">
-            <h3 class="text-sm font-bold text-white">Scan QR - UPI Direct No Flutterwave Page</h3>
-            <video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
-            <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Simulate Scan (Merchant QR)</button>
-            <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
-        </div>
-    </div>
+<!-- MODALS -->
+<div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
+<div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
+<h3 class="text-sm font-bold text-white">Scan QR - Direct Bank to Bank</h3>
+<video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
+<button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Scan Sample QR (Demo)</button>
+<button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
+</div>
+</div>
 
-    <div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
-        <div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">✓</div>
-                <h3 class="text-base font-bold text-slate-900">Confirm Payment - UPI DIRECT NO PAGE</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Money will go directly bank to bank - No Flutterwave page - Supabase saved</p>
-            </div>
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">KRISHNYANSH ZENOVA PEAKS LTD</span></div>
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">GARG RUBY</span></div>
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
-                <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
-            </div>
-            <div>
-                <label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
-                <input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
-            </div>
-            <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct - UPI No Page</button>
-            <button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
-        </div>
-    </div>
+<div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
+<div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900 anim-fadeUp">
+<div class="text-center">
+<div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">&#10003;</div>
+<h3 class="text-base font-bold text-slate-900">Confirm Payment - Direct</h3>
+<p class="text-[11px] text-slate-500 mt-1">Money moves directly bank to bank - fast & secure</p>
+</div>
+<div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
+<div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
+<div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
+<div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
+<div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
+</div>
+<div>
+<label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
+<input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
+</div>
+<button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct</button>
+<button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
+</div>
+</div>
 
-    <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
-        <div class="bg-orange-50 border-b border-orange-100 p-3 text-center">
-            <p class="text-[12px] text-slate-700"><span class="font-bold">UPI Direct - No Flutterwave Page</span></p>
-        </div>
-        <div class="p-4 flex-1">
-            <h2 class="text-[15px] font-semibold text-slate-800 mb-4">Direct UPI - Account to Account</h2>
-            <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
-                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p><div class="flex items-center gap-3 mt-1"><span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span></div></div>
-                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p><div class="flex items-center gap-3 mt-1"><span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span></div></div>
-                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p><p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p></div>
-                <div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p><p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">GARG RUBY / KRISHNYANSH ZENOVA PEAKS LTD</p></div>
-            </div>
-            <div class="mt-6 space-y-3">
-                <button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I have paid - Confirm UPI</button>
-                <button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-orange-500 text-[14px] font-semibold py-2">Cancel</button>
-            </div>
-        </div>
-    </div>
+<div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
+<div class="bg-teal-50 border-b border-teal-100 p-3 text-center"><p class="text-[12px] text-slate-700"><span class="font-bold">Direct Transfer - Bank to Bank</span></p></div>
+<div class="p-4 flex-1">
+<h2 class="text-[15px] font-semibold text-slate-800 mb-4">Confirm Direct Transfer</h2>
+<div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
+<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p><span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span></div>
+<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p><span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span></div>
+<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p><p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p></div>
+<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p><p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">RUBY GARG / ZENOVA PEAK TECH HUB</p></div>
+</div>
+<div class="mt-6 space-y-3">
+<button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I Have Paid - Confirm</button>
+<button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-teal-600 text-[14px] font-semibold py-2">Cancel</button>
+</div>
+</div>
+</div>
 
-    <div id="paymentModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
-            <h3 class="text-base font-bold text-teal-400">UPI Direct - No Flutterwave Page</h3>
-            <input type="number" id="paymentPopupAmount" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-lg font-bold text-white outline-none" placeholder="5000">
-            <button onclick="executeLiveFlutterwavePayment()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-teal-400 transition shadow-lg">Pay Direct - UPI No Page</button>
-            <button onclick="document.getElementById('paymentModal').classList.add('hidden')" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs">Cancel</button>
-        </div>
-    </div>
+<div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
+<h3 class="text-base font-bold text-white">Link Bank Account</h3>
+<p class="text-[11px] text-slate-400">Your account name is verified live with the bank before saving.</p>
+<select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none"><option value="">Select Bank</option></select>
+<input type="text" id="accountNumberInput" maxlength="10" inputmode="numeric" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="10-digit account number">
+<input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Account holder name appears here after verification">
+<div class="flex space-x-2">
+<button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
+<button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Verify & Save</button>
+</div>
+</div>
+</div>
 
-    <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
-            <h3 class="text-base font-bold text-white">Link Bank Account - Save in Supabase</h3>
-            <select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none"><option value="">Select Bank</option></select>
-            <input type="text" id="accountNumberInput" maxlength="10" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="0123456789">
-            <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Auto-fills real holder name from Supabase">
-            <div class="flex space-x-2">
-                <button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
-                <button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Save in Supabase</button>
-            </div>
-        </div>
-    </div>
+<div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Notifications <span class="text-[10px] text-slate-500 font-normal">(last 3 months)</span></h3><button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div id="notificationListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs"></div>
+</div>
+</div>
 
-    <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Notifications</h3><button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
-            <div class="p-3 text-xs text-slate-300"><p class="font-bold text-white">Welcome to ClickPeQR!</p><p class="text-[10px] text-slate-400">UPI Direct No Flutterwave Page active - bank save in Supabase.</p></div>
-        </div>
-    </div>
+<div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Transaction History <span class="text-[10px] text-slate-500 font-normal">(last 3 months)</span></h3><button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div id="transactionListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs text-slate-300"></div>
+</div>
+</div>
 
-    <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Transaction History - Supabase</h3><button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
-            <div id="transactionListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs text-slate-300 mt-2"></div>
-        </div>
-    </div>
+<div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-3 max-h-[85vh] overflow-y-auto anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">About ClickPeQR</h3><button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div class="text-center"><img src="logo.png" class="w-14 h-14 rounded-2xl mx-auto mb-2 border border-teal-500/30" alt="logo"><p class="font-bold text-white text-sm">ClickPeQR</p><p class="text-[10px] text-slate-500">by ZENOVA PEAK TECH HUB &bull; RC-9810296</p></div>
+<div><p class="font-bold text-teal-300 mb-1">Why we built ClickPeQR</p><p class="text-slate-400">Small businesses in Nigeria lose sales every day to slow transfers, failed payments and complicated checkout pages. We built ClickPeQR so any shop owner can receive money in seconds with one simple QR - no machine, no stress, no technical knowledge needed.</p></div>
+<div><p class="font-bold text-teal-300 mb-1">Who it is for</p><p class="text-slate-400">Market traders, small shops, restaurants, service providers - and their customers who want to pay fast and safely. If you have a bank account, you can use ClickPeQR.</p></div>
+<div><p class="font-bold text-teal-300 mb-1">Our Vision</p><p class="text-slate-400">A Nigeria where every small business - from Lagos to Kano - can accept digital payments as easily as receiving cash.</p></div>
+<div><p class="font-bold text-teal-300 mb-1">Our Mission</p><p class="text-slate-400">To give every merchant instant, secure, low-cost payment tools with real-time voice confirmation, and to reward every customer and merchant with points on every transaction.</p></div>
+<p class="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-800">Powered by Zenova Peak Tech Hub &bull; Designed by Krishnyansh Zenova Peaks Ltd<br>All Rights Reserved &copy; 2026</p>
+</div>
+</div>
 
-    <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-2">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">About</h3><button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
-            <p><strong>ClickPeQR</strong> by KRISHNYANSH ZENOVA PEAKS LTD. RC-9810296<br>Powered by Flutterwave</p>
-        </div>
-    </div>
+<div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div class="flex items-center gap-3">
+<img id="settingsAvatarPreview" src="logo.png" class="user-avatar-display w-14 h-14 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="avatar">
+<button onclick="document.getElementById('dpFileInput').click()" class="text-[11px] bg-slate-800 text-teal-300 px-3 py-2 rounded-xl">Change Picture</button>
+</div>
+<div class="space-y-3 text-xs">
+<div><label class="text-slate-400">Full Name</label><input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Full Name"></div>
+<div><label class="text-slate-400">Email</label><input type="email" id="settingsEmail" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Email address"></div>
+<div id="settingsBizField" class="hidden"><label class="text-slate-400">Business Name</label><input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Business Name"></div>
+<div><label class="text-slate-400">Phone</label><input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" value="+2349067862223"></div>
+<button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl hover:bg-teal-400 transition">Save Changes</button>
+</div>
+</div>
+</div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
-            <div class="space-y-3 text-xs">
-                <input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" placeholder="Full Name">
-                <div id="settingsBizField" class="hidden"><input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" placeholder="Business Name"></div>
-                <input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none" value="+2349067862223">
-                <button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl hover:bg-teal-400 transition">Save Changes</button>
-            </div>
-        </div>
-    </div>
+<div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 max-h-[85vh] overflow-y-auto anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h3 class="text-sm font-bold text-teal-400">Frequently Asked Questions</h3><button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div id="faqList" class="space-y-2"></div>
+</div>
+</div>
 
-    <div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl text-xs text-slate-300 space-y-2">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">FAQ</h3><button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">✕</button></div>
-            <p><strong>How UPI without Flutterwave page works?</strong><br>Customer scans QR, app calls /api/direct-account-to-account, money moves bank to bank directly via Supabase saved accounts, no Flutterwave checkout page.</p>
-            <p><strong>Bank save?</strong><br>All banks saved in Supabase linked_accounts table, persists after logout, billion scale.</p>
-            <p><strong>Voice speaker?</strong><br>After direct payment, merchant hears "Money received in this account successfully".</p>
-        </div>
-    </div>
+<div id="complaintModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-rose-400">&#9888;&#65039; Complaint & Support</h3><button onclick="document.getElementById('complaintModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<p class="text-[11px] text-slate-400">Facing an issue? Reach us directly on any channel below - we respond within 24 hours.</p>
+<a href="https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help" target="_blank" class="flex items-center gap-3 bg-green-500/10 border border-green-500/30 p-3 rounded-xl hover:bg-green-500/20 transition">
+<span class="text-xl">&#128241;</span><div><p class="text-xs font-bold text-white">WhatsApp Us</p><p class="text-[11px] text-green-300">+234 906 786 2223</p></div>
+</a>
+<a href="mailto:Info@krishnyanshzenovapeaks.com?subject=ClickPeQR%20Complaint" class="flex items-center gap-3 bg-slate-950 border border-slate-800 p-3 rounded-xl hover:border-teal-500/40 transition">
+<span class="text-xl">&#128231;</span><div><p class="text-xs font-bold text-white">Email Us</p><p class="text-[11px] text-teal-300 break-all">Info@krishnyanshzenovapeaks.com</p></div>
+</a>
+<a href="mailto:Krishnyanshzenovapeaksltd@gmail.com?subject=ClickPeQR%20Complaint" class="flex items-center gap-3 bg-slate-950 border border-slate-800 p-3 rounded-xl hover:border-teal-500/40 transition">
+<span class="text-xl">&#128231;</span><div><p class="text-xs font-bold text-white">Email Us (Alt)</p><p class="text-[11px] text-teal-300 break-all">Krishnyanshzenovapeaksltd@gmail.com</p></div>
+</a>
+<button onclick="toggleAIBot();document.getElementById('complaintModal').classList.add('hidden')" class="w-full bg-teal-500/10 border border-teal-500/30 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Chat with AI Assistant (24/7)</button>
+</div>
+</div>
 
-    <!-- AI SUPPORT BOT -->
-    <div class="fixed bottom-4 right-4 z-40"><button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition">🤖</button></div>
-    <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h4 class="text-xs font-bold text-teal-400">ClickPeQR Smart Assistant - UPI No Page</h4><button onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button></div>
-        <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! Welcome to ClickPeQR UPI Direct - No Flutterwave page, bank save in Supabase.</div></div>
-        <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask about UPI..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter') sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
-    </div>
+<div id="pointsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-amber-300">&#11088; Points & Rewards</h3><button onclick="document.getElementById('pointsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+<div class="text-center bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-4">
+<p class="text-[10px] text-slate-400 uppercase tracking-wide">Your Balance</p>
+<p class="text-3xl font-bold text-amber-300">&#11088; <span id="pointsBalanceBig">0</span></p>
+<p class="text-[10px] text-slate-500 mt-1">100 pts = &#8358;10 cashback value</p>
+</div>
+<div class="text-[11px] text-slate-400 space-y-1">
+<p class="font-bold text-white">How it works</p>
+<p>&bull; Customers earn <b class="text-amber-300">1 pt per &#8358;100</b> on every successful payment.</p>
+<p>&bull; Merchants earn <b class="text-amber-300">2 pts per &#8358;100</b> on every sale received.</p>
+<p>&bull; Points never expire and are saved to your account.</p>
+</div>
+<div><p class="text-xs font-bold text-white mb-2">Points History</p><div id="pointsHistoryList" class="space-y-2 max-h-40 overflow-y-auto text-[11px]"></div></div>
+</div>
+</div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].5Z';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const nigerianBanksList = [
-            { name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "Ecobank Nigeria", code: "050" },
-            { name: "Fidelity Bank", code: "070" }, { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
-            { name: "GTB", code: "058" }, { name: "Heritage Bank", code: "030" }, { name: "Keystone Bank", code: "082" },
-            { name: "Polaris Bank", code: "076" }, { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
-            { name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" }, { name: "Union Bank", code: "032" },
-            { name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "Zenith Bank", code: "057" },
-            { name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
-            { name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" }, { name: "Opay", code: "999992" },
-            { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }, { name: "Sparkle", code: "51310" },
-            { name: "Airtel Smartcash PSB", code: "120004" }, { name: "MTN Momo PSB", code: "120003" }, { name: "9psb", code: "120001" },
-            { name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" }, { name: "Globus Bank", code: "103" },
-            { name: "Signature Bank", code: "106" }, { name: "Titan Trust Bank", code: "102" }
-        ];
+<div class="fixed bottom-4 right-4 z-40"><button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition text-xl">&#129302;</button></div>
+<div id="aiBotModal" class="fixed bottom-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96 anim-fadeUp">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h4 class="text-xs font-bold text-teal-400">ClickPeQR Assistant - 24/7</h4><button onclick="toggleAIBot()" class="text-slate-400 text-xs">&#10005;</button></div>
+<div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! I&apos;m your ClickPeQR assistant. Ask me anything about payments, QR codes, bank linking, points, or support. &#128522;</div></div>
+<div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter')sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
+</div>
 
-        let currentAuthMode = 'login'; 
-        let currentPortalType = 'customer'; 
-        let scannedMerchantData = null; 
-        let speakerChannel = null; 
-        let isSpeakerEnabled = false;
-        const PAYMENT_MODE = 'UPI_NO_FLUTTERWAVE_PAGE_SUPABASE_SAVE';
+<script>
+const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].5Z';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        try { 
-            speakerChannel = new BroadcastChannel('clickpeqr_payments'); 
-            speakerChannel.onmessage = (e) => { 
-                if(e.data.type === 'payment_success'){ 
-                    triggerVirtualSpeaker(e.data.amount, e.data.txId); 
-                } 
-            }; 
-        } catch(e){}
+const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
+const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
 
-        function toggleSidebar(){
-            document.getElementById('appSidebar').classList.toggle('-translate-x-full');
-            document.getElementById('sidebarOverlay').classList.toggle('hidden');
-        }
+const nigerianBanksList = [
+{ name: "Access Bank", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "Ecobank Nigeria", code: "050" },
+{ name: "Fidelity Bank", code: "070" }, { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
+{ name: "GTBank", code: "058" }, { name: "Heritage Bank", code: "030" }, { name: "Keystone Bank", code: "082" },
+{ name: "Polaris Bank", code: "076" }, { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
+{ name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" }, { name: "Union Bank", code: "032" },
+{ name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "Zenith Bank", code: "057" },
+{ name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
+{ name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" }, { name: "OPay", code: "999992" },
+{ name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }, { name: "Sparkle", code: "51310" },
+{ name: "Airtel Smartcash PSB", code: "120004" }, { name: "MTN Momo PSB", code: "120003" }, { name: "9PSB", code: "120001" },
+{ name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" }, { name: "Globus Bank", code: "103" },
+{ name: "Signature Bank", code: "106" }, { name: "Titan Trust Bank", code: "102" }
+];
 
-        function switchAuthTab(m){
-            currentAuthMode = m;
-            const l = document.getElementById('loginTabBtn');
-            const r = document.getElementById('registerTabBtn');
-            const k = document.getElementById('kycFields');
-            const s = document.getElementById('authSubmitBtn');
-            if(m === 'login'){
-                l.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
-                r.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
-                k.classList.add('hidden');
-                s.textContent = "Sign In Securely";
-            } else {
-                r.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
-                l.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
-                k.classList.remove('hidden');
-                s.textContent = "Register & Launch App";
-            }
-        }
+let currentAuthMode = 'login';
+let currentPortalType = 'customer';
+let scannedMerchantData = null;
+let speakerChannel = null;
+let isSpeakerEnabled = false;
 
-        function setPortalType(t){
-            currentPortalType = t;
-            const c = document.getElementById('typeCustomerBtn');
-            const m = document.getElementById('typeMerchantBtn');
-            const b = document.getElementById('businessNameField');
-            if(t === 'customer'){
-                c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400";
-                m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
-                b.classList.add('hidden');
-            } else {
-                m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400";
-                c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
-                b.classList.remove('hidden');
-            }
-        }
+function getUser(){ try { return JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}'); } catch(e){ return {}; } }
+function saveUser(u){ localStorage.setItem('clickpeqr_active_user', JSON.stringify(u)); }
+function within3Months(ts){ return (Date.now() - ts) <= THREE_MONTHS_MS; }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const d = document.getElementById('bankSelectDropdown');
-            if(d){
-                d.innerHTML = '<option value="">Select Bank</option>';
-                nigerianBanksList.forEach(b => {
-                    let o = document.createElement('option');
-                    o.value = b.code;
-                    o.textContent = b.name;
-                    d.appendChild(o);
-                });
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const shouldStay = urlParams.get('stay') === '1' || localStorage.getItem('clickpeqr_remember') === 'true';
-            const a = localStorage.getItem('clickpeqr_active_user');
-            if(shouldStay && a){
-                loadDashboard(JSON.parse(a));
-            } else {
-                document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('dashboardScreen').classList.add('hidden');
-                document.getElementById('mainHeader').classList.add('hidden');
-            }
-            if('speechSynthesis' in window){
-                speechSynthesis.getVoices();
-                window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
-            }
-        });
+try {
+speakerChannel = new BroadcastChannel('clickpeqr_payments');
+speakerChannel.onmessage = (e) => { if(e.data && e.data.type === 'payment_success'){ triggerVirtualSpeaker(e.data.amount, e.data.txId); } };
+} catch(e){}
 
-        function handleAuthSubmit(e){
-            e.preventDefault();
-            const fullName = document.getElementById('fullNameInput').value.trim();
-            const emailRaw = document.getElementById('emailInput').value.trim();
-            const email = emailRaw.toLowerCase();
-            const bizName = document.getElementById('businessNameInput')?.value.trim() || (fullName + " Store");
-            const phoneVal = document.getElementById('settingsPhone')?.value || "+2349067862223";
-            let allUsers = JSON.parse(localStorage.getItem('clickpeqr_all_users') || '{}');
-            let uniqueId = allUsers[email]?.id;
-            if(!uniqueId){
-                uniqueId = Math.floor(Math.random() * 900000) + 100000;
-                allUsers[email] = {id: uniqueId, email: email};
-                localStorage.setItem('clickpeqr_all_users', JSON.stringify(allUsers));
-            }
-            const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
-            const userData = {
-                id: uniqueId,
-                full_name: fullName,
-                email: email,
-                business_name: bizName,
-                portal_type: currentPortalType,
-                avatar_url: dp,
-                phone_number: phoneVal,
-                permanent_qr_version: Date.now()
-            };
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(userData));
-            localStorage.setItem('clickpeqr_remember', 'true');
-            loadDashboard(userData);
-            setTimeout(async () => {
-                try {
-                    if(currentPortalType === 'merchant'){
-                        await supabaseClient.from('merchants').upsert([{
-                            id: uniqueId, business_name: bizName, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, settlement_bank: '044', permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version
-                        }], {onConflict: 'email'});
-                    } else {
-                        await supabaseClient.from('users').upsert([{
-                            id: uniqueId, full_name: fullName, email: email, phone_number: phoneVal, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version
-                        }], {onConflict: 'email'});
-                    }
-                } catch(err){}
-            }, 100);
-        }
+/* ---------- UI helpers ---------- */
+function toggleSidebar(){
+document.getElementById('appSidebar').classList.toggle('-translate-x-full');
+document.getElementById('sidebarOverlay').classList.toggle('hidden');
+}
+function switchView(){ window.scrollTo({top:0, behavior:'smooth'}); }
+function copyToClipboard(t){ if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('Copied: '+t)); } }
 
-        function loadDashboard(user){
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainHeader').classList.remove('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
-            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User Name');
-            document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
-            document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
-            const dp = localStorage.getItem('user_custom_dp') || user.avatar_url;
-            if(dp){
-                document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
-                const s = document.getElementById('sidebarUserDP');
-                if(s) s.src = dp;
-            }
-            if(user.portal_type === 'merchant'){
-                document.getElementById('merchantPortalView').classList.remove('hidden');
-                document.getElementById('customerPortalView').classList.add('hidden');
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
-                setTimeout(() => renderPermanentShopQR(user), 100);
-                setTimeout(() => initMerchantRealtime(user.id), 500);
-            } else {
-                document.getElementById('customerPortalView').classList.remove('hidden');
-                document.getElementById('merchantPortalView').classList.add('hidden');
-                setTimeout(() => renderCustomerPermanentQR(user), 100);
-            }
-            fetchAndRenderBanks(user.id);
-        }
+/* ---------- Auth ---------- */
+function switchAuthTab(m){
+currentAuthMode = m;
+const l = document.getElementById('loginTabBtn'), r = document.getElementById('registerTabBtn');
+const k = document.getElementById('kycFields'), s = document.getElementById('authSubmitBtn');
+if(m === 'login'){
+l.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
+r.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
+k.classList.add('hidden'); s.textContent = "Sign In Securely";
+} else {
+r.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
+l.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
+k.classList.remove('hidden'); s.textContent = "Register & Launch App";
+}
+}
+function setPortalType(t){
+currentPortalType = t;
+const c = document.getElementById('typeCustomerBtn'), m = document.getElementById('typeMerchantBtn'), b = document.getElementById('businessNameField');
+if(t === 'customer'){
+c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400";
+m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
+b.classList.add('hidden');
+} else {
+m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400";
+c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
+b.classList.remove('hidden');
+}
+}
+function handleAuthSubmit(e){
+e.preventDefault();
+const fullName = document.getElementById('fullNameInput').value.trim();
+const email = document.getElementById('emailInput').value.trim().toLowerCase();
+const bizName = (document.getElementById('businessNameInput') || {}).value || '';
+const businessName = bizName.trim() || (fullName + " Store");
+if(!fullName || !email){ alert('Please enter your name and email.'); return; }
+let allUsers = {};
+try { allUsers = JSON.parse(localStorage.getItem('clickpeqr_all_users') || '{}'); } catch(e){}
+let uniqueId = allUsers[email] && allUsers[email].id;
+if(!uniqueId){ uniqueId = Math.floor(Math.random()*900000)+100000; allUsers[email] = {id: uniqueId, email: email}; localStorage.setItem('clickpeqr_all_users', JSON.stringify(allUsers)); }
+const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
+const userData = { id: uniqueId, full_name: fullName, email: email, business_name: businessName, portal_type: currentPortalType, avatar_url: dp, phone_number: '+2349067862223', permanent_qr_version: Date.now() };
+saveUser(userData);
+localStorage.setItem('clickpeqr_remember', 'true');
+loadDashboard(userData);
+pushNotification('Welcome to ClickPeQR', 'Your account is ready. Link your bank to start receiving payments.');
+setTimeout(async () => {
+try {
+if(currentPortalType === 'merchant'){
+await supabaseClient.from('merchants').upsert([{ id: uniqueId, business_name: businessName, full_name: fullName, email: email, phone_number: userData.phone_number, avatar_url: dp, permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version }], {onConflict: 'email'});
+} else {
+await supabaseClient.from('users').upsert([{ id: uniqueId, full_name: fullName, email: email, phone_number: userData.phone_number, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version }], {onConflict: 'email'});
+}
+} catch(err){}
+}, 100);
+}
+function loadDashboard(user){
+document.getElementById('authScreen').classList.add('hidden');
+document.getElementById('mainHeader').classList.remove('hidden');
+document.getElementById('dashboardScreen').classList.remove('hidden');
+document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User');
+const se = document.getElementById('sidebarUserEmail'); if(se) se.textContent = user.email || '';
+document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
+document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
+const dp = localStorage.getItem('user_custom_dp') || user.avatar_url || 'logo.png';
+document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
+const sdp = document.getElementById('sidebarUserDP'); if(sdp) sdp.src = dp;
+if(user.portal_type === 'merchant'){
+document.getElementById('merchantPortalView').classList.remove('hidden');
+document.getElementById('customerPortalView').classList.add('hidden');
+document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
+setTimeout(() => renderPermanentShopQR(user), 100);
+setTimeout(() => initMerchantRealtime(user.id), 500);
+} else {
+document.getElementById('customerPortalView').classList.remove('hidden');
+document.getElementById('merchantPortalView').classList.add('hidden');
+setTimeout(() => renderCustomerPermanentQR(user), 100);
+}
+fetchAndRenderBanks(user.id);
+updatePointsUI();
+updateNotifBadge();
+}
+function handleLogout(){ localStorage.removeItem('clickpeqr_active_user'); window.location.href = window.location.pathname; }
 
-        function handleDPChange(event){
-            const file = event.target.files[0];
-            if(file){
-                const r = new FileReader();
-                r.onload = async function(e){
-                    const b = e.target.result;
-                    localStorage.setItem('user_custom_dp', b);
-                    document.querySelectorAll('.user-avatar-display').forEach(img => img.src = b);
-                    const s = document.getElementById('sidebarUserDP');
-                    if(s) s.src = b;
-                    try {
-                        const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-                        if(u.id){
-                            if(u.portal_type === 'merchant'){
-                                await supabaseClient.from('merchants').update({avatar_url: b}).eq('id', u.id);
-                            } else {
-                                await supabaseClient.from('users').update({avatar_url: b}).eq('id', u.id);
-                            }
-                            u.avatar_url = b;
-                            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
-                        }
-                    } catch(err){}
-                    alert("Profile Picture updated successfully!");
-                };
-                r.readAsDataURL(file);
-            }
-        }
+/* ---------- Profile ---------- */
+function handleDPChange(event){
+const file = event.target.files[0];
+if(!file) return;
+const r = new FileReader();
+r.onload = async function(e){
+const b = e.target.result;
+localStorage.setItem('user_custom_dp', b);
+document.querySelectorAll('.user-avatar-display').forEach(img => img.src = b);
+const s = document.getElementById('sidebarUserDP'); if(s) s.src = b;
+const pv = document.getElementById('settingsAvatarPreview'); if(pv) pv.src = b;
+try {
+const u = getUser();
+if(u.id){
+if(u.portal_type === 'merchant'){ await supabaseClient.from('merchants').update({avatar_url: b}).eq('id', u.id); }
+else { await supabaseClient.from('users').update({avatar_url: b}).eq('id', u.id); }
+u.avatar_url = b; saveUser(u);
+}
+} catch(err){}
+alert('Profile picture updated successfully.');
+};
+r.readAsDataURL(file);
+}
+function openSettingsModal(){
+const u = getUser();
+document.getElementById('settingsFullName').value = u.full_name || '';
+document.getElementById('settingsEmail').value = u.email || '';
+document.getElementById('settingsPhone').value = u.phone_number || '+2349067862223';
+const pv = document.getElementById('settingsAvatarPreview'); if(pv) pv.src = localStorage.getItem('user_custom_dp') || u.avatar_url || 'logo.png';
+if(u.portal_type === 'merchant'){ document.getElementById('settingsBizField').classList.remove('hidden'); document.getElementById('settingsBizName').value = u.business_name || ''; }
+else { document.getElementById('settingsBizField').classList.add('hidden'); }
+document.getElementById('settingsModal').classList.remove('hidden');
+}
+async function saveProfileSettings(){
+let u = getUser();
+const newName = document.getElementById('settingsFullName').value.trim();
+const newEmail = document.getElementById('settingsEmail').value.trim().toLowerCase();
+const newPhone = document.getElementById('settingsPhone').value.trim();
+if(!newName){ alert('Please enter your full name.'); return; }
+if(!newEmail || newEmail.indexOf('@') < 0){ alert('Please enter a valid email address.'); return; }
+u.full_name = newName; u.email = newEmail; u.phone_number = newPhone;
+if(u.portal_type === 'merchant'){
+u.business_name = document.getElementById('settingsBizName').value.trim() || u.business_name;
+document.getElementById('merchantStoreNameLabel').textContent = "Store: " + u.business_name;
+renderPermanentShopQR(u);
+try { await supabaseClient.from('merchants').update({business_name: u.business_name, full_name: newName, email: newEmail, phone_number: newPhone}).eq('id', u.id); } catch(e){}
+} else {
+renderCustomerPermanentQR(u);
+try { await supabaseClient.from('users').update({full_name: newName, email: newEmail, phone_number: newPhone}).eq('id', u.id); } catch(e){}
+}
+saveUser(u);
+document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = u.full_name);
+const se = document.getElementById('sidebarUserEmail'); if(se) se.textContent = u.email;
+document.getElementById('settingsModal').classList.add('hidden');
+pushNotification('Profile updated', 'Your profile details were saved successfully.');
+alert('Profile saved successfully.');
+}
 
-        function openSettingsModal(){
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            document.getElementById('settingsFullName').value = u.full_name || '';
-            if(u.portal_type === 'merchant'){
-                document.getElementById('settingsBizField').classList.remove('hidden');
-                document.getElementById('settingsBizName').value = u.business_name || '';
-            }
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
+/* ---------- QR ---------- */
+function primaryBankOf(userId){
+try {
+const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+return banks.find(b => b.is_primary) || banks[0] || null;
+} catch(e){ return null; }
+}
+function renderPermanentShopQR(user){
+const c = document.getElementById('permanentShopQRContainer');
+if(!c) return;
+c.innerHTML = "";
+const ver = user.permanent_qr_version || Date.now();
+const pb = primaryBankOf(user.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
+const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
+new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
+}
+function renderCustomerPermanentQR(user){
+const c = document.getElementById('customerPermanentQRContainer');
+if(!c) return;
+c.innerHTML = "";
+const ver = user.permanent_qr_version || Date.now();
+new QRCode(c, {text: JSON.stringify({type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver}), width: 130, height: 130});
+}
+function regenerateMerchantQR(){
+let u = getUser();
+if(!u.id) return;
+if(!confirm('Generate a new Permanent Shop QR? Your previous QR will no longer work.')) return;
+u.permanent_qr_version = Date.now();
+saveUser(u);
+renderPermanentShopQR(u);
+try { supabaseClient.from('merchants').update({permanent_qr_id: 'PERM_'+u.id+'_'+u.permanent_qr_version}).eq('id', u.id).then(()=>{}); } catch(e){}
+alert('Your new Permanent Shop QR is ready.');
+}
+function regenerateCustomerQR(){
+let u = getUser();
+if(!u.id) return;
+if(!confirm('Generate a new Permanent Customer QR?')) return;
+u.permanent_qr_version = Date.now();
+saveUser(u);
+renderCustomerPermanentQR(u);
+try { supabaseClient.from('users').update({permanent_qr_id: 'CUST_'+u.id+'_'+u.permanent_qr_version}).eq('id', u.id).then(()=>{}); } catch(e){}
+alert('Your new Permanent Customer QR is ready.');
+}
+function generateMerchantDynamicQR(){
+const amt = document.getElementById('merchantDynAmt').value;
+if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
+const c = document.getElementById('dynamicQRContainer');
+c.innerHTML = "";
+const u = getUser();
+const pb = primaryBankOf(u.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
+new QRCode(c, { text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name}), width: 140, height: 140 });
+document.getElementById('merchantQRResult').classList.remove('hidden');
+}
 
-        async function saveProfileSettings(){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            u.full_name = document.getElementById('settingsFullName').value.trim();
-            u.phone_number = document.getElementById('settingsPhone').value.trim();
-            if(u.portal_type === 'merchant'){
-                u.business_name = document.getElementById('settingsBizName').value.trim();
-                document.getElementById('merchantStoreNameLabel').textContent = "Store: " + u.business_name;
-                renderPermanentShopQR(u);
-                try {
-                    await supabaseClient.from('merchants').update({business_name: u.business_name, full_name: u.full_name, phone_number: u.phone_number}).eq('id', u.id);
-                } catch(e){}
-            } else {
-                renderCustomerPermanentQR(u);
-                try {
-                    await supabaseClient.from('users').update({full_name: u.full_name, phone_number: u.phone_number}).eq('id', u.id);
-                } catch(e){}
-            }
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
-            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = u.full_name);
-            document.getElementById('settingsModal').classList.add('hidden');
-            alert("Settings updated successfully!");
-        }
+/* ---------- Scanner & payment ---------- */
+async function openWorkingScanner(){
+document.getElementById('scannerModal').classList.remove('hidden');
+try {
+const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
+document.getElementById('cameraVideoFeed').srcObject = s;
+} catch(err){}
+}
+function closeScannerModal(){
+const v = document.getElementById('cameraVideoFeed');
+if(v && v.srcObject){ v.srcObject.getTracks().forEach(t => t.stop()); }
+document.getElementById('scannerModal').classList.add('hidden');
+}
+function simulateSuccessfulScan(){
+closeScannerModal();
+const activeUser = getUser();
+let qrData = null;
+try { const ls = localStorage.getItem('last_scanned_qr_payload'); if(ls) qrData = JSON.parse(ls); } catch(e){}
+if(qrData && qrData.account_number){
+scannedMerchantData = { shop_name: qrData.businessName || 'Merchant Store', account_name: qrData.account_name, account_number: qrData.account_number, bank_name: qrData.bank_name || qrData.bank_code, bank_code: qrData.bank_code, merchant_id: qrData.merchantId || ('merchant_'+Date.now()), amount: qrData.amount };
+} else {
+const pb = primaryBankOf(activeUser.id) || {bank_name: 'GTBank', account_number: '0638090889', account_name: 'RUBY GARG', bank_code: '058'};
+scannedMerchantData = { shop_name: 'ZENOVA PEAK TECH HUB', account_name: pb.account_name, account_number: pb.account_number, bank_name: pb.bank_name, bank_code: pb.bank_code, merchant_id: 'zenova_merchant_001' };
+}
+document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
+document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
+document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
+document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
+document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '510';
+document.getElementById('merchantConfirmModal').classList.remove('hidden');
+}
+function proceedToManualTransfer(){
+const amt = document.getElementById('confirmAmountInput').value;
+if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
+document.getElementById('merchantConfirmModal').classList.add('hidden');
+document.getElementById('manualTransferModal').classList.remove('hidden');
+document.getElementById('manualAmountDisplay').innerText = 'NGN ' + amt;
+document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
+document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
+document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
+}
+async function handleManualPaid(){ await handleManualPaidDirectUPI(); }
+async function handleManualPaidDirectUPI(){
+const amtInput = document.getElementById('confirmAmountInput');
+const amt = (amtInput && amtInput.value) || '0';
+if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
+const u = getUser();
+const merchant = scannedMerchantData;
+if(!u.id || !merchant){ alert('Something went wrong. Please try again.'); return; }
+try {
+const res = await fetch('/api/direct-account-to-account', {
+method: 'POST', headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({customer_id: u.id, merchant_id: merchant.merchant_id, amount: amt, transaction_id: 'TXN_'+Date.now()})
+});
+const result = await res.json();
+if(result.status === 'success'){
+await saveTransactionToSupabase(amt, (result.transfer && result.transfer.data && result.transfer.data.id) || Date.now());
+awardPoints(u.id, Math.floor(parseFloat(amt)/100) * POINTS.customerPer100, 'Payment of \u20A6' + amt + ' to ' + merchant.shop_name);
+if(merchant.merchant_id){ awardPoints(merchant.merchant_id, Math.floor(parseFloat(amt)/100) * POINTS.merchantPer100, 'Sale of \u20A6' + amt); }
+if(speakerChannel){ speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: (result.transfer && result.transfer.data && result.transfer.data.id) || ''}); }
+triggerVirtualSpeaker(amt, (result.transfer && result.transfer.data && result.transfer.data.id) || '');
+pushNotification('Payment successful', '\u20A6' + amt + ' paid to ' + merchant.shop_name + '. You earned ' + (Math.floor(parseFloat(amt)/100) * POINTS.customerPer100) + ' points.');
+document.getElementById('manualTransferModal').classList.add('hidden');
+alert('Payment successful. \u20A6' + amt + ' has been sent to ' + merchant.shop_name + '.');
+} else {
+alert('Payment could not be completed: ' + (result.message || 'Please try again.'));
+}
+} catch(e){ alert('Payment could not be completed. Please check your connection and try again.'); }
+}
+function executeLiveFlutterwavePayment(){ handleManualPaidDirectUPI(); }
 
-        function renderPermanentShopQR(user){
-            const c = document.getElementById('permanentShopQRContainer');
-            if(!c) return;
-            c.innerHTML = "";
-            const ver = user.permanent_qr_version || Date.now();
-            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+user.id) || '[]');
-            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', bank_name: 'GTB'};
-            const payload = {
-                type: "MERCHANT_PERMANENT",
-                merchantId: user.id,
-                businessName: user.business_name || user.full_name,
-                version: ver,
-                permanent_id: 'PERM_'+user.id+'_'+ver,
-                bank_code: primaryBank.bank_code,
-                account_number: primaryBank.account_number,
-                account_name: primaryBank.account_name,
-                bank_name: primaryBank.bank_name,
-                scale: "BILLION_READY_PURE_NO_PAGE"
-            };
-            new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
-        }
+/* ---------- Speaker ---------- */
+function enableSpeaker(){
+isSpeakerEnabled = true;
+document.getElementById('enableSpeakerBtn').innerText = 'Voice ON';
+document.getElementById('speakerIdleText').innerText = 'Speaker enabled - Listening for payments...';
+document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
+speakMoneyReceived(0, true);
+}
+function testSpeakerVoice(){ if(!isSpeakerEnabled) enableSpeaker(); speakMoneyReceived('510', false); }
+function triggerVirtualSpeaker(amount, txId){
+const statusEl = document.getElementById('speakerStatus'), waveEl = document.getElementById('speakerWave'),
+idleEl = document.getElementById('speakerIdleText'), logEl = document.getElementById('lastPaymentLog');
+if(statusEl){ statusEl.innerText = 'Payment received: \u20A6' + amount; statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2'; }
+if(waveEl){ waveEl.classList.remove('hidden'); waveEl.classList.add('flex'); }
+if(idleEl) idleEl.classList.add('hidden');
+if(logEl) logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">Payment ID: ' + txId + ' - \u20A6' + amount + ' - ' + new Date().toLocaleTimeString() + '</div>';
+const salesEl = document.getElementById('todaysSales');
+if(salesEl){
+const current = parseFloat(salesEl.innerText.replace(/[^0-9.]/g, '')) || 0;
+salesEl.innerText = '\u20A6 ' + (current + parseFloat(amount)).toLocaleString(undefined, {minimumFractionDigits: 2});
+}
+speakMoneyReceived(amount, false);
+setTimeout(() => {
+if(waveEl){ waveEl.classList.add('hidden'); waveEl.classList.remove('flex'); }
+if(idleEl){ idleEl.classList.remove('hidden'); idleEl.innerText = 'Waiting for next payment...'; }
+if(statusEl){ statusEl.innerText = 'Speaker idle - Waiting for payment...'; statusEl.className = 'text-[11px] text-slate-400 mb-2'; }
+}, 5000);
+}
+function speakMoneyReceived(amount, isTest){
+if(!isSpeakerEnabled && !isTest) return;
+if(!('speechSynthesis' in window)) return;
+window.speechSynthesis.cancel();
+const text = isTest ? 'Voice alerts enabled. You will hear a message for every payment received.' : 'Payment received successfully. ' + amount + ' Naira received.';
+const utter = new SpeechSynthesisUtterance(text);
+utter.lang = 'en-NG'; utter.rate = 0.9; utter.pitch = 1.1; utter.volume = 1.0;
+const voices = window.speechSynthesis.getVoices();
+let preferred = voices.find(v => v.lang && v.lang.indexOf('en-NG') === 0) || voices.find(v => v.lang && v.lang.indexOf('en') === 0);
+if(preferred) utter.voice = preferred;
+window.speechSynthesis.speak(utter);
+}
+function initMerchantRealtime(merchantId){
+try {
+supabaseClient.channel('merchant:'+merchantId).on('broadcast', {event: 'payment_success'}, (payload) => {
+if(payload && payload.payload){ triggerVirtualSpeaker(payload.payload.amount, payload.payload.txId); }
+}).subscribe((status) => {
+if(status === 'SUBSCRIBED'){
+const se = document.getElementById('speakerStatus'); if(se) se.innerText = 'Live - Waiting for payments...';
+const d = document.getElementById('speakerLiveDot'); if(d) d.className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
+}
+});
+} catch(e){}
+}
 
-        function renderCustomerPermanentQR(user){
-            const c = document.getElementById('customerPermanentQRContainer');
-            if(!c) return;
-            c.innerHTML = "";
-            const ver = user.permanent_qr_version || Date.now();
-            new QRCode(c, {text: JSON.stringify({type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver}), width: 130, height: 130});
-        }
+/* ---------- Transactions (3 months) ---------- */
+async function saveTransactionToSupabase(amount, txId){
+const u = getUser();
+const tx = { amount: parseFloat(amount), type: 'Direct Transfer', merchant: (scannedMerchantData && scannedMerchantData.shop_name) || 'Merchant', date: new Date().toLocaleString(), ts: Date.now(), txId: String(txId) };
+let txs = [];
+try { txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]'); } catch(e){}
+txs.unshift(tx);
+localStorage.setItem('clickpeqr_txs', JSON.stringify(txs.slice(0, 200)));
+try {
+await supabaseClient.from('transactions').insert([{ transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: (scannedMerchantData && scannedMerchantData.merchant_id) || u.id, amount: parseFloat(amount), status: 'success', type: 'Direct Transfer' }]);
+} catch(e){}
+}
+function showTransactionHistory(){
+const c = document.getElementById('transactionListContainer');
+let txs = [];
+try { txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]'); } catch(e){}
+const recent = txs.filter(t => t.ts && within3Months(t.ts));
+if(recent.length === 0){
+c.innerHTML = '<p class="text-slate-500 text-center py-4">No transactions in the last 3 months.</p>';
+} else {
+let h = '';
+for(let i = 0; i < recent.length; i++){
+const t = recent[i];
+h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white text-[11px]">' + t.type + ' - ' + t.merchant + '</p><p class="text-[10px] text-slate-400">' + t.date + ' | ID: ' + t.txId + '</p></div><span class="text-teal-400 font-mono font-bold text-xs">\u20A6' + t.amount + '</span></div>';
+}
+c.innerHTML = h;
+}
+document.getElementById('transactionModal').classList.remove('hidden');
+}
 
-        function regenerateMerchantQR(){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if(!u.id) return;
-            if(!confirm('Change your Permanent Shop QR? Old QR will stop working. Continue?')) return;
-            u.permanent_qr_version = Date.now();
-            u.permanent_qr_id = 'PERM_'+u.id+'_'+u.permanent_qr_version;
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
-            renderPermanentShopQR(u);
-            supabaseClient.from('merchants').update({permanent_qr_id: u.permanent_qr_id}).eq('id', u.id).then(()=>{});
-            alert('New Permanent Shop QR generated successfully!');
-        }
+/* ---------- Notifications (3 months) ---------- */
+function pushNotification(title, body){
+let n = [];
+try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
+n.unshift({title: title, body: body, ts: Date.now(), date: new Date().toLocaleString()});
+localStorage.setItem('clickpeqr_notifs', JSON.stringify(n.slice(0, 100)));
+try {
+const u = getUser();
+if(u.id){ supabaseClient.from('notifications').insert([{user_id: u.id, title: title, body: body}]).then(()=>{}); }
+} catch(e){}
+updateNotifBadge();
+if(!document.getElementById('notificationModal').classList.contains('hidden')){ renderNotifications(); }
+}
+function updateNotifBadge(){
+let n = [];
+try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
+const lastSeen = parseInt(localStorage.getItem('clickpeqr_notif_seen') || '0', 10);
+const hasNew = n.some(x => x.ts > lastSeen);
+const badge = document.getElementById('notifBadge');
+if(badge){ badge.classList.toggle('hidden', !hasNew); }
+}
+function renderNotifications(){
+const c = document.getElementById('notificationListContainer');
+let n = [];
+try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
+const recent = n.filter(x => within3Months(x.ts));
+if(recent.length === 0){
+c.innerHTML = '<p class="text-slate-500 text-center py-4">You have no notifications.</p>';
+} else {
+let h = '';
+for(let i = 0; i < recent.length; i++){
+const x = recent[i];
+h += '<div class="bg-slate-950 p-3 rounded-xl border border-slate-800"><p class="font-bold text-white text-[11px]">' + x.title + '</p><p class="text-[11px] text-slate-400 mt-0.5">' + x.body + '</p><p class="text-[9px] text-slate-500 mt-1">' + x.date + '</p></div>';
+}
+c.innerHTML = h;
+}
+}
+function showNotificationModal(){
+renderNotifications();
+document.getElementById('notificationModal').classList.remove('hidden');
+localStorage.setItem('clickpeqr_notif_seen', String(Date.now()));
+setTimeout(updateNotifBadge, 300);
+}
 
-        function regenerateCustomerQR(){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if(!u.id) return;
-            if(!confirm('Change your Permanent Customer QR? Continue?')) return;
-            u.permanent_qr_version = Date.now();
-            u.permanent_qr_id = 'CUST_'+u.id+'_'+u.permanent_qr_version;
-            localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
-            renderCustomerPermanentQR(u);
-            supabaseClient.from('users').update({permanent_qr_id: u.permanent_qr_id}).eq('id', u.id).then(()=>{});
-            alert('New Permanent Customer QR generated!');
-        }
+/* ---------- Points ---------- */
+function getPointsData(userId){
+try {
+const d = JSON.parse(localStorage.getItem('clickpeqr_points_'+userId) || '{"balance":0,"history":[]}');
+if(typeof d.balance !== 'number') d.balance = 0;
+if(!Array.isArray(d.history)) d.history = [];
+return d;
+} catch(e){ return {balance: 0, history: []}; }
+}
+function awardPoints(userId, pts, reason){
+if(!userId || !pts || pts <= 0) return;
+const d = getPointsData(userId);
+d.balance += pts;
+d.history.unshift({pts: pts, reason: reason, date: new Date().toLocaleString(), ts: Date.now()});
+localStorage.setItem('clickpeqr_points_'+userId, JSON.stringify({balance: d.balance, history: d.history.slice(0, 100)}));
+try { supabaseClient.from('reward_points').upsert([{user_id: userId, balance: d.balance}], {onConflict: 'user_id'}).then(()=>{}); } catch(e){}
+updatePointsUI();
+}
+function updatePointsUI(){
+const u = getUser();
+const bal = u.id ? getPointsData(u.id).balance : 0;
+document.querySelectorAll('.customerPointsVal').forEach(el => el.textContent = bal);
+document.querySelectorAll('.merchantPointsVal').forEach(el => el.textContent = bal);
+const hp = document.getElementById('headerPoints'); if(hp) hp.textContent = bal;
+const sp = document.getElementById('sidebarPoints'); if(sp) sp.textContent = bal;
+const bb = document.getElementById('pointsBalanceBig'); if(bb) bb.textContent = bal;
+}
+function openPointsModal(){
+const u = getUser();
+const d = u.id ? getPointsData(u.id) : {balance: 0, history: []};
+const c = document.getElementById('pointsHistoryList');
+if(!d.history.length){ c.innerHTML = '<p class="text-slate-500 text-center py-3">No points earned yet. Make a payment to start earning.</p>'; }
+else {
+let h = '';
+for(let i = 0; i < d.history.length; i++){
+const x = d.history[i];
+h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="text-white text-[11px]">' + x.reason + '</p><p class="text-[9px] text-slate-500">' + x.date + '</p></div><span class="text-amber-300 font-bold text-xs">+' + x.pts + '</span></div>';
+}
+c.innerHTML = h;
+}
+updatePointsUI();
+document.getElementById('pointsModal').classList.remove('hidden');
+}
 
-        function generateMerchantDynamicQR(){
-            const amt = document.getElementById('merchantDynAmt').value;
-            if(!amt || amt <= 0){ alert("Enter valid amount"); return; }
-            const c = document.getElementById('dynamicQRContainer');
-            c.innerHTML = "";
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
-            const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_code: '058', account_number: '0638090889', account_name: 'GARG RUBY', bank_name: 'GTB'};
-            new QRCode(c, {
-                text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: primaryBank.bank_code, account_number: primaryBank.account_number, account_name: primaryBank.account_name, bank_name: primaryBank.bank_name, scale: "BILLION_READY_PURE_NO_PAGE"}),
-                width: 140, height: 140
-            });
-            document.getElementById('merchantQRResult').classList.remove('hidden');
-        }
+/* ---------- Banks ---------- */
+async function fetchAndRenderBanks(userId){
+const c = document.getElementById('linkedBanksListContainer');
+if(!c) return;
+const u = getUser();
+const emailKey = (u.email || '').toLowerCase();
+try {
+const res = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false});
+if(!res.error && res.data && res.data.length > 0){
+renderBankRows(c, res.data, userId);
+localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(res.data));
+localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(res.data));
+return;
+}
+} catch(e){}
+let localBanks = [];
+try {
+const a = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+const b = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+localBanks = b.length > 0 ? b : a;
+} catch(e){}
+if(localBanks.length === 0){
+c.innerHTML = '<p class="text-xs text-slate-500 text-center py-3">No bank accounts linked yet. Tap &quot;+ Link Bank&quot; to add your bank for instant payments.</p>';
+return;
+}
+renderBankRows(c, localBanks, userId);
+}
+function renderBankRows(c, banks, userId){
+let h = '';
+for(let i = 0; i < banks.length; i++){
+const a = banks[i];
+const tag = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded ml-1">Primary</span>' : '';
+h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + tag + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount(\'' + userId + '\',' + i + ')" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">Remove</button></div></div>';
+}
+c.innerHTML = h;
+}
+function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
+function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
+let verifyTimer = null;
+async function verifyBankAccount(){
+const bankCode = document.getElementById('bankSelectDropdown').value;
+const accNum = document.getElementById('accountNumberInput').value.trim();
+const nameInput = document.getElementById('accountNameInput');
+if(!bankCode){ nameInput.value = ''; return; }
+if(accNum.length !== 10){ nameInput.value = ''; return; }
+if(verifyTimer) clearTimeout(verifyTimer);
+verifyTimer = setTimeout(async () => {
+nameInput.value = 'Verifying account details...';
+try {
+const res = await fetch('/api/resolve-account', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({account_number: accNum, account_bank: bankCode}) });
+const result = await res.json();
+if(result && result.status === 'success' && result.data && result.data.account_name){ nameInput.value = result.data.account_name; }
+else { nameInput.value = ''; alert('We could not verify this account. Please check the bank and account number.'); }
+} catch(err){ nameInput.value = ''; alert('Verification is temporarily unavailable. Please try again.'); }
+}, 600);
+}
+async function saveNewBankAccount(){
+const u = getUser();
+if(!u.id){ alert('Please sign in first.'); return; }
+const dd = document.getElementById('bankSelectDropdown');
+const bankName = dd.options[dd.selectedIndex] ? dd.options[dd.selectedIndex].text : '';
+const bankCode = dd.value;
+const accNum = document.getElementById('accountNumberInput').value.trim();
+const accName = document.getElementById('accountNameInput').value.trim();
+if(!bankCode || accNum.length !== 10 || !accName || accName === 'Verifying account details...'){
+alert('Please select a bank, enter your 10-digit account number, and wait for the account name to appear.');
+return;
+}
+const emailKey = (u.email || '').toLowerCase();
+let localBanks = [];
+try {
+const a = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
+const b = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+localBanks = b.length > 0 ? b : a;
+} catch(e){}
+if(localBanks.some(b => b.account_number === accNum)){ alert('This account is already linked.'); return; }
+const newBank = { user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: localBanks.length === 0, email: emailKey, created_at: new Date().toISOString() };
+try { await supabaseClient.from('linked_accounts').insert([newBank]); } catch(e){}
+localBanks.push(newBank);
+localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
+localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(localBanks));
+closeAddBankModal();
+fetchAndRenderBanks(u.id);
+pushNotification('Bank account linked', bankName + ' (' + accNum + ') was linked successfully.');
+alert('Bank account linked successfully.');
+document.getElementById('accountNumberInput').value = '';
+document.getElementById('accountNameInput').value = '';
+}
+async function switchPrimaryBank(userId, idx){
+const u = getUser();
+const emailKey = (u.email || '').toLowerCase();
+let banks = [];
+try {
+banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+} catch(e){}
+if(!banks[idx]) return;
+banks.forEach((a, i) => { a.is_primary = (i === idx); });
+localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
+localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
+try {
+await supabaseClient.from('linked_accounts').update({is_primary: false}).eq('user_id', userId);
+await supabaseClient.from('linked_accounts').update({is_primary: true}).eq('user_id', userId).eq('account_number', banks[idx].account_number);
+} catch(e){}
+fetchAndRenderBanks(userId);
+const cu = getUser(); if(cu.portal_type === 'merchant'){ renderPermanentShopQR(cu); }
+alert('Primary bank updated.');
+}
+async function deleteBankAccount(userId, idx){
+if(!confirm('Remove this bank account?')) return;
+const u = getUser();
+const emailKey = (u.email || '').toLowerCase();
+let banks = [];
+try {
+banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
+if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
+} catch(e){}
+const toDelete = banks[idx];
+banks.splice(idx, 1);
+if(banks.length > 0 && !banks.some(b => b.is_primary)) banks[0].is_primary = true;
+localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
+localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
+try { if(toDelete) await supabaseClient.from('linked_accounts').delete().eq('user_id', userId).eq('account_number', toDelete.account_number); } catch(e){}
+fetchAndRenderBanks(userId);
+alert('Bank account removed.');
+}
 
-        async function openWorkingScanner(){
-            document.getElementById('scannerModal').classList.remove('hidden');
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
-                document.getElementById('cameraVideoFeed').srcObject = s;
-            } catch(err){ alert("Camera access denied - using simulate"); }
-        }
+/* ---------- About / FAQ / Complaints ---------- */
+function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
+function showComplaintModal(){ document.getElementById('complaintModal').classList.remove('hidden'); }
+function showComplaintWhatsApp(){ window.open(SUPPORT.whatsapp + '?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help', '_blank'); }
 
-        function closeScannerModal(){
-            const v = document.getElementById('cameraVideoFeed');
-            if(v && v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
-            document.getElementById('scannerModal').classList.add('hidden');
-        }
+const FAQ_DATA = [
+{q: "What is ClickPeQR?", a: "ClickPeQR is a secure payment gateway by Krishnyansh Zenova Peaks Ltd (RC-9810296). It lets merchants receive payments instantly through QR codes, and lets customers pay directly from their bank accounts."},
+{q: "How do I receive payments as a merchant?", a: "Sign in as a merchant, link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives."},
+{q: "How do I pay as a customer?", a: "Sign in as a customer, tap \u201CPay (Scan QR)\u201D, scan the merchant\u2019s QR code, confirm the amount, and complete the transfer. Your payment is confirmed instantly."},
+{q: "How do I link my bank account?", a: "Go to \u201CBank Accounts\u201D and tap \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, and wait for your account name to be verified automatically. Then tap \u201CVerify & Save\u201D."},
+{q: "Which banks are supported?", a: "All major Nigerian banks are supported, including GTBank, Access Bank, First Bank, UBA, Zenith Bank, and digital banks like Kuda, OPay, PalmPay and Moniepoint."},
+{q: "Is my money safe?", a: "Yes. Payments go directly between verified bank accounts, your details are stored securely, and every transaction is recorded in your history."},
+{q: "What are reward points and how do they work?", a: "Every successful transaction earns you points \u2014 customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app."},
+{q: "How do I update my profile?", a: "Open the menu, tap \u201CSettings\u201D, and you can update your profile picture, full name, email address and phone number."},
+{q: "What should I do if a payment fails?", a: "First check your internet connection and confirm the merchant\u2019s account details. If the problem continues, contact us through \u201CComplaints\u201D in the menu \u2014 we respond within 24 hours."},
+{q: "How do I file a complaint?", a: "Tap \u201CComplaints\u201D in the menu. You can reach us instantly on WhatsApp (+234 906 786 2223) or by email at Info@krishnyanshzenovapeaks.com."},
+{q: "How far back can I see my history?", a: "Your transaction history and notifications are available for the last 3 months, so you always have a clear record of your activity."},
+{q: "Who built ClickPeQR?", a: "ClickPeQR was designed and built by Krishnyansh Zenova Peaks Ltd, a registered Nigerian company (RC-9810296), to make digital payments simple for every small business."}
+];
+function buildFAQ(){
+const c = document.getElementById('faqList');
+if(!c) return;
+let h = '';
+for(let i = 0; i < FAQ_DATA.length; i++){
+h += '<div class="faq-item bg-slate-950 border border-slate-800 rounded-xl"><button onclick="toggleFaq(' + i + ')" class="w-full text-left p-3 flex justify-between items-center gap-2"><span class="font-semibold text-white text-[11px]">' + FAQ_DATA[i].q + '</span><span class="text-teal-400 text-sm">+</span></button><div class="faq-a px-3"><p class="pb-3 text-slate-400 text-[11px]">' + FAQ_DATA[i].a + '</p></div></div>';
+}
+c.innerHTML = h;
+}
+function toggleFaq(i){
+const items = document.querySelectorAll('#faqList .faq-item');
+if(items[i]) items[i].classList.toggle('faq-open');
+}
+function showFAQModal(){ buildFAQ(); document.getElementById('faqModal').classList.remove('hidden'); }
 
-        function simulateSuccessfulScan(){
-            closeScannerModal();
-            const activeUser = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            let qrData = null;
-            try {
-                const lastScanned = localStorage.getItem('last_scanned_qr_payload');
-                if(lastScanned) qrData = JSON.parse(lastScanned);
-            } catch(e){}
-            if(qrData && qrData.account_number){
-                scannedMerchantData = {
-                    shop_name: qrData.businessName || qrData.shop_name || 'Merchant Store',
-                    account_name: qrData.account_name,
-                    account_number: qrData.account_number,
-                    bank_name: qrData.bank_name || qrData.bank_code,
-                    bank_code: qrData.bank_code,
-                    merchant_id: qrData.merchantId || qrData.merchant_id || 'merchant_'+Date.now(),
-                    amount: qrData.amount
-                };
-            } else {
-                const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+activeUser.id) || '[]');
-                const primaryBank = banks.find(b => b.is_primary) || banks[0] || {bank_name: 'GTB', account_number: '0638090889', account_name: 'GARG RUBY', bank_code: '058'};
-                scannedMerchantData = {
-                    shop_name: 'KRISHNYANSH ZENOVA PEAKS LTD',
-                    account_name: primaryBank.account_name,
-                    account_number: primaryBank.account_number,
-                    bank_name: primaryBank.bank_name,
-                    bank_code: primaryBank.bank_code,
-                    merchant_id: 'krishnyansh_merchant_001'
-                };
-            }
-            document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
-            document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
-            document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
-            document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
-            document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '510';
-            document.getElementById('merchantConfirmModal').classList.remove('hidden');
-        }
+/* ---------- AI Assistant ---------- */
+function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
+const BOT_KB = [
+{k: ['hello','hi ','hey','good morning','good afternoon','good evening'], r: "Hello! Welcome to ClickPeQR. I can help with payments, QR codes, bank linking, reward points, and support. What would you like to know?"},
+{k: ['point','reward','cashback','earn'], r: "You earn reward points on every successful transaction: customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app \u2014 tap it anytime to view your points history."},
+{k: ['fail','not receive','pending','stuck','error ','unsuccessful','did not receive'], r: "I\u2019m sorry about that. Please check your internet connection and confirm the merchant\u2019s account details, then try again. If the issue continues, use \u201CComplaints\u201D in the menu to reach us on WhatsApp (+234 906 786 2223) or email \u2014 we respond within 24 hours."},
+{k: ['refund','reverse','money back','returned'], r: "For refund requests, please contact our support team through \u201CComplaints\u201D with your transaction ID and amount. We will review it and respond within 24 hours."},
+{k: ['complain','support','help','contact','whatsapp','human','agent','email','issue','problem'], r: "Our support team is here for you. You can reach us on WhatsApp at +234 906 786 2223, or by email at Info@krishnyanshzenovapeaks.com and Krishnyanshzenovapeaksltd@gmail.com. We respond within 24 hours. You can also tap \u201CComplaints\u201D in the menu for direct links."},
+{k: ['receive','accept payment','collect','merchant','sell ','sale'], r: "As a merchant: link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives, and it appears in your transaction history."},
+{k: ['qr code','dynamic qr','permanent qr','change qr','new qr'], r: "Merchants have two QR types: a Permanent Shop QR for everyday use, and a Dynamic QR with a fixed amount for single sales. You can generate a new permanent QR anytime from your dashboard \u2014 the old one will stop working."},
+{k: ['link bank','add bank','bank account','connect bank'], r: "To link your bank: open the menu, tap \u201CBank Accounts\u201D, then \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, wait for your account name to be verified, then tap \u201CVerify & Save\u201D."},
+{k: ['verify','account name','resolve'], r: "When you link a bank, we verify the account name live with your bank before saving \u2014 this protects you from sending money to the wrong account."},
+{k: ['pay ','send money','make payment','customer pay'], r: "To pay: tap \u201CPay (Scan QR)\u201D, scan the merchant\u2019s QR code, confirm the amount and beneficiary details, then complete the transfer. You will earn reward points on every payment."},
+{k: ['history','record','past payment','previous'], r: "Tap \u201CTransaction History\u201D in the menu to see all your successful transactions from the last 3 months, with amounts, dates and reference IDs."},
+{k: ['notification','alert','bell'], r: "Tap the bell icon at the top to see your notifications from the last 3 months \u2014 including payments, points earned, and account updates."},
+{k: ['profile','my name','change name','email address','picture','avatar','photo','settings','phone number'], r: "To update your profile: open the menu, tap \u201CSettings\u201D. You can change your profile picture, full name, email address and phone number there."},
+{k: ['speaker','voice','sound','announce','hear'], r: "The virtual speaker announces every payment received. Tap \u201CEnable Voice\u201D on the merchant terminal to turn it on, and \u201CTest Voice\u201D to check it."},
+{k: ['fee','charge','cost','commission','how much'], r: "ClickPeQR keeps charges minimal so small businesses keep more of every sale. Any applicable charge is always shown clearly before you confirm a payment."},
+{k: ['which bank','supported bank','kuda','opay','palmpay','gtb ','access bank'], r: "We support all major Nigerian banks \u2014 including GTBank, Access Bank, First Bank, UBA, Zenith Bank \u2014 plus digital banks like Kuda, OPay, PalmPay and Moniepoint."},
+{k: ['safe','secure','security','trust'], r: "Your security comes first: payments move directly between verified bank accounts, account names are verified before saving, and every transaction is recorded in your history."},
+{k: ['about','vision','mission','who are you','company','zenova','built'], r: "ClickPeQR was designed and built by Krishnyansh Zenova Peaks Ltd (RC-9810296). Our vision is a Nigeria where every small business can accept digital payments as easily as receiving cash."},
+{k: ['open','hours','time','24'], r: "ClickPeQR works 24/7 \u2014 receive and make payments anytime. Our human support team responds within 24 hours."},
+{k: ['pin','login','password','forgot','log out','logout'], r: "You sign in with your name, email and 6-digit PIN. Keep your PIN private. To log out, use the \u201CLog Out\u201D button at the bottom of the menu."},
+{k: ['thank','great','nice','awesome','good job'], r: "You are most welcome! If there is anything else I can help with \u2014 payments, points, or support \u2014 just ask."},
+{k: ['price','plan','subscription'], r: "ClickPeQR is free to join for both customers and merchants. Just create your account, link your bank, and start transacting."}
+];
+function botReplyText(t){
+const l = ' ' + t.toLowerCase() + ' ';
+for(let i = 0; i < BOT_KB.length; i++){
+const item = BOT_KB[i];
+for(let j = 0; j < item.k.length; j++){ if(l.indexOf(item.k[j]) >= 0) return item.r; }
+}
+return "I want to make sure I give you the right answer. You can ask me about payments, QR codes, bank linking, reward points, transaction history, or account settings \u2014 or tap \u201CComplaints\u201D in the menu to reach our support team on WhatsApp (+234 906 786 2223).";
+}
+function sendBotMessage(){
+const i = document.getElementById('botInputText');
+const c = document.getElementById('botChatMessages');
+const t = i.value.trim();
+if(!t) return;
+const div = document.createElement('div');
+div.className = 'bg-teal-500/10 text-teal-200 p-2.5 rounded-xl text-right';
+div.textContent = t;
+c.appendChild(div);
+i.value = '';
+c.scrollTop = c.scrollHeight;
+setTimeout(() => {
+const r = document.createElement('div');
+r.className = 'bg-slate-950 p-2.5 rounded-xl';
+r.textContent = botReplyText(t);
+c.appendChild(r);
+c.scrollTop = c.scrollHeight;
+}, 500);
+}
 
-        function copyToClipboard(text){
-            navigator.clipboard.writeText(text).then(() => { alert('Copied: '+text); });
-        }
-
-        async function payPureAccountToAccount(){
-            const amt = document.getElementById('confirmAmountInput').value;
-            if(!amt || amt <= 0){ alert('Enter valid amount'); return; }
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const merchant = scannedMerchantData;
-            if(!u.id || !merchant){ alert('User/Merchant missing - Link bank first'); return; }
-            document.getElementById('merchantConfirmModal').classList.add('hidden');
-            document.getElementById('manualTransferModal').classList.remove('hidden');
-            document.getElementById('manualAmountDisplay').innerText = 'NGN '+amt;
-            document.getElementById('manualAccountNumber').innerText = merchant.account_number;
-            document.getElementById('manualBankNameDisplay').innerText = merchant.bank_name+' ('+merchant.bank_code+')';
-            document.getElementById('manualBeneficiaryName').innerText = merchant.account_name+' / '+merchant.shop_name;
-            document.getElementById('paymentPopupAmount').value = amt;
-        }
-
-        async function handleManualPaidDirectUPI(){
-            const amt = document.getElementById('confirmAmountInput').value || document.getElementById('paymentPopupAmount').value;
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const merchant = scannedMerchantData;
-            try {
-                const res = await fetch('/api/direct-account-to-account', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({customer_id: u.id, merchant_id: merchant.merchant_id || merchant.merchantId, amount: amt, transaction_id: 'UPI_'+Date.now()})
-                });
-                const result = await res.json();
-                if(result.status === 'success'){
-                    await saveTransactionToSupabase(amt, result.transfer?.data?.id || Date.now());
-                    if(speakerChannel) speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: result.transfer?.data?.id, merchant_id: merchant.merchant_id});
-                    triggerVirtualSpeaker(amt, result.transfer?.data?.id);
-                    document.getElementById('manualTransferModal').classList.add('hidden');
-                    alert("UPI DIRECT SUCCESS!\nNGN "+amt+" moved ACCOUNT TO ACCOUNT - NO FLUTTERWAVE PAGE\n"+result.message);
-                } else {
-                    alert("UPI Failed: "+result.message);
-                }
-            } catch(e){ alert("UPI Error: "+e.message); }
-        }
-
-        function executeLiveFlutterwavePayment(){
-            handleManualPaidDirectUPI();
-        }
-
-        function proceedToManualTransfer(){
-            const amt = document.getElementById('confirmAmountInput').value;
-            if(!amt || amt <= 0){ alert('Enter valid amount'); return; }
-            localStorage.setItem('pending_merchant_transfer', JSON.stringify({...scannedMerchantData, amount: amt}));
-            payPureAccountToAccount();
-        }
-
-        async function handleManualPaid(){
-            await handleManualPaidDirectUPI();
-        }
-
-        function enableSpeaker(){
-            isSpeakerEnabled = true;
-            document.getElementById('enableSpeakerBtn').innerText = 'Voice ON ✓';
-            document.getElementById('enableSpeakerBtn').className = 'text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold';
-            document.getElementById('speakerIdleText').innerText = 'Speaker enabled - Listening...';
-            document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
-            speakMoneyReceived(0, true);
-        }
-
-        function testSpeakerVoice(){
-            if(!isSpeakerEnabled) enableSpeaker();
-            speakMoneyReceived('510', false);
-        }
-
-        function triggerVirtualSpeaker(amount, txId){
-            const statusEl = document.getElementById('speakerStatus');
-            const waveEl = document.getElementById('speakerWave');
-            const idleEl = document.getElementById('speakerIdleText');
-            const logEl = document.getElementById('lastPaymentLog');
-            if(statusEl){ statusEl.innerText = '🔊 Money Received! NGN '+amount; statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2'; }
-            if(waveEl) waveEl.classList.remove('hidden');
-            if(idleEl) idleEl.classList.add('hidden');
-            if(logEl) logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">✓ Payment ID: '+txId+' - NGN '+amount+' - '+new Date().toLocaleTimeString()+'</div>';
-            const salesEl = document.getElementById('todaysSales');
-            if(salesEl){
-                const current = parseFloat(salesEl.innerText.replace('₦','').replace(',','')) || 0;
-                const newTotal = current + parseFloat(amount);
-                salesEl.innerText = '₦ ' + newTotal.toLocaleString();
-            }
-            speakMoneyReceived(amount, false);
-            setTimeout(() => {
-                if(waveEl) waveEl.classList.add('hidden');
-                if(idleEl){ idleEl.classList.remove('hidden'); idleEl.innerText = 'Waiting for next payment...'; }
-                if(statusEl){ statusEl.innerText = 'Waiting for payment...'; statusEl.className = 'text-[11px] text-slate-400 mb-2'; }
-            }, 5000);
-        }
-
-        function speakMoneyReceived(amount, isTest){
-            if(!isSpeakerEnabled && !isTest) return;
-            if(!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const text = isTest ? 'Virtual speaker enabled. Ready for payments.' : `Money received in this account successfully. Received ${amount} Naira.`;
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'en-NG';
-            utter.rate = 0.9;
-            utter.pitch = 1.1;
-            utter.volume = 1.0;
-            const voices = window.speechSynthesis.getVoices();
-            let preferred = voices.find(v => v.lang.includes('en-NG') && v.name.toLowerCase().includes('female'));
-            if(!preferred) preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google UK English Female') || v.name.includes('Zira') || v.name.includes('Female'));
-            if(!preferred) preferred = voices.find(v => v.lang.startsWith('en-'));
-            if(preferred) utter.voice = preferred;
-            window.speechSynthesis.speak(utter);
-        }
-
-        function initMerchantRealtime(merchantId){
-            try {
-                supabaseClient.channel('merchant:'+merchantId).on('broadcast', {event: 'payment_success'}, (payload) => {
-                    triggerVirtualSpeaker(payload.payload.amount, payload.payload.txId);
-                }).subscribe((status) => {
-                    if(status === 'SUBSCRIBED'){
-                        document.getElementById('speakerStatus').innerText = 'Live Connected - Waiting...';
-                        document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
-                    }
-                });
-            } catch(e){}
-        }
-
-        async function saveTransactionToSupabase(amount, txId){
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            let txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            txs.unshift({amount, type: 'UPI Direct No Page - '+(scannedMerchantData?.shop_name || 'Merchant'), date: new Date().toLocaleString(), txId: txId, merchant: scannedMerchantData?.shop_name || 'Merchant'});
-            localStorage.setItem('clickpeqr_txs', JSON.stringify(txs));
-            try {
-                await supabaseClient.from('transactions').insert([{
-                    transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: scannedMerchantData?.merchant_id || u.id, amount: parseFloat(amount), status: 'success', type: 'UPI No Flutterwave Page - '+scannedMerchantData?.account_number, scale: 'BILLION_PURE_NO_PAGE'
-                }]);
-            } catch(e){}
-        }
-
-        function showTransactionHistory(){
-            const c = document.getElementById('transactionListContainer');
-            const txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
-            if(txs.length === 0){
-                c.innerHTML = '<p class="text-slate-500 text-center py-2">No recent live transactions.</p>';
-            } else {
-                let h = '';
-                for(let i=0; i<txs.length; i++){
-                    const t = txs[i];
-                    h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white">'+t.type+' - '+(t.merchant || '')+'</p><p class="text-[10px] text-slate-400">'+t.date+' | ID:'+(t.txId || '')+'</p></div><span class="text-teal-400 font-mono font-bold">₦'+t.amount+'</span></div>';
-                }
-                c.innerHTML = h;
-            }
-            document.getElementById('transactionModal').classList.remove('hidden');
-        }
-
-        async function fetchAndRenderBanks(userId){
-            const c = document.getElementById('linkedBanksListContainer');
-            if(!c) return;
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            const emailKey = (u.email || '').toLowerCase();
-            try {
-                const {data, error} = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false});
-                if(!error && data && data.length > 0){
-                    let h = '';
-                    for(let i=0; i<data.length; i++){
-                        const a = data[i];
-                        const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded ml-1">Primary - Pure UPI</span>' : '';
-                        h += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">${a.bank_name} ${p}</p><p class="text-[10px] text-slate-400 font-mono">${a.account_number} - ${a.account_name} (${a.bank_code})</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank('${userId}',${i})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount('${userId}',${i})" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">X</button></div></div>`;
-                    }
-                    c.innerHTML = h;
-                    localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(data));
-                    localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(data));
-                    return;
-                }
-            } catch(e){}
-
-            let idBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-            let emailBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-            let localBanks = emailBanks.length > 0 ? emailBanks : idBanks;
-            if(localBanks.length === 0){
-                c.innerHTML = '<p class="text-xs text-slate-500 text-center py-2">No bank accounts linked yet - Link any Nigerian bank for pure UPI account to account. Save in Supabase.</p>';
-                return;
-            }
-            let h2 = '';
-            for(let i=0; i<localBanks.length; i++){
-                const a = localBanks[i];
-                const p = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1 rounded">Primary</span>' : '';
-                h2 += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">${a.bank_name} ${p}</p><p class="text-[10px] text-slate-400 font-mono">${a.account_number} - ${a.account_name}</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank('${userId}',${i})" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount('${userId}',${i})" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">X</button></div></div>`;
-            }
-            c.innerHTML = h2;
-        }
-
-        function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
-        function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
-
-        async function verifyBankAccount(){
-            const bankCode = document.getElementById('bankSelectDropdown').value;
-            const accNum = document.getElementById('accountNumberInput').value.trim();
-            const nameInput = document.getElementById('accountNameInput');
-            if(!bankCode){ alert("Please select a bank first."); return; }
-            if(accNum.length !== 10){ nameInput.value = ""; return; }
-            nameInput.value = "Verifying with bank - Supabase save...";
-            try {
-                const res = await fetch('/api/resolve-account', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({account_number: accNum, account_bank: bankCode})
-                });
-                const result = await res.json();
-                if(result && result.status === 'success' && result.data && result.data.account_name){
-                    nameInput.value = result.data.account_name;
-                } else {
-                    nameInput.value = "";
-                    alert("Bank verification failed: "+(result.message || "Invalid account"));
-                }
-            } catch(err){
-                nameInput.value = "";
-                alert("Verification failed - check Render server");
-            }
-        }
-
-        async function saveNewBankAccount(){
-            const u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            if(!u.id){ alert("Please log in first."); return; }
-            const dd = document.getElementById('bankSelectDropdown');
-            const bankName = dd.options[dd.selectedIndex]?.text;
-            const bankCode = dd.value;
-            const accNum = document.getElementById('accountNumberInput').value.trim();
-            const accName = document.getElementById('accountNameInput').value.trim();
-            if(!bankCode || bankName === "Select Bank" || accNum.length !== 10 || !accName){
-                alert("Please select bank, enter 10-digit account, and wait for real holder name.");
-                return;
-            }
-            const emailKey = (u.email || '').toLowerCase();
-            let idBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
-            let emailBanks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-            let localBanks = emailBanks.length > 0 ? emailBanks : idBanks;
-            const isPrimary = localBanks.length === 0;
-            const newBank = {
-                user_id: u.id,
-                bank_name: bankName,
-                bank_code: bankCode,
-                account_number: accNum,
-                account_name: accName,
-                is_primary: isPrimary,
-                email: emailKey,
-                created_at: new Date().toISOString()
-            };
-            try {
-                await supabaseClient.from('linked_accounts').insert([newBank]);
-            } catch(e){}
-            localBanks.push(newBank);
-            localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
-            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(localBanks));
-            closeAddBankModal();
-            fetchAndRenderBanks(u.id);
-            alert("Bank linked & saved in Supabase for PURE UPI! Real name: "+accName);
-            document.getElementById('accountNumberInput').value = "";
-            document.getElementById('accountNameInput').value = "";
-        }
-
-        async function switchPrimaryBank(userId, idx){
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            let emailKey = (u.email || '').toLowerCase();
-            let banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-            if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-            banks.forEach((a, i) => { a.is_primary = (i === idx); });
-            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
-            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
-            try {
-                await supabaseClient.from('linked_accounts').update({is_primary: false}).eq('user_id', userId);
-                const primary = banks[idx];
-                if(primary){
-                    await supabaseClient.from('linked_accounts').update({is_primary: true}).eq('user_id', userId).eq('account_number', primary.account_number);
-                }
-            } catch(e){}
-            fetchAndRenderBanks(userId);
-            alert("Primary bank switched & saved in Supabase!");
-        }
-
-        async function deleteBankAccount(userId, idx){
-            if(!confirm('Delete this bank?')) return;
-            let u = JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
-            let emailKey = (u.email || '').toLowerCase();
-            let banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-            if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-            const toDelete = banks[idx];
-            banks.splice(idx, 1);
-            if(banks.length > 0 && !banks.some(b => b.is_primary)) banks[0].is_primary = true;
-            localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
-            localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
-            try {
-                if(toDelete) await supabaseClient.from('linked_accounts').delete().eq('user_id', userId).eq('account_number', toDelete.account_number);
-            } catch(e){}
-            fetchAndRenderBanks(userId);
-        }
-
-        function showComplaintWhatsApp(){ window.open("https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support", "_blank"); }
-        function showNotificationModal(){ document.getElementById('notificationModal').classList.remove('hidden'); }
-        function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
-        function showFAQModal(){ document.getElementById('faqModal').classList.remove('hidden'); }
-        function switchView(){}
-
-        function handleLogout(){
-            localStorage.removeItem('clickpeqr_active_user');
-            window.location.href = window.location.pathname;
-        }
-
-        function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
-
-        function sendBotMessage(){
-            const i = document.getElementById('botInputText');
-            const c = document.getElementById('botChatMessages');
-            const t = i.value.trim();
-            if(!t) return;
-            c.innerHTML += '<div class="bg-teal-500/10 text-teal-300 p-2.5 rounded-xl text-right">'+t+'</div>';
-            i.value = '';
-            setTimeout(() => {
-                let r = "Hello! I am your ClickPeQR UPI Direct Assistant.";
-                const l = t.toLowerCase();
-                if(l.includes('flutterwave')) r = "Direct UPI account to account via /api/direct-account-to-account without external gateway pages.";
-                else if(l.includes('supabase')) r = "All linked accounts saved securely in Supabase linked_accounts table.";
-                else if(l.includes('bank')) r = "Link any Nigerian bank for instant direct settlement.";
-                else if(l.includes('speaker')) r = "Virtual Speaker announces payment success automatically.";
-                c.innerHTML += '<div class="bg-slate-950 p-2.5 rounded-xl">'+r+'</div>';
-                c.scrollTop = c.scrollHeight;
-            }, 600);
-        }
-    </script>
+/* ---------- Init ---------- */
+window.addEventListener('DOMContentLoaded', () => {
+const d = document.getElementById('bankSelectDropdown');
+if(d){
+d.innerHTML = '<option value="">Select Bank</option>';
+nigerianBanksList.forEach(b => {
+const o = document.createElement('option');
+o.value = b.code; o.textContent = b.name;
+d.appendChild(o);
+});
+}
+buildFAQ();
+try {
+const remember = localStorage.getItem('clickpeqr_remember') === 'true';
+const a = localStorage.getItem('clickpeqr_active_user');
+if(remember && a){ loadDashboard(JSON.parse(a)); }
+else {
+document.getElementById('authScreen').classList.remove('hidden');
+document.getElementById('dashboardScreen').classList.add('hidden');
+document.getElementById('mainHeader').classList.add('hidden');
+}
+} catch(e){}
+if('speechSynthesis' in window){
+try {
+speechSynthesis.getVoices();
+window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
+} catch(e){}
+}
+updateNotifBadge();
+});
+</script>
 </body>
 </html>
