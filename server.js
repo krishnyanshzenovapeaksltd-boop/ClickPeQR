@@ -573,5 +573,4 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log('ClickPeQR server running on port ' + PORT);
   console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL+')')
-}};
 });
