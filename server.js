@@ -32,11 +32,13 @@ const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X";
 
 // Monnify: switch environments with environment variables only.
+//   Sandbox: MONNIFY_BASE_URL=https://sandbox.monnify.com  (+ MK_TEST keys)
+//   Live:    MONNIFY_BASE_URL=https://api.monnify.com      (+ MK_LIVE keys)
 const MONNIFY_BASE_URL = (process.env.MONNIFY_BASE_URL || "https://sandbox.monnify.com").replace(/\/$/, '');
 const MONNIFY_API_KEY = process.env.MONNIFY_API_KEY || "";
 const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY || "";
 const MONNIFY_CONTRACT_CODE = process.env.MONNIFY_CONTRACT_CODE || "";
-const MONNIFY_WALLET_ACCOUNT = process.env.MONNIFY_WALLET_ACCOUNT || ""; 
+const MONNIFY_WALLET_ACCOUNT = process.env.MONNIFY_WALLET_ACCOUNT || ""; // source account for disbursements
 const isMonnifyLive = MONNIFY_BASE_URL.includes("api.monnify.com");
 
 const POINTS = {
@@ -118,6 +120,7 @@ app.post('/api/transactions/verify', async (req, res) => {
   }
 });
 
+// Transaction history for the last 3 months (default)
 app.get('/api/transactions/history/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -161,9 +164,7 @@ app.post('/api/resolve-account', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// 6. Transfers & Direct Settlements
-// ---------------------------------------------------------------------------
+// [STRIPPED 77 bytes] 6. Transfers
 app.post('/api/settle-to-merchant', async (req, res) => {
   const { amount, transaction_id, merchant_id, merchant_account, merchant_bank_code, merchant_account_name } = req.body;
   if (!amount || !merchant_account || !merchant_bank_code) {
@@ -174,6 +175,7 @@ app.post('/api/settle-to-merchant', async (req, res) => {
     if (!MONNIFY_WALLET_ACCOUNT) {
       return res.status(500).json({ status: 'error', message: 'Settlements are not configured yet. Please contact support.' });
     }
+    // Licensed disbursement via Monnify: ClickPeQR wallet -> merchant bank account
     const disbursePayload = {
       amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + (transaction_id || Date.now()) + '_' + (merchant_id || 'GEN'),
@@ -218,6 +220,11 @@ app.post('/api/settle-to-merchant', async (req, res) => {
   }
 });
 
+/**
+ * Direct account-to-account payment.
+ * Customer pays -> merchant receives via licensed Monnify disbursement.
+ * Merchant bank comes from linked account or the scanned QR payload.
+ */
 app.post('/api/direct-account-to-account', async (req, res) => {
   const { customer_id, merchant_id, amount, transaction_id, merchant_account, merchant_bank_code, merchant_account_name, merchant_bank_name, customer_account, customer_bank_code } = req.body;
   if (!customer_id || !merchant_id || !amount) {
@@ -245,6 +252,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
         custBank = r.data || null;
       } catch (e) {}
     }
+    // Merchant bank details can come from the scanned QR payload
     if (!merchBank && merchant_account && merchant_bank_code) {
       merchBank = {
         bank_name: merchant_bank_name || 'Merchant Bank',
@@ -277,6 +285,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
     if (!MONNIFY_WALLET_ACCOUNT) {
       return res.status(500).json({ status: 'error', message: 'Payments are not configured yet. Please contact support.' });
     }
+    // Licensed disbursement via Monnify: ClickPeQR wallet -> merchant bank account
     const disbursePayload = {
       amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + Date.now() + '_' + merchant_id + '_' + customer_id,
@@ -307,6 +316,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       }]);
     } catch (logErr) { console.log("Transaction log notice:", logErr.message); }
 
+    // Award reward points for both sides
     try {
       const custPts = Math.floor(parseFloat(amount) / 100) * POINTS.customerPer100;
       const merchPts = Math.floor(parseFloat(amount) / 100) * POINTS.merchantPer100;
@@ -335,9 +345,9 @@ app.post('/api/direct-account-to-account', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// 7. Monnify - licensed payment backbone
-// ---------------------------------------------------------------------------
+// [STRIPPED 77 bytes] 7. Monnify - licensed payment backbone
+// [STRIPPED 78 bytes] reserved (virtual) account for a merchant so customers can pay
+// into a dedicated account number. All fund movement stays under Monnify's license.
 app.post('/api/monnify/reserved-account', async (req, res) => {
   const { user_id, account_name, customer_name, customer_email } = req.body;
   if (!account_name) {
@@ -371,6 +381,7 @@ app.post('/api/monnify/reserved-account', async (req, res) => {
   }
 });
 
+// Look up an existing reserved account
 app.get('/api/monnify/reserved-account/:reference', async (req, res) => {
   try {
     const data = await monnifyRequest('GET', '/api/v2/bank-transfer/reserved-accounts/' + encodeURIComponent(req.params.reference));
@@ -381,6 +392,7 @@ app.get('/api/monnify/reserved-account/:reference', async (req, res) => {
   }
 });
 
+// Single disbursement (payout) from the Monnify wallet to any Nigerian bank account
 app.post('/api/monnify/disburse', async (req, res) => {
   const { amount, destination_bank_code, destination_account_number, narration, reference } = req.body;
   if (!amount || !destination_bank_code || !destination_account_number) {
@@ -407,6 +419,8 @@ app.post('/api/monnify/disburse', async (req, res) => {
   }
 });
 
+// Monnify webhook - verifies the transaction hash before accepting any notification
+// hash = SHA512(secretKey | paymentReference | amountPaid | paidOn | transactionReference)
 app.post('/api/monnify/webhook', async (req, res) => {
   try {
     const b = req.body || {};
@@ -436,9 +450,7 @@ app.post('/api/monnify/webhook', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// 8. Reward points
-// ---------------------------------------------------------------------------
+// [STRIPPED 77 bytes] 8. Reward points
 app.get('/api/points/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -462,6 +474,7 @@ app.get('/api/points/:userId', async (req, res) => {
   }
 });
 
+// Award points (single or batch)
 app.post('/api/points/award', async (req, res) => {
   try {
     const awards = Array.isArray(req.body.awards) ? req.body.awards : [req.body];
@@ -485,9 +498,7 @@ app.post('/api/points/award', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// 9. Notifications
-// ---------------------------------------------------------------------------
+// [STRIPPED 77 bytes] 9. Notifications
 app.get('/api/notifications/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -519,9 +530,7 @@ app.post('/api/notifications', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// 10. Health, webhooks & static serving
-// ---------------------------------------------------------------------------
+// [STRIPPED 77 bytes] 10. Health, webhooks & static serving
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -548,20 +557,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Legacy Flutterwave webhook
 app.post('/webhook', (req, res) => {
   console.log("Webhook received");
   res.sendStatus(200);
 });
 
+// Serve the frontend for any other route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ---------------------------------------------------------------------------
-// 11. Start server
-// ---------------------------------------------------------------------------
-const PORT = process.env.PORT || 5000;
+// [STRIPPED 77 bytes] 11. Start server
+// [STRIPPED 78 bytes] PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log('ClickPeQR server running on port ' + PORT);
-  console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL + ')');
+  console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL+')')
+}};
 });
