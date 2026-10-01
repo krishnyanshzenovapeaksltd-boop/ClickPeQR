@@ -171,22 +171,20 @@ app.post('/api/settle-to-merchant', async (req, res) => {
   }
   try {
     const settlementAmount = parseFloat(amount) * 0.985;
-    const transferPayload = {
-      account_bank: String(merchant_bank_code),
-      account_number: String(merchant_account),
-      amount: settlementAmount,
-      currency: "NGN",
-      beneficiary_name: merchant_account_name || "Merchant",
+    if (!MONNIFY_WALLET_ACCOUNT) {
+      return res.status(500).json({ status: 'error', message: 'Settlements are not configured yet. Please contact support.' });
+    }
+    const disbursePayload = {
+      amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + (transaction_id || Date.now()) + '_' + (merchant_id || 'GEN'),
-      callback_url: (process.env.PUBLIC_BASE_URL || "https://clickpeqr.onrender.com") + "/webhook",
       narration: 'ClickPeQR settlement to ' + (merchant_account_name || merchant_id),
-      debit_currency: "NGN"
+      destinationBankCode: String(merchant_bank_code),
+      destinationAccountNumber: String(merchant_account),
+      currency: "NGN",
+      sourceAccountNumber: MONNIFY_WALLET_ACCOUNT
     };
-    const transferRes = await axios.post(
-      'https://api.flutterwave.com/v3/transfers',
-      transferPayload,
-      { headers: { Authorization: 'Bearer ' + FLUTTERWAVE_SECRET_KEY, 'Content-Type': 'application/json' } }
-    );
+    const disburseRes = await monnifyRequest('POST', '/api/v2/disbursements/single', disbursePayload);
+    const disburseBody = (disburseRes && disburseRes.responseBody) || {};
     try {
       await supabase.from('transactions').insert([{
         transaction_ref: String(transaction_id || Date.now()),
@@ -205,12 +203,13 @@ app.post('/api/settle-to-merchant', async (req, res) => {
     return res.json({
       status: "success",
       message: 'NGN ' + settlementAmount.toFixed(2) + ' settled to ' + merchant_account_name + ' (' + merchant_account + ')',
-      transfer: transferRes.data,
+      disbursement: disburseBody,
+      transfer: disburseBody,
       settlement_amount: settlementAmount
     });
   } catch (err) {
     const errData = err.response && err.response.data;
-    const errMsg = (errData && errData.message) || err.message;
+    const errMsg = (errData && (errData.responseMessage || errData.message)) || err.message;
     return res.status(500).json({
       status: 'error',
       message: errMsg || 'Settlement could not be completed. Please try again.',
@@ -275,22 +274,20 @@ app.post('/api/direct-account-to-account', async (req, res) => {
     }
 
     const settlementAmount = parseFloat(amount) * 0.985;
-    const transferPayload = {
-      account_bank: String(merchBank.bank_code),
-      account_number: String(merchBank.account_number),
-      amount: settlementAmount,
-      currency: "NGN",
-      beneficiary_name: merchBank.account_name || "Merchant",
+    if (!MONNIFY_WALLET_ACCOUNT) {
+      return res.status(500).json({ status: 'error', message: 'Payments are not configured yet. Please contact support.' });
+    }
+    const disbursePayload = {
+      amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + Date.now() + '_' + merchant_id + '_' + customer_id,
-      callback_url: (process.env.PUBLIC_BASE_URL || "https://clickpeqr.onrender.com") + "/webhook",
       narration: 'ClickPeQR ' + custBank.bank_name + ' to ' + merchBank.bank_name,
-      debit_currency: "NGN"
+      destinationBankCode: String(merchBank.bank_code),
+      destinationAccountNumber: String(merchBank.account_number),
+      currency: "NGN",
+      sourceAccountNumber: MONNIFY_WALLET_ACCOUNT
     };
-    const transferRes = await axios.post(
-      'https://api.flutterwave.com/v3/transfers',
-      transferPayload,
-      { headers: { Authorization: 'Bearer ' + FLUTTERWAVE_SECRET_KEY, 'Content-Type': 'application/json' } }
-    );
+    const disburseRes = await monnifyRequest('POST', '/api/v2/disbursements/single', disbursePayload);
+    const disburseBody = (disburseRes && disburseRes.responseBody) || {};
     try {
       await supabase.from('transactions').insert([{
         transaction_ref: String(transaction_id || Date.now()),
@@ -321,14 +318,15 @@ app.post('/api/direct-account-to-account', async (req, res) => {
     return res.json({
       status: "success",
       message: 'NGN ' + amount + ' sent from ' + custBank.bank_name + ' (' + custBank.account_number + ') to ' + merchBank.bank_name + ' (' + merchBank.account_number + ')',
-      transfer: transferRes.data,
+      disbursement: disburseBody,
+      transfer: disburseBody,
       settlement_amount: settlementAmount,
       customer_bank: custBank.bank_name + ' - ' + custBank.bank_code,
       merchant_bank: merchBank.bank_name + ' - ' + merchBank.bank_code
     });
   } catch (err) {
     const errData = err.response && err.response.data;
-    const errMsg = (errData && errData.message) || err.message;
+    const errMsg = (errData && (errData.responseMessage || errData.message)) || err.message;
     return res.status(500).json({
       status: 'error',
       message: errMsg || 'Payment could not be completed. Please try again.',
@@ -351,7 +349,7 @@ app.post('/api/monnify/reserved-account', async (req, res) => {
       accountName: account_name,
       currencyCode: "NGN",
       contractCode: MONNIFY_CONTRACT_CODE,
-      customerEmail: customer_email || "info@krishnyanshzenovapeaks.com",
+      customerEmail: customer_email || "support@krishnyanshzenovapeaks.com",
       customerName: customer_name || account_name
     };
     const data = await monnifyRequest('POST', '/api/v2/bank-transfer/reserved-accounts', payload);
