@@ -1,16 +1,20 @@
 {
-  "name": "clickPeQR-backend",
+  "name": "clickpeqr",
   "version": "1.0.0",
-  "description": "ClickPeQR Backend",
+  "description": "ClickPeQR - Secure Fintech & AI Payment Gateway",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "axios": "^1.6.8",
+    "express": "^4.19.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "node-fetch": "^2.7.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "axios": "^1.6.8"
   }
 }
