@@ -4,8 +4,8 @@
  * Secure Fintech & AI Payment Gateway
  *
  * Configuration is fully environment-driven:
- *  - Monnify sandbox <-> live is switched via MONNIFY_BASE_URL and keys only.
- *  - No code changes are required when moving from sandbox to live.
+ * - Monnify sandbox <-> live is switched via MONNIFY_BASE_URL and keys only.
+ * - No code changes are required when moving from sandbox to live.
  */
 
 const express = require('express');
@@ -21,9 +21,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 // 1. Configuration
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpzteqexkc.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -32,13 +32,11 @@ const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X";
 
 // Monnify: switch environments with environment variables only.
-//   Sandbox: MONNIFY_BASE_URL=https://sandbox.monnify.com  (+ MK_TEST keys)
-//   Live:    MONNIFY_BASE_URL=https://api.monnify.com      (+ MK_LIVE keys)
 const MONNIFY_BASE_URL = (process.env.MONNIFY_BASE_URL || "https://sandbox.monnify.com").replace(/\/$/, '');
 const MONNIFY_API_KEY = process.env.MONNIFY_API_KEY || "";
 const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY || "";
 const MONNIFY_CONTRACT_CODE = process.env.MONNIFY_CONTRACT_CODE || "";
-const MONNIFY_WALLET_ACCOUNT = process.env.MONNIFY_WALLET_ACCOUNT || ""; // source account for disbursements
+const MONNIFY_WALLET_ACCOUNT = process.env.MONNIFY_WALLET_ACCOUNT || "";
 const isMonnifyLive = MONNIFY_BASE_URL.includes("api.monnify.com");
 
 const POINTS = {
@@ -47,16 +45,16 @@ const POINTS = {
   nairaPer100Pts: parseInt(process.env.POINTS_NAIRA_PER_100 || "10", 10),
 };
 
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 // 2. Monnify helpers
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 let monnifyTokenCache = { token: null, expiresAt: 0 };
 
 async function getMonnifyToken() {
   if (monnifyTokenCache.token && Date.now() < monnifyTokenCache.expiresAt) {
     return monnifyTokenCache.token;
   }
-  if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
+  if (!MONNIFY_API_KEY ||!MONNIFY_SECRET_KEY) {
     throw new Error("Monnify API credentials are not configured.");
   }
   const basic = Buffer.from(MONNIFY_API_KEY + ":" + MONNIFY_SECRET_KEY).toString("base64");
@@ -83,9 +81,9 @@ async function monnifyRequest(method, endpoint, data) {
   return res.data;
 }
 
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 // 3. Auth & profiles
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { id, full_name, email, business_name, portal_type, avatar_url, phone_number } = req.body;
@@ -98,9 +96,9 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 // 4. Transactions
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 app.post('/api/transactions/verify', async (req, res) => {
   try {
     const { amount, sender_phone, transaction_id, user_id } = req.body;
@@ -120,19 +118,18 @@ app.post('/api/transactions/verify', async (req, res) => {
   }
 });
 
-// Transaction history for the last 3 months (default)
 app.get('/api/transactions/history/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
     const since = new Date();
     since.setMonth(since.getMonth() - months);
     const { data, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', req.params.userId)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(200);
+     .from('transactions')
+     .select('*')
+     .eq('user_id', req.params.userId)
+     .gte('created_at', since.toISOString())
+     .order('created_at', { ascending: false })
+     .limit(200);
     if (error) return res.status(400).json({ error: error.message });
     res.json({ status: "success", data });
   } catch (err) {
@@ -140,12 +137,12 @@ app.get('/api/transactions/history/:userId', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 // 5. Bank account verification
-// ---------------------------------------------------------------------------
+// [STRIPPED 75 bytes]
 app.post('/api/resolve-account', async (req, res) => {
   const { account_number, account_bank } = req.body;
-  if (!account_number || !account_bank || String(account_number).length !== 10) {
+  if (!account_number ||!account_bank || String(account_number).length!== 10) {
     return res.json({ status: 'error', message: 'Please enter a valid 10-digit account number.' });
   }
   try {
@@ -164,10 +161,12 @@ app.post('/api/resolve-account', async (req, res) => {
   }
 });
 
-// [STRIPPED 77 bytes] 6. Transfers
+// [STRIPPED 75 bytes]
+// 6. Transfers - now via Monnify licensed disbursement
+// [STRIPPED 75 bytes]
 app.post('/api/settle-to-merchant', async (req, res) => {
   const { amount, transaction_id, merchant_id, merchant_account, merchant_bank_code, merchant_account_name } = req.body;
-  if (!amount || !merchant_account || !merchant_bank_code) {
+  if (!amount ||!merchant_account ||!merchant_bank_code) {
     return res.status(400).json({ status: 'error', message: 'Payment details are incomplete. Please try again.' });
   }
   try {
@@ -175,7 +174,6 @@ app.post('/api/settle-to-merchant', async (req, res) => {
     if (!MONNIFY_WALLET_ACCOUNT) {
       return res.status(500).json({ status: 'error', message: 'Settlements are not configured yet. Please contact support.' });
     }
-    // Licensed disbursement via Monnify: ClickPeQR wallet -> merchant bank account
     const disbursePayload = {
       amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + (transaction_id || Date.now()) + '_' + (merchant_id || 'GEN'),
@@ -220,21 +218,16 @@ app.post('/api/settle-to-merchant', async (req, res) => {
   }
 });
 
-/**
- * Direct account-to-account payment.
- * Customer pays -> merchant receives via licensed Monnify disbursement.
- * Merchant bank comes from linked account or the scanned QR payload.
- */
 app.post('/api/direct-account-to-account', async (req, res) => {
   const { customer_id, merchant_id, amount, transaction_id, merchant_account, merchant_bank_code, merchant_account_name, merchant_bank_name, customer_account, customer_bank_code } = req.body;
-  if (!customer_id || !merchant_id || !amount) {
+  if (!customer_id ||!merchant_id ||!amount) {
     return res.status(400).json({ status: 'error', message: 'Payment details are incomplete. Please try again.' });
   }
   try {
     let custBank = null;
     let merchBank = null;
-    const numericCustId = isNaN(parseInt(customer_id)) ? null : parseInt(customer_id);
-    const numericMerchId = isNaN(parseInt(merchant_id)) ? null : parseInt(merchant_id);
+    const numericCustId = isNaN(parseInt(customer_id))? null : parseInt(customer_id);
+    const numericMerchId = isNaN(parseInt(merchant_id))? null : parseInt(merchant_id);
     try {
       if (numericCustId) {
         const r = await supabase.from('linked_accounts').select('*').eq('user_id', numericCustId).eq('is_primary', true).limit(1).maybeSingle();
@@ -252,7 +245,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
         custBank = r.data || null;
       } catch (e) {}
     }
-    // Merchant bank details can come from the scanned QR payload
     if (!merchBank && merchant_account && merchant_bank_code) {
       merchBank = {
         bank_name: merchant_bank_name || 'Merchant Bank',
@@ -277,7 +269,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
         is_primary: true
       };
     }
-    if (!custBank || !merchBank) {
+    if (!custBank ||!merchBank) {
       return res.status(400).json({ status: 'error', message: 'Both customer and merchant need a linked bank account. Please link your bank first.' });
     }
 
@@ -285,7 +277,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
     if (!MONNIFY_WALLET_ACCOUNT) {
       return res.status(500).json({ status: 'error', message: 'Payments are not configured yet. Please contact support.' });
     }
-    // Licensed disbursement via Monnify: ClickPeQR wallet -> merchant bank account
     const disbursePayload = {
       amount: parseFloat(settlementAmount.toFixed(2)),
       reference: 'CLICKPEQR_' + Date.now() + '_' + merchant_id + '_' + customer_id,
@@ -316,7 +307,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       }]);
     } catch (logErr) { console.log("Transaction log notice:", logErr.message); }
 
-    // Award reward points for both sides
     try {
       const custPts = Math.floor(parseFloat(amount) / 100) * POINTS.customerPer100;
       const merchPts = Math.floor(parseFloat(amount) / 100) * POINTS.merchantPer100;
@@ -345,9 +335,9 @@ app.post('/api/direct-account-to-account', async (req, res) => {
   }
 });
 
-// [STRIPPED 77 bytes] 7. Monnify - licensed payment backbone
-// [STRIPPED 78 bytes] reserved (virtual) account for a merchant so customers can pay
-// into a dedicated account number. All fund movement stays under Monnify's license.
+// [STRIPPED 75 bytes]
+// 7. Monnify - licensed payment backbone
+// [STRIPPED 75 bytes]
 app.post('/api/monnify/reserved-account', async (req, res) => {
   const { user_id, account_name, customer_name, customer_email } = req.body;
   if (!account_name) {
@@ -381,7 +371,6 @@ app.post('/api/monnify/reserved-account', async (req, res) => {
   }
 });
 
-// Look up an existing reserved account
 app.get('/api/monnify/reserved-account/:reference', async (req, res) => {
   try {
     const data = await monnifyRequest('GET', '/api/v2/bank-transfer/reserved-accounts/' + encodeURIComponent(req.params.reference));
@@ -392,10 +381,9 @@ app.get('/api/monnify/reserved-account/:reference', async (req, res) => {
   }
 });
 
-// Single disbursement (payout) from the Monnify wallet to any Nigerian bank account
 app.post('/api/monnify/disburse', async (req, res) => {
   const { amount, destination_bank_code, destination_account_number, narration, reference } = req.body;
-  if (!amount || !destination_bank_code || !destination_account_number) {
+  if (!amount ||!destination_bank_code ||!destination_account_number) {
     return res.status(400).json({ status: 'error', message: 'Amount, bank code and account number are required.' });
   }
   if (!MONNIFY_WALLET_ACCOUNT) {
@@ -419,16 +407,14 @@ app.post('/api/monnify/disburse', async (req, res) => {
   }
 });
 
-// Monnify webhook - verifies the transaction hash before accepting any notification
-// hash = SHA512(secretKey | paymentReference | amountPaid | paidOn | transactionReference)
 app.post('/api/monnify/webhook', async (req, res) => {
   try {
     const b = req.body || {};
     const expected = crypto
-      .createHash('sha512')
-      .update([MONNIFY_SECRET_KEY, b.paymentReference, b.amountPaid, b.paidOn, b.transactionReference].join('|'))
-      .digest('hex');
-    if (!b.transactionHash || b.transactionHash.toLowerCase() !== expected.toLowerCase()) {
+     .createHash('sha512')
+     .update([MONNIFY_SECRET_KEY, b.paymentReference, b.amountPaid, b.paidOn, b.transactionReference].join('|'))
+     .digest('hex');
+    if (!b.transactionHash || b.transactionHash.toLowerCase()!== expected.toLowerCase()) {
       console.log("Monnify webhook: hash verification failed");
       return res.sendStatus(400);
     }
@@ -450,7 +436,9 @@ app.post('/api/monnify/webhook', async (req, res) => {
   }
 });
 
-// [STRIPPED 77 bytes] 8. Reward points
+// [STRIPPED 75 bytes]
+// 8. Reward points
+// [STRIPPED 75 bytes]
 app.get('/api/points/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -458,11 +446,11 @@ app.get('/api/points/:userId', async (req, res) => {
     since.setMonth(since.getMonth() - months);
     const bal = await supabase.from('reward_points').select('balance').eq('user_id', req.params.userId).maybeSingle();
     const hist = await supabase.from('reward_point_history')
-      .select('*')
-      .eq('user_id', req.params.userId)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(100);
+     .select('*')
+     .eq('user_id', req.params.userId)
+     .gte('created_at', since.toISOString())
+     .order('created_at', { ascending: false })
+     .limit(100);
     res.json({
       status: "success",
       balance: (bal.data && bal.data.balance) || 0,
@@ -474,13 +462,12 @@ app.get('/api/points/:userId', async (req, res) => {
   }
 });
 
-// Award points (single or batch)
 app.post('/api/points/award', async (req, res) => {
   try {
-    const awards = Array.isArray(req.body.awards) ? req.body.awards : [req.body];
+    const awards = Array.isArray(req.body.awards)? req.body.awards : [req.body];
     const results = [];
     for (const a of awards) {
-      if (!a.user_id || !a.points || a.points <= 0) continue;
+      if (!a.user_id ||!a.points || a.points <= 0) continue;
       const cur = await supabase.from('reward_points').select('balance').eq('user_id', a.user_id).maybeSingle();
       const newBal = ((cur.data && cur.data.balance) || 0) + a.points;
       await supabase.from('reward_points').upsert([{ user_id: a.user_id, balance: newBal }], { onConflict: 'user_id' });
@@ -498,19 +485,21 @@ app.post('/api/points/award', async (req, res) => {
   }
 });
 
-// [STRIPPED 77 bytes] 9. Notifications
+// [STRIPPED 75 bytes]
+// 9. Notifications
+// [STRIPPED 75 bytes]
 app.get('/api/notifications/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
     const since = new Date();
     since.setMonth(since.getMonth() - months);
     const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', req.params.userId)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(100);
+     .from('notifications')
+     .select('*')
+     .eq('user_id', req.params.userId)
+     .gte('created_at', since.toISOString())
+     .order('created_at', { ascending: false })
+     .limit(100);
     if (error) return res.status(400).json({ status: 'error', message: error.message });
     res.json({ status: "success", data });
   } catch (err) {
@@ -521,7 +510,7 @@ app.get('/api/notifications/:userId', async (req, res) => {
 app.post('/api/notifications', async (req, res) => {
   try {
     const { user_id, title, body } = req.body;
-    if (!user_id || !title) return res.status(400).json({ status: 'error', message: 'A recipient and title are required.' });
+    if (!user_id ||!title) return res.status(400).json({ status: 'error', message: 'A recipient and title are required.' });
     const { data, error } = await supabase.from('notifications').insert([{ user_id, title, body: body || '' }]);
     if (error) return res.status(400).json({ status: 'error', message: error.message });
     res.json({ status: "success", data });
@@ -530,13 +519,15 @@ app.post('/api/notifications', async (req, res) => {
   }
 });
 
-// [STRIPPED 77 bytes] 10. Health, webhooks & static serving
+// [STRIPPED 75 bytes]
+// 10. Health, webhooks & static serving
+// [STRIPPED 75 bytes]
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'ClickPeQR - Secure Fintech & AI Payment Gateway',
     company: 'Krishnyansh Zenova Peaks Ltd (RC-9810296)',
-    payment_backbone: 'Monnify (' + (isMonnifyLive ? 'live' : 'sandbox') + ')',
+    payment_backbone: 'Monnify (' + (isMonnifyLive? 'live' : 'sandbox') + ')',
     monnify_configured: Boolean(MONNIFY_API_KEY && MONNIFY_SECRET_KEY && MONNIFY_CONTRACT_CODE),
     flutterwave_configured: Boolean(FLUTTERWAVE_SECRET_KEY),
     endpoints: [
@@ -557,20 +548,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Legacy Flutterwave webhook
 app.post('/webhook', (req, res) => {
   console.log("Webhook received");
   res.sendStatus(200);
 });
 
-// Serve the frontend for any other route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// [STRIPPED 77 bytes] 11. Start server
-// [STRIPPED 78 bytes] PORT = process.env.PORT || 5000;
+// [STRIPPED 75 bytes]
+// 11. Start server
+// [STRIPPED 75 bytes]
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log('ClickPeQR server running on port ' + PORT);
-  console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL+')')
+  console.log('Monnify mode: ' + (isMonnifyLive? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL + ')');
 });
