@@ -12,6 +12,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
 require('dotenv').config();
@@ -20,12 +21,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 1. Configuration
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpzteqexkc.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcyNzQ1MjQ1MywiZXhwIjoyMDQzMDI4NDUzfQ.EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY;
@@ -45,16 +47,16 @@ const POINTS = {
   nairaPer100Pts: parseInt(process.env.POINTS_NAIRA_PER_100 || "10", 10),
 };
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 2. Monnify helpers
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 let monnifyTokenCache = { token: null, expiresAt: 0 };
 
 async function getMonnifyToken() {
   if (monnifyTokenCache.token && Date.now() < monnifyTokenCache.expiresAt) {
     return monnifyTokenCache.token;
   }
-  if (!MONNIFY_API_KEY ||!MONNIFY_SECRET_KEY) {
+  if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
     throw new Error("Monnify API credentials are not configured.");
   }
   const basic = Buffer.from(MONNIFY_API_KEY + ":" + MONNIFY_SECRET_KEY).toString("base64");
@@ -81,9 +83,9 @@ async function monnifyRequest(method, endpoint, data) {
   return res.data;
 }
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 3. Auth & profiles
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { id, full_name, email, business_name, portal_type, avatar_url, phone_number } = req.body;
@@ -96,9 +98,9 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 4. Transactions
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.post('/api/transactions/verify', async (req, res) => {
   try {
     const { amount, sender_phone, transaction_id, user_id } = req.body;
@@ -137,12 +139,12 @@ app.get('/api/transactions/history/:userId', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 5. Bank account verification - FIXED for UUIDs
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.post('/api/resolve-account', async (req, res) => {
   const { account_number, account_bank } = req.body;
-  if (!account_number ||!account_bank || String(account_number).length!== 10) {
+  if (!account_number || !account_bank || String(account_number).length !== 10) {
     return res.json({ status: 'error', message: 'Please enter a valid 10-digit account number.' });
   }
   if (!FLUTTERWAVE_SECRET_KEY) {
@@ -164,12 +166,12 @@ app.post('/api/resolve-account', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 6. Transfers - FIXED: Now handles UUID user_ids, not just numeric IDs
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.post('/api/settle-to-merchant', async (req, res) => {
   const { amount, transaction_id, merchant_id, merchant_account, merchant_bank_code, merchant_account_name } = req.body;
-  if (!amount ||!merchant_account ||!merchant_bank_code) {
+  if (!amount || !merchant_account || !merchant_bank_code) {
     return res.status(400).json({ status: 'error', message: 'Payment details are incomplete. Please try again.' });
   }
   try {
@@ -223,16 +225,19 @@ app.post('/api/settle-to-merchant', async (req, res) => {
 
 /**
  * Direct account-to-account payment - FIXED for your error screenshot.
+ * Customer pays -> merchant receives via licensed Monnify disbursement.
+ * FIX: Now accepts string UUIDs and bank details from QR payload directly.
  */
 app.post('/api/direct-account-to-account', async (req, res) => {
   const { customer_id, merchant_id, amount, transaction_id, merchant_account, merchant_bank_code, merchant_account_name, merchant_bank_name, customer_account, customer_bank_code } = req.body;
-  if (!customer_id ||!merchant_id ||!amount) {
+  if (!customer_id || !merchant_id || !amount) {
     return res.status(400).json({ status: 'error', message: 'Payment details are incomplete. Please try again.' });
   }
   try {
     let custBank = null;
     let merchBank = null;
 
+    // Merchant bank from QR payload has highest priority (scanned QR always has bank_code + account_number)
     if (merchant_account && merchant_bank_code) {
       merchBank = {
         bank_name: merchant_bank_name || 'Merchant Bank',
@@ -243,6 +248,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       };
     }
 
+    // Customer bank from payload if frontend sends it
     if (customer_account && customer_bank_code) {
       custBank = {
         bank_name: 'Customer Bank',
@@ -253,6 +259,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       };
     }
 
+    // Lookup linked_accounts by user_id as STRING (UUIDs) - THIS FIXES YOUR ERROR
     try {
       if (!custBank && customer_id) {
         let r = await supabase.from('linked_accounts').select('*').eq('user_id', customer_id).eq('is_primary', true).limit(1).maybeSingle();
@@ -286,7 +293,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       }
     } catch (e) { console.log("Bank lookup notice:", e.message); }
 
-    if (!custBank ||!merchBank) {
+    if (!custBank || !merchBank) {
       return res.status(400).json({ status: 'error', message: 'Both customer and merchant need a linked bank account. Please link your bank first.' });
     }
 
@@ -352,9 +359,9 @@ app.post('/api/direct-account-to-account', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 7. Monnify - licensed payment backbone
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.post('/api/monnify/reserved-account', async (req, res) => {
   const { user_id, account_name, customer_name, customer_email } = req.body;
   if (!account_name) {
@@ -400,7 +407,7 @@ app.get('/api/monnify/reserved-account/:reference', async (req, res) => {
 
 app.post('/api/monnify/disburse', async (req, res) => {
   const { amount, destination_bank_code, destination_account_number, narration, reference } = req.body;
-  if (!amount ||!destination_bank_code ||!destination_account_number) {
+  if (!amount || !destination_bank_code || !destination_account_number) {
     return res.status(400).json({ status: 'error', message: 'Amount, bank code and account number are required.' });
   }
   if (!MONNIFY_WALLET_ACCOUNT) {
@@ -428,10 +435,10 @@ app.post('/api/monnify/webhook', async (req, res) => {
   try {
     const b = req.body || {};
     const expected = crypto
-     .createHash('sha512')
-     .update([MONNIFY_SECRET_KEY, b.paymentReference, b.amountPaid, b.paidOn, b.transactionReference].join('|'))
-     .digest('hex');
-    if (!b.transactionHash || b.transactionHash.toLowerCase()!== expected.toLowerCase()) {
+      .createHash('sha512')
+      .update([MONNIFY_SECRET_KEY, b.paymentReference, b.amountPaid, b.paidOn, b.transactionReference].join('|'))
+      .digest('hex');
+    if (!b.transactionHash || b.transactionHash.toLowerCase() !== expected.toLowerCase()) {
       console.log("Monnify webhook: hash verification failed");
       return res.sendStatus(400);
     }
@@ -453,9 +460,9 @@ app.post('/api/monnify/webhook', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 8. Reward points
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.get('/api/points/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -481,10 +488,10 @@ app.get('/api/points/:userId', async (req, res) => {
 
 app.post('/api/points/award', async (req, res) => {
   try {
-    const awards = Array.isArray(req.body.awards)? req.body.awards : [req.body];
+    const awards = Array.isArray(req.body.awards) ? req.body.awards : [req.body];
     const results = [];
     for (const a of awards) {
-      if (!a.user_id ||!a.points || a.points <= 0) continue;
+      if (!a.user_id || !a.points || a.points <= 0) continue;
       const cur = await supabase.from('reward_points').select('balance').eq('user_id', a.user_id).maybeSingle();
       const newBal = ((cur.data && cur.data.balance) || 0) + a.points;
       await supabase.from('reward_points').upsert([{ user_id: a.user_id, balance: newBal }], { onConflict: 'user_id' });
@@ -502,9 +509,9 @@ app.post('/api/points/award', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 9. Notifications
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.get('/api/notifications/:userId', async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months || "3", 10), 12);
@@ -527,7 +534,7 @@ app.get('/api/notifications/:userId', async (req, res) => {
 app.post('/api/notifications', async (req, res) => {
   try {
     const { user_id, title, body } = req.body;
-    if (!user_id ||!title) return res.status(400).json({ status: 'error', message: 'A recipient and title are required.' });
+    if (!user_id || !title) return res.status(400).json({ status: 'error', message: 'A recipient and title are required.' });
     const { data, error } = await supabase.from('notifications').insert([{ user_id, title, body: body || '' }]);
     if (error) return res.status(400).json({ status: 'error', message: error.message });
     res.json({ status: "success", data });
@@ -536,15 +543,15 @@ app.post('/api/notifications', async (req, res) => {
   }
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 10. Health, webhooks & static serving
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'ClickPeQR - Secure Fintech & AI Payment Gateway',
     company: 'Krishnyansh Zenova Peaks Ltd (RC-9810296)',
-    payment_backbone: 'Monnify (' + (isMonnifyLive? 'live' : 'sandbox') + ')',
+    payment_backbone: 'Monnify (' + (isMonnifyLive ? 'live' : 'sandbox') + ')',
     monnify_configured: Boolean(MONNIFY_API_KEY && MONNIFY_SECRET_KEY && MONNIFY_CONTRACT_CODE),
     flutterwave_configured: Boolean(FLUTTERWAVE_SECRET_KEY),
     endpoints: [
@@ -571,14 +578,22 @@ app.post('/webhook', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const publicIndex = path.join(__dirname, 'public', 'index.html');
+  const rootIndex = path.join(__dirname, 'index.html');
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
+  }
+  if (fs.existsSync(rootIndex)) {
+    return res.sendFile(rootIndex);
+  }
+  return res.status(404).send('Not Found - index.html missing. Please ensure index.html is in /public or root.');
 });
 
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 // 11. Start server - FIXED: No double brace
-// [STRIPPED 75 bytes]
+// ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log('ClickPeQR server running on port ' + PORT);
-  console.log('Monnify mode: ' + (isMonnifyLive? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL + ')');
+  console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL + ')');
 });
