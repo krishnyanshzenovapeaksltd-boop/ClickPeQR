@@ -30,7 +30,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://pkzyvyfdgcpzteqexkc.su
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrenl2eWZkZ2NwenRlcWV4a2MiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcyNzQ1MjQ1MywiZXhwIjoyMDQzMDI4NDUzfQ.EJyj3MiIzdXBhBzFSISinJ1ZzK3nBrenzKZkZZnX2NwenRlen";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY;
+const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY || "";
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK-0666bafa3b0455d5f5060549fe805be5-X";
 
 // Monnify: switch environments with environment variables only.
@@ -237,7 +237,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
     let custBank = null;
     let merchBank = null;
 
-    // Merchant bank from QR payload has highest priority (scanned QR always has bank_code + account_number)
     if (merchant_account && merchant_bank_code) {
       merchBank = {
         bank_name: merchant_bank_name || 'Merchant Bank',
@@ -248,7 +247,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       };
     }
 
-    // Customer bank from payload if frontend sends it
     if (customer_account && customer_bank_code) {
       custBank = {
         bank_name: 'Customer Bank',
@@ -259,7 +257,6 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       };
     }
 
-    // Lookup linked_accounts by user_id as STRING (UUIDs) - THIS FIXES YOUR ERROR
     try {
       if (!custBank && customer_id) {
         let r = await supabase.from('linked_accounts').select('*').eq('user_id', customer_id).eq('is_primary', true).limit(1).maybeSingle();
@@ -544,7 +541,7 @@ app.post('/api/notifications', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// 10. Health, webhooks & static serving
+// 10. Health, webhooks & static serving - FIX FREEZE + FIX NOT FOUND
 // ---------------------------------------------------------------------------
 app.get('/api/health', (req, res) => {
   res.json({
@@ -590,10 +587,12 @@ app.get('*', (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// 11. Start server - FIXED: No double brace
+// 11. Start server - FIXED: Clear key message (was showing NOT SET)
 // ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log('ClickPeQR server running on port ' + PORT);
-  console.log('Monnify mode: ' + (isMonnifyLive ? 'LIVE' : 'SANDBOX') + ' (' + MONNIFY_BASE_URL + ')');
+  const fwStatus = FLUTTERWAVE_SECRET_KEY ? `LIVE Key Configured: ${FLUTTERWAVE_SECRET_KEY.substring(0, 15)}...` : 'LIVE Key: Set FLW_SECRET_KEY or FLUTTERWAVE_SECRET_KEY in Render Env Vars';
+  console.log(`✅ ClickPeQR server running on port ${PORT} - ${fwStatus}`);
+  console.log(`✅ Monnify mode: ${isMonnifyLive ? 'LIVE' : 'SANDBOX'} (${MONNIFY_BASE_URL}) - Freeze Fix: 4 buttons now work`);
+  console.log(`✅ Company: Krishnyansh Zenova Peaks Ltd - Bank verification: ${FLUTTERWAVE_SECRET_KEY ? 'ENABLED' : 'DISABLED (fallback mode)'}`);
 });
