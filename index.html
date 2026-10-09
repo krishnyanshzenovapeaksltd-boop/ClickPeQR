@@ -647,7 +647,7 @@ if(!u.id || !merchant){ alert('Something went wrong. Please try again.'); return
 try {
 const res = await fetch('/api/direct-account-to-account', {
 method: 'POST', headers: {'Content-Type': 'application/json'},
-consbody: JSON.stringify({customer_id: u.id, merchant_id: merchant.merchant_id, amount: amt, transaction_id: 'TXN_'+Date.now(), merchant_account: merchant.account_number, merchant_bank_code: merchant.bank_code, merchant_account_name: merchant.account_name, merchant_bank_name: merchant.bank_name, customer_account: (primaryBankOf(u.id) && primaryBankOf(u.id).account_number) || '', customer_bank_code: (primaryBankOf(u.id) && primaryBankOf(u.id).bank_code) || ''})t result = await res.json();
+consbody: JSON.stringify({customer_id: u.id, merchant_id: merchant.merchant_id, amount: amt, transaction_id: 'TXN_'+Date.now(), merchant_account: merchant.account_number, merchant_bank_code: merchant.bank_code, merchant_account_name: merchant.account_name, merchant_bank_name: merchant.bank_name, customer_account: (primaryBankOf(u.id) && primaryBankOf(u.id).account_number) || '', customer_bank_code: (primaryBankOf(u.id) && primaryBankOf(u.id).bank_code) || ''}) result = await res.json();
 if(result.status === 'success'){
 await saveTransactionToSupabase(amt, (result.transfer && result.transfer.data && result.transfer.data.id) || Date.now());
 awardPoints(u.id, Math.floor(parseFloat(amt)/100) * POINTS.customerPer100, 'Payment of \u20A6' + amt + ' to ' + merchant.shop_name);
