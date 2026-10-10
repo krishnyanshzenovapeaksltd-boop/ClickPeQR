@@ -541,19 +541,34 @@ pushNotification('Profile updated', 'Your profile details were saved successfull
 alert('Profile saved successfully.');
 }
 
-/* ---------- QR ---------- */
+// Naya - email fallback + userId dono
 function primaryBankOf(userId){
-try {
-const banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-return banks.find(b => b.is_primary) || banks[0] || null;
-} catch(e){ return null; }
+  const u = getUser();
+  const emailKey = (u.email || '').toLowerCase();
+  let banks = [];
+  try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]'); } catch(e){}
+  if(banks.length === 0){
+    try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
+  }
+  return banks.find(b => b.is_primary) || banks[0] || null;
 }
+  
 function renderPermanentShopQR(user){
 const c = document.getElementById('permanentShopQRContainer');
 if(!c) return;
 c.innerHTML = "";
 const ver = user.permanent_qr_version || Date.now();
-const pb = primaryBankOf(user.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
+cons// Naya - email fallback + userId dono
+function primaryBankOf(userId){
+  const u = getUser();
+  const emailKey = (u.email || '').toLowerCase();
+  let banks = [];
+  try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]'); } catch(e){}
+  if(banks.length === 0){
+    try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
+  }
+  return banks.find(b => b.is_primary) || banks[0] || null;
+}t pb = primaryBankOf(user.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
 const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
 new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
 }
