@@ -108,8 +108,7 @@
 <div><input type="password" id="pinInput" required maxlength="6" inputmode="numeric" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="6-digit PIN"></div>
 <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
 </form>
-<p class="text-center text-[10px] text-slate-500 mt-4">Powered by <span class="text-teal-400 font-semibold"> v
-  MONNIFY </span> &bull; RC-9810296</p>
+<p class="text-center text-[10px] text-slate-500 mt-4">Powered by <span class="text-teal-400 font-semibold"> MONNIFY </span> &bull; RC-9810296</p>
 </div>
 
 <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4 anim-fadeUp">
@@ -541,7 +540,7 @@ pushNotification('Profile updated', 'Your profile details were saved successfull
 alert('Profile saved successfully.');
 }
 
-// Naya - email fallback + userId dono
+/* ---------- Corrected Helper Functions ---------- */
 function primaryBankOf(userId){
   const u = getUser();
   const emailKey = (u.email || '').toLowerCase();
@@ -550,28 +549,29 @@ function primaryBankOf(userId){
   if(banks.length === 0){
     try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
   }
-  return banks.find(b => b.is_primary) || banks[0] || null;
+  return banks.find(b => b.is_primary) || banks[0] || { bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank' };
 }
   
 function renderPermanentShopQR(user){
-const c = document.getElementById('permanentShopQRContainer');
-if(!c) return;
-c.innerHTML = "";
-const ver = user.permanent_qr_version || Date.now();
-cons// Naya - email fallback + userId dono
-function primaryBankOf(userId){
-  const u = getUser();
-  const emailKey = (u.email || '').toLowerCase();
-  let banks = [];
-  try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]'); } catch(e){}
-  if(banks.length === 0){
-    try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
-  }
-  return banks.find(b => b.is_primary) || banks[0] || null;
-function primaryBankOf (user.id) ||  { bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
-const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
-new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
+  const c = document.getElementById('permanentShopQRContainer');
+  if(!c) return;
+  c.innerHTML = "";
+  const ver = user.permanent_qr_version || Date.now();
+  const pb = primaryBankOf(user.id);
+  const payload = { 
+    type: "MERCHANT_PERMANENT", 
+    merchantId: user.id, 
+    businessName: user.business_name || user.full_name, 
+    version: ver, 
+    permanent_id: 'PERM_'+user.id+'_'+ver, 
+    bank_code: pb.bank_code, 
+    account_number: pb.account_number, 
+    account_name: pb.account_name, 
+    bank_name: pb.bank_name 
+  };
+  new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
 }
+
 function renderCustomerPermanentQR(user){
 const c = document.getElementById('customerPermanentQRContainer');
 if(!c) return;
@@ -605,7 +605,7 @@ if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return;
 const c = document.getElementById('dynamicQRContainer');
 c.innerHTML = "";
 const u = getUser();
-const pb = primaryBankOf(u.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
+const pb = primaryBankOf(u.id);
 new QRCode(c, { text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name}), width: 140, height: 140 });
 document.getElementById('merchantQRResult').classList.remove('hidden');
 }
@@ -631,7 +631,7 @@ try { const ls = localStorage.getItem('last_scanned_qr_payload'); if(ls) qrData 
 if(qrData && qrData.account_number){
 scannedMerchantData = { shop_name: qrData.businessName || 'Merchant Store', account_name: qrData.account_name, account_number: qrData.account_number, bank_name: qrData.bank_name || qrData.bank_code, bank_code: qrData.bank_code, merchant_id: qrData.merchantId || ('merchant_'+Date.now()), amount: qrData.amount };
 } else {
-const pb = primaryBankOf(activeUser.id) || {bank_name: 'GTBank', account_number: '0638090889', account_name: 'RUBY GARG', bank_code: '058'};
+const pb = primaryBankOf(activeUser.id);
 scannedMerchantData = { shop_name: 'ZENOVA PEAK TECH HUB', account_name: pb.account_name, account_number: pb.account_number, bank_name: pb.bank_name, bank_code: pb.bank_code, merchant_id: 'zenova_merchant_001' };
 }
 document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
