@@ -568,7 +568,7 @@ function primaryBankOf(userId){
     try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
   }
   return banks.find(b => b.is_primary) || banks[0] || null;
-}t pb = primaryBankOf(user.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
+} = primaryBankOf(user.id) || {bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank'};
 const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
 new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
 }
