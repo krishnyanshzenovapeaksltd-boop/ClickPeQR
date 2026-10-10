@@ -185,6 +185,7 @@ app.post('/api/settle-to-merchant', async (req, res) => {
       narration: 'ClickPeQR settlement to ' + (merchant_account_name || merchant_id),
       destinationBankCode: String(merchant_bank_code),
       destinationAccountNumber: String(merchant_account),
+      destinationAccountName: String(merchant_account_name || 'Merchant'),
       currency: "NGN",
       sourceAccountNumber: MONNIFY_WALLET_ACCOUNT
     };
@@ -304,6 +305,7 @@ app.post('/api/direct-account-to-account', async (req, res) => {
       narration: 'ClickPeQR ' + custBank.bank_name + ' to ' + merchBank.bank_name,
       destinationBankCode: String(merchBank.bank_code),
       destinationAccountNumber: String(merchBank.account_number),
+      destinationAccountName: String(merchBank.account_name || 'Merchant'),
       currency: "NGN",
       sourceAccountNumber: MONNIFY_WALLET_ACCOUNT
     };
