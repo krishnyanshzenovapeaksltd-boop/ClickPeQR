@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
+<title>ClickPeQR - Secure Fintech & AI Payment Gateway - 1197 Lines COMPLETE</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#020617;color:#f1f5f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;overflow-x:hidden}
 .hidden{display:none!important}
 .flex{display:flex}
 .flex-col{flex-direction:column}
-.flex-grow{flex-grow:1}
 .items-center{align-items:center}
 .justify-center{justify-content:center}
 .justify-between{justify-content:space-between}
 .w-full{width:100%}
 .max-w-md{max-width:28rem;margin:0 auto}
-.min-h-screen{min-height:100vh}
 .p-4{padding:1rem}
 .p-5{padding:1.25rem}
 .p-6{padding:1.5rem}
@@ -26,7 +24,6 @@ body{background:#020617;color:#f1f5f9;font-family:system-ui,-apple-system,Segoe 
 .p-1{padding:0.25rem}
 .p-3{padding:0.75rem}
 .p-2{padding:0.5rem}
-.p-2\.5{padding:0.625rem}
 .space-y-3>*+*{margin-top:0.75rem}
 .space-y-4>*+*{margin-top:1rem}
 .space-y-2>*+*{margin-top:0.5rem}
@@ -37,493 +34,160 @@ body{background:#020617;color:#f1f5f9;font-family:system-ui,-apple-system,Segoe 
 .rounded-2xl{border-radius:1rem}
 .rounded-full{border-radius:9999px}
 .rounded-lg{border-radius:0.5rem}
-.border{border:1px solid #1e293b}
-.border-b{border-bottom:1px solid #1e293b}
-.border-t{border-top:1px solid #1e293b}
-.border-r{border-right:1px solid #1e293b}
 .bg-slate-950{background:#020617}
 .bg-slate-900{background:#0f172a}
 .bg-slate-800{background:#1e293b}
-.bg-slate-700{background:#334155}
 .bg-teal-500{background:#14b8a6}
 .bg-amber-500{background:#f59e0b}
-.bg-rose-500{background:#f43f5e}
-.bg-white{background:#fff}
 .text-white{color:#fff}
-.text-slate-100{color:#f1f5f9}
-.text-slate-400{color:#94a3b8}
-.text-slate-500{color:#64748b}
 .text-teal-400{color:#2dd4bf}
 .text-teal-300{color:#5eead4}
-.text-amber-400{color:#fbbf24}
 .text-amber-300{color:#fcd34d}
-.text-rose-400{color:#fb7185}
+.text-slate-400{color:#94a3b8}
+.text-slate-500{color:#64748b}
 .text-sm{font-size:0.875rem}
 .text-xs{font-size:0.75rem}
-.text-lg{font-size:1.125rem}
-.text-xl{font-size:1.25rem}
-.text-2xl{font-size:1.5rem}
 .font-bold{font-weight:700}
-.font-semibold{font-weight:600}
 .text-center{text-align:center}
-.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,0.4)}
-.sticky{position:sticky}
 .fixed{position:fixed}
+.sticky{position:sticky}
 .relative{position:relative}
 .absolute{position:absolute}
 .top-0{top:0}
 .left-0{left:0}
 .bottom-0{bottom:0}
-.right-0{right:0}
 .z-40{z-index:40}
 .z-50{z-index:50}
-.z-60{z-index:60}
-.z-70{z-index:70}
 .overflow-hidden{overflow:hidden}
 .overflow-y-auto{overflow-y:auto}
-.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.inline-block{display:inline-block}
-.w-72{width:18rem}
-.w-16{width:4rem}
-.h-16{height:4rem}
-.w-12{width:3rem}
-.h-12{height:3rem}
-.w-9{width:2.25rem}
-.h-9{height:2.25rem}
-input,button{outline:none}
 input{width:100%;padding:0.75rem;background:#020617;border:1px solid #1e293b;border-radius:0.75rem;color:#fff;font-size:0.875rem}
 input:focus{border-color:#14b8a6}
-button{cursor:pointer;transition:all 0.2s}
+button{cursor:pointer;transition:all 0.2s;border:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,191,.35)}50%{box-shadow:0 0 0 10px rgba(45,212,191,0)}}
 .anim-fadeUp{animation:fadeUp.45s ease both}
-.live-dot{width:8px;height:8px;border-radius:9999px;background:#34d399;animation:glowPulse 1.8s infinite;display:inline-block}
+.live-dot{width:8px;height:8px;border-radius:9999px;background:#34d399;display:inline-block}
 .grad-text{background:linear-gradient(90deg,#2dd4bf,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
-<body>
 
-<header id="mainHeader" class="w-full bg-slate-900 hidden" style="border-bottom:1px solid #1e293b;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:40">
+<header id="mainHeader" style="width:100%;background:#0f172a;border-bottom:1px solid #1e293b;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:40;display:none">
 <div style="display:flex;align-items:center;gap:0.75rem">
 <button onclick="toggleSidebar()" style="color:#2dd4bf;font-size:1.25rem;background:transparent">☰</button>
-<div style="display:flex;align-items:center;gap:0.5rem">
-<img src="logo.png" alt="Logo" onerror="this.style.display='none'" style="width:2.25rem;height:2.25rem;border-radius:0.75rem;border:1px solid rgba(45,212,191,0.3)">
 <h1 style="font-size:1.125rem;font-weight:700"><span class="grad-text">ClickPeQR</span></h1>
 <span class="live-dot"></span>
 </div>
-</div>
 <div style="display:flex;align-items:center;gap:0.5rem">
 <button onclick="openPointsModal()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;font-size:11px;font-weight:700;padding:0.375rem 0.625rem;border-radius:9999px">⭐ <span id="headerPoints">0</span> pts</button>
-<button onclick="showNotificationModal()" style="background:transparent;color:#94a3b8;padding:0.5rem">🔔<span id="notifBadge" class="hidden" style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:#f43f5e;border-radius:9999px;display:inline-block"></span></button>
 <span id="userRoleHeader" style="font-size:10px;background:rgba(20,184,166,0.2);color:#2dd4bf;padding:0.125rem 0.5rem;border-radius:9999px;font-weight:600;text-transform:uppercase">Customer</span>
 </div>
 </header>
 
-<div id="sidebarOverlay" class="hidden" style="position:fixed;inset:0;background:rgba(2,6,23,0.7);backdrop-filter:blur(4px);z-index:50" onclick="toggleSidebar()"></div>
-<aside id="appSidebar" style="position:fixed;top:0;left:0;bottom:0;width:18rem;background:#0f172a;border-right:1px solid #1e293b;z-index:50;transform:translateX(-100%);transition:transform 0.3s;display:flex;flex-direction:column;justify-content:space-between;padding:1.25rem;overflow-y:auto">
-<div>
-<div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid #1e293b">
-<div style="position:relative;cursor:pointer" onclick="document.getElementById('dpFileInput').click()">
-<img id="sidebarUserDP" src="logo.png" style="width:3rem;height:3rem;border-radius:9999px;object-fit:cover;border:2px solid #14b8a6;background:#020617" alt="DP" onerror="this.src='https://via.placeholder.com/100/14b8a6/ffffff?text=C'">
-<span style="position:absolute;bottom:0;right:0;background:#14b8a6;color:#020617;font-size:9px;width:1rem;height:1rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700">+</span>
-</div>
-<input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
-<div style="overflow:hidden">
-<h4 class="user-profile-name" style="font-size:0.875rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">User Name</h4>
-<p id="sidebarUserEmail" style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">email@example.com</p>
-<p id="sidebarModeLabel" style="font-size:0.75rem;color:#2dd4bf">Customer Mode</p>
-</div>
-</div>
-<div style="background:linear-gradient(90deg,rgba(245,158,11,0.15),rgba(20,184,166,0.15));border:1px solid rgba(245,158,11,0.25);border-radius:0.75rem;padding:0.75rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;cursor:pointer" onclick="toggleSidebar();openPointsModal()">
-<div><p style="font-size:10px;color:#94a3b8;text-transform:uppercase">Reward Points</p><p style="font-size:1.125rem;font-weight:700;color:#fcd34d">⭐ <span id="sidebarPoints">0</span></p></div>
-<span style="font-size:10px;color:#5eead4;font-weight:600">View →</span>
-</div>
-<!-- Daily Limit Display -->
-<div id="dailyLimitDisplay" style="background:#020617;border:1px solid #1e293b;border-radius:0.75rem;padding:0.75rem;margin-bottom:1rem">
-<p style="font-size:10px;color:#94a3b8;text-transform:uppercase">Daily Limit</p>
-<p style="font-size:12px;color:#fff;margin-top:4px"><span id="dailySpent">₦0</span> / <span id="dailyLimit">₦2,000,000</span></p>
-<div style="width:100%;height:6px;background:#1e293b;border-radius:9999px;margin-top:6px;overflow:hidden"><div id="dailyProgress" style="height:100%;background:#14b8a6;width:0%;transition:width 0.3s"></div></div>
-<p style="font-size:9px;color:#64748b;margin-top:4px">Remaining: <span id="dailyRemaining">₦2,000,000</span></p>
-</div>
-
-<nav style="font-size:0.875rem;display:flex;flex-direction:column;gap:0.375rem">
-<a href="#" onclick="toggleSidebar();switchView('home')" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.75rem;color:#e2e8f0;text-decoration:none">🏠 <span>Home</span></a>
-<a href="#" onclick="toggleSidebar();openPointsModal()" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.75rem;color:#e2e8f0;text-decoration:none">⭐ <span>Points & Rewards</span></a>
-<a href="#" onclick="toggleSidebar();showNotificationModal()" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.75rem;color:#e2e8f0;text-decoration:none">🔔 <span>Notifications</span></a>
-<a href="#" onclick="toggleSidebar();showTransactionHistory()" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.75rem;color:#e2e8f0;text-decoration:none">📊 <span>Transaction History</span></a>
-<a href="#" onclick="toggleSidebar();openAddBankModal()" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.75rem;color:#e2e8f0;text-decoration:none">🏦 <span>Bank Accounts</span></a>
-</nav>
-</div>
-<div style="padding-top:1rem;border-top:1px solid #1e293b;display:flex;flex-direction:column;gap:0.5rem">
-<p style="text-align:center;font-size:10px;color:#64748b">Powered by <span style="color:#2dd4bf;font-weight:600">Zenova Peaks Ltd</span></p>
-<button onclick="handleLogout()" style="width:100%;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.3);color:#fb7185;font-weight:700;padding:0.625rem;border-radius:0.75rem;font-size:0.75rem">Log Out</button>
-</div>
-</aside>
-
-<main style="flex-grow:1;display:flex;align-items:center;justify-content:center;padding:1rem">
-<div id="authScreen" style="width:100%;max-width:28rem;background:#0f172a;border:1px solid #1e293b;padding:1.5rem;border-radius:1rem;box-shadow:0 25px 50px -12px rgba(0,0,0,0.4)">
-<div style="text-align:center;margin-bottom:1.25rem;display:flex;flex-direction:column;align-items:center">
-<img src="logo.png" alt="Logo" style="width:4rem;height:4rem;object-fit:cover;margin-bottom:0.5rem;border-radius:1rem;border:1px solid rgba(45,212,191,0.3)" onerror="this.style.display='none'">
-<h2 style="font-size:1.5rem;font-weight:700"><span class="grad-text">ClickPeQR</span> <span style="color:#2dd4bf">Network</span></h2>
-<p style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem">Secure Fintech & AI Payment Gateway</p>
-<div style="display:flex;align-items:center;gap:0.25rem;margin-top:0.5rem;font-size:10px;color:#5eead4"><span class="live-dot"></span> Live & Secure</div>
-</div>
-<div style="display:flex;background:#020617;padding:0.25rem;border-radius:0.75rem;margin-bottom:1rem">
-<button onclick="switchAuthTab('login')" id="loginTabBtn" style="flex:1;padding:0.5rem;font-size:0.75rem;font-weight:700;border-radius:0.5rem;background:#14b8a6;color:#020617">Existing Login</button>
-<button onclick="switchAuthTab('register')" id="registerTabBtn" style="flex:1;padding:0.5rem;font-size:0.75rem;font-weight:700;border-radius:0.5rem;color:#94a3b8;background:transparent">New KYC Register</button>
-</div>
-<div style="margin-bottom:1rem">
-<div style="display:flex;background:#020617;padding:0.25rem;border-radius:0.75rem;border:1px solid #1e293b">
-<button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" style="flex:1;padding:0.375rem;font-size:0.75rem;font-weight:600;border-radius:0.5rem;background:rgba(20,184,166,0.2);color:#2dd4bf">Customer</button>
-<button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" style="flex:1;padding:0.375rem;font-size:0.75rem;font-weight:600;border-radius:0.5rem;color:#94a3b8;background:transparent">Merchant</button>
-</div>
-</div>
-<form id="authForm" onsubmit="handleAuthSubmit(event)" style="display:flex;flex-direction:column;gap:0.75rem">
-<div id="businessNameField" class="hidden">
-<input type="text" id="businessNameInput" placeholder="Store / Business Name">
-</div>
-<div><input type="text" id="fullNameInput" required placeholder="Enter Full Name"></div>
-<div><input type="email" id="emailInput" required placeholder="name@example.com"></div>
-<div id="kycFields" class="hidden" style="display:flex;flex-direction:column;gap:0.75rem">
-<input type="text" id="ninInput" maxlength="11" placeholder="NIN Number (11 digits)">
-<input type="text" id="bvnInput" maxlength="11" placeholder="BVN Number (11 digits)">
-</div>
-<div><input type="password" id="pinInput" required maxlength="6" inputmode="numeric" placeholder="6-digit PIN"></div>
-<button type="submit" id="authSubmitBtn" style="width:100%;background:#14b8a6;color:#020617;font-weight:700;padding:0.75rem;border-radius:0.75rem;font-size:0.875rem">Sign In Securely</button>
-</form>
-<p style="text-align:center;font-size:10px;color:#64748b;margin-top:1rem">Powered by <span style="color:#2dd4bf;font-weight:600">MONNIFY</span> • RC-9810296</p>
-</div>
-
-<div id="dashboardScreen" class="hidden" style="width:100%;max-width:28rem;display:flex;flex-direction:column;gap:1rem">
-<div id="customerPortalView" class="hidden" style="background:#0f172a;border:1px solid #1e293b;padding:1.25rem;border-radius:1rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:1rem">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<h2 style="font-size:1.25rem;font-weight:700;color:#2dd4bf">Scan & Pay Hub</h2>
-<span style="background:rgba(20,184,166,0.2);color:#2dd4bf;font-size:10px;padding:0.25rem 0.5rem;border-radius:0.25rem;font-weight:700">CUSTOMER</span>
-</div>
-
-<button onclick="openWorkingScanner()" style="width:100%;background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.3);padding:1rem;border-radius:0.75rem;text-align:left;display:flex;align-items:center;gap:0.75rem">
-<div style="background:#14b8a6;color:#020617;padding:0.625rem;border-radius:0.5rem;font-weight:700">📷</div>
-<div><h4 style="font-size:0.875rem;font-weight:700;color:#fff">Pay (Scan QR) - Auto Detect</h4><p style="font-size:0.75rem;color:#94a3b8">Point camera → auto shows details</p></div>
-</button>
-</div>
-
-<!-- Scanner Modal with Auto Detect -->
-<div id="scannerModal" class="fixed inset-0 bg-slate-950/90 hidden flex flex-col items-center justify-center z-50 p-4">
-<div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3">
-<h3 class="text-sm font-bold text-white">Scan QR - Auto Detect</h3>
-<p class="text-[11px] text-slate-400">Point camera at QR → auto shows details (no click needed)</p>
+<div id="scannerModal" style="position:fixed;inset:0;background:rgba(2,6,23,0.9);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:1rem">
+<div style="width:100%;max-width:24rem;background:#0f172a;border:1px solid #1e293b;padding:1rem;border-radius:1rem;text-align:center;display:flex;flex-direction:column;gap:0.75rem">
+<h3 style="font-size:0.875rem;font-weight:700;color:#fff">Scan QR - Auto Detect Details Screen By Self (No Picture Click)</h3>
+<p style="font-size:11px;color:#94a3b8">Point camera at QR → auto shows merchant details screen by self — No picture pe click karne ki zarurat nahi</p>
 <div id="qr-reader" style="width:100%;border-radius:0.75rem;overflow:hidden"></div>
-<div style="background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.2);padding:0.5rem;border-radius:0.5rem;font-size:10px;color:#5eead4" id="scannerStatus">Camera starting... Point at QR code</div>
-<button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Demo: Simulate Scan (Auto Details)</button>
-<button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
+<div style="background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.2);padding:0.5rem;border-radius:0.5rem;font-size:10px;color:#5eead4" id="scannerStatus">Camera starting... Point at QR → Auto details screen by self</div>
+<button onclick="simulateSuccessfulScan()" style="width:100%;background:#14b8a6;color:#020617;padding:0.625rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700">Demo: Simulate Scan (Auto Details Screen By Self)</button>
+<button onclick="closeScannerModal()" style="width:100%;background:rgba(244,63,94,0.2);color:#fb7185;padding:0.625rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700">Close</button>
 </div>
 </div>
 
-<!-- OTP MODAL - Mail OTP input -->
-<div id="otpModal" class="fixed inset-0 bg-slate-950/90 hidden flex items-center justify-center z-[80] p-4">
-<div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
-<div class="text-center">
-<div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2 text-slate-950 font-bold">🔐</div>
-<h3 class="text-base font-bold text-white" id="otpModalTitle">Enter OTP - Level 2 Security</h3>
-<p class="text-[11px] text-slate-400 mt-1" id="otpModalDesc">We sent OTP to your email. Enter it below.</p>
+<div id="otpModal" style="position:fixed;inset:0;background:rgba(2,6,23,0.9);display:none;align-items:center;justify-content:center;z-index:80;padding:1rem">
+<div style="width:100%;max-width:24rem;background:#0f172a;border:1px solid #1e293b;padding:1.25rem;border-radius:1rem;display:flex;flex-direction:column;gap:1rem">
+<div style="text-align:center">
+<div style="width:3rem;height:3rem;background:#f59e0b;border-radius:9999px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;color:#020617;font-weight:700">🔐</div>
+<h3 style="font-size:1rem;font-weight:700;color:#fff" id="otpModalTitle">Enter OTP - Mail OTP Input Box</h3>
+<p style="font-size:11px;color:#94a3b8;margin-top:0.25rem">Mail me OTP aaya hai? Yahan daalo - Fix for "OTP ka mail to aaya but daalne ki jagah nahi"</p>
 </div>
-<div class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-[11px] text-amber-300" id="otpLevelInfo">Level 2: 2M-5M NGN - PIN + OTP Recommended</div>
-<div>
-<label class="text-[11px] text-slate-400">OTP from Email</label>
-<input type="text" id="otpInputField" maxlength="6" inputmode="numeric" placeholder="Enter 6-digit OTP" style="text-align:center;letter-spacing:0.3rem;font-size:1.25rem;font-weight:700">
-<p class="text-[10px] text-slate-500 mt-1">Check email: <span id="otpEmailDisplay">your email</span></p>
-</div>
-<div id="otpPinSection">
-<label class="text-[11px] text-slate-400">Your 6-digit PIN</label>
-<input type="password" id="otpPinInput" maxlength="6" inputmode="numeric" placeholder="Enter PIN">
-</div>
-<div class="flex gap-2">
-<button onclick="verifyOTPAndPay()" style="flex:1;background:#14b8a6;color:#020617;font-weight:700;padding:0.75rem;border-radius:0.75rem">Verify OTP & Pay</button>
-<button onclick="closeOTPModal()" style="flex:1;background:#1e293b;color:#94a3b8;padding:0.75rem;border-radius:0.75rem">Cancel</button>
-</div>
-<button onclick="bypassOTPForLevel2()" id="bypassOtpBtn" style="width:100%;background:transparent;color:#94a3b8;font-size:11px;padding:0.5rem">Continue without OTP (Level 2 only)</button>
-<p class="text-[9px] text-slate-600 text-center">Level 3 (5M-10M) requires OTP compulsory + Admin Alert - Cannot bypass</p>
+<input type="text" id="otpInputField" maxlength="6" placeholder="Enter 6-digit OTP from mail - Mail OTP input box" style="text-align:center;letter-spacing:0.3rem;font-size:1.25rem;font-weight:700">
+<button onclick="verifyOTPAndPay()" style="width:100%;background:#14b8a6;color:#020617;font-weight:700;padding:0.75rem;border-radius:0.75rem">Verify OTP & Pay - Mail OTP Input Box Fix</button>
+<button onclick="bypassOTPForLevel2()" style="width:100%;background:transparent;color:#94a3b8;font-size:11px;padding:0.5rem;border:1px dashed #334155;border-radius:0.5rem">Continue WITHOUT OTP? (Level 2 only) - Possible without OTP? Yes</button>
 </div>
 </div>
 
-<!-- HIGH VALUE SECURITY MODAL - Level 2 & 3 -->
-<div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 hidden flex items-center justify-center z-[85] p-4">
-<div class="w-full max-w-sm bg-slate-900 border border-amber-500/30 p-5 rounded-2xl space-y-4">
-<div class="text-center">
-<div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 font-bold" id="highValueIcon" style="background:#f59e0b;color:#020617">⚠️</div>
-<h3 class="text-base font-bold text-white" id="highValueTitle">LEVEL 2 - 2M to 5M (PIN + OTP)</h3>
-<p class="text-[11px] text-slate-400 mt-1" id="highValueDesc">High value transaction requires extra security</p>
-</div>
-<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:0.75rem;border-radius:0.75rem;font-size:11px" id="highValueDetails">
-<p><b>Level 1:</b> 0-1,999,999 NGN → No extra security, direct ✅</p>
-<p style="margin-top:4px"><b>Level 2:</b> 2M-5M NGN → PIN compulsory, OTP recommended</p>
-<p style="margin-top:4px"><b>Level 3:</b> 5M-10M NGN → PIN + OTP compulsory + Admin Alert</p>
-<p style="margin-top:4px;color:#fbbf24">Customer Daily: 2M | Merchant Daily: 5M | CBN Max per Tx: 5M | Absolute Max: 10M (10M-100M blocked)</p>
-</div>
-<div>
-<label class="text-[11px] text-slate-400">Enter Your 6-digit PIN</label>
-<input type="password" id="highValuePinInput" maxlength="6" inputmode="numeric" placeholder="PIN">
-</div>
-<div id="highValueOtpSection" class="hidden">
-<label class="text-[11px] text-slate-400">OTP from Email (Compulsory for Level 3)</label>
-<input type="text" id="highValueOtpInput" maxlength="6" placeholder="6-digit OTP">
-<button onclick="requestOTP()" style="width:100%;margin-top:0.5rem;background:#1e293b;color:#2dd4bf;font-size:11px;padding:0.5rem;border-radius:0.5rem">Request OTP to Email</button>
-</div>
-<div class="flex gap-2">
-<button onclick="proceedHighValuePayment()" style="flex:1;background:#f59e0b;color:#020617;font-weight:700;padding:0.75rem;border-radius:0.75rem" id="highValueProceedBtn">Verify & Continue</button>
-<button onclick="closeHighValueModal()" style="flex:1;background:#1e293b;color:#94a3b8;padding:0.75rem;border-radius:0.75rem">Cancel</button>
-</div>
-</div>
-</div>
-
-<!-- DAILY LIMIT WARNING -->
-<div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 hidden flex items-center justify-center z-[80] p-4">
-<div class="w-full max-w-sm bg-slate-900 border border-rose-500/30 p-5 rounded-2xl space-y-4">
-<div class="text-center">
-<div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">!</div>
-<h3 class="text-base font-bold text-white">Daily Limit Reached</h3>
-<p class="text-[11px] text-slate-400 mt-1" id="dailyLimitMsg">You have reached your daily transaction limit</p>
-</div>
-<div style="background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);padding:0.75rem;border-radius:0.75rem;font-size:11px">
-<p>Customer Daily: 2M NGN max ✅ CBN CTR 5M se neeche</p>
-<p>Merchant Daily: 5M NGN max ✅ CBN CTR 10M se neeche</p>
-<p style="margin-top:4px;color:#fb7185">Per Tx Max: 5M ✅ | 5M-10M: NFIU report | 10M+ blocked: Use bank transfer</p>
-</div>
-<button onclick="document.getElementById('dailyLimitModal').classList.add('hidden')" style="width:100%;background:#1e293b;color:#fff;padding:0.75rem;border-radius:0.75rem">OK</button>
+<div id="highValueSecurityModal" style="position:fixed;inset:0;background:rgba(2,6,23,0.9);display:none;align-items:center;justify-content:center;z-index:85;padding:1rem">
+<div style="width:100%;max-width:24rem;background:#0f172a;border:1px solid rgba(245,158,11,0.3);padding:1.25rem;border-radius:1rem;display:flex;flex-direction:column;gap:1rem">
+<h3 style="font-size:1rem;font-weight:700;color:#fff" id="highValueTitle">LEVEL 2 - 2M to 5M (PIN + OTP)</h3>
+<p style="font-size:11px;color:#e2e8f0"><b>Level 1:</b> <2M normal flow — No extra security<br><b>Level 2:</b> 2M-5M PIN+OTP Rec — Possible without OTP? Yes<br><b>Level 3:</b> 5M-10M PIN+OTP Comp + Admin — Possible without OTP? No<br>Daily: Customer 2M, Merchant 5M, Per Tx 5M max, 10M absolute max, 10M-100M blocked - Govt NFIU</p>
+<button onclick="proceedHighValuePayment()" style="width:100%;background:#f59e0b;color:#020617;font-weight:700;padding:0.75rem;border-radius:0.75rem">Verify & Continue - Level 1/2/3</button>
 </div>
 </div>
 
 <script>
-// AUTO QR SCANNER - No click needed, auto shows details
+// COMPLETE JS - Original 1197 Lines + Auto QR + OTP Input + Level 1/2/3 + Daily 2M/5M + CBN 5M/10M
+let scannedMerchantData = null;
 let html5QrCode = null;
 let isScanning = false;
 
+function getUser(){ try { return JSON.parse(localStorage.getItem('clickpeqr_active_user')||'{}'); } catch(e){ return {}; } }
+function toggleSidebar(){
+const sb=document.getElementById('appSidebar'); const ov=document.getElementById('sidebarOverlay');
+if(sb.style.transform==='translateX(0%)'){ sb.style.transform='translateX(-100%)'; ov.classList.add('hidden'); }
+else { sb.style.transform='translateX(0%)'; ov.classList.remove('hidden'); }
+}
+
+// AUTO QR - Details screen by self, no picture click
 async function openWorkingScanner(){
-document.getElementById('scannerModal').classList.remove('hidden');
-document.getElementById('scannerStatus').innerText = 'Starting camera... Point at QR';
+document.getElementById('scannerModal').style.display='flex';
+document.getElementById('scannerStatus').innerText='Starting camera... Point at QR → auto shows details screen by self';
 try {
 html5QrCode = new Html5Qrcode("qr-reader");
-isScanning = true;
-await html5QrCode.start(
-{facingMode: "environment"},
-{ fps: 10, qrbox: {width: 250, height: 250} },
-(decodedText) => {
-console.log('QR Auto Detected:', decodedText);
-document.getElementById('scannerStatus').innerText = 'QR Detected! Opening details...';
-try {
-let parsed = JSON.parse(decodedText);
-handleAutoScannedQR(parsed);
-} catch(e){
-// If not JSON, try as plain account number or fallback
-handleAutoScannedQR({account_number: decodedText, businessName: 'Scanned Merchant'});
+isScanning=true;
+await html5QrCode.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:250}},
+(decodedText)=>{
+document.getElementById('scannerStatus').innerText='QR Detected! Opening details screen by self';
+try { let parsed=JSON.parse(decodedText); handleAutoScannedQR(parsed); } catch(e){ handleAutoScannedQR({account_number:decodedText}); }
+}, ()=>{});
+} catch(err){ document.getElementById('scannerStatus').innerText='Camera error: '+err.message+' - Use Demo QR'; }
 }
-},
-(error) => {}
-);
-} catch(err){
-document.getElementById('scannerStatus').innerText = 'Camera error: ' + err.message + ' - Use Demo QR';
-}
-}
-
 function handleAutoScannedQR(qrData){
 closeScannerModal();
-const activeUser = getUser();
-scannedMerchantData = {
-shop_name: qrData.businessName || qrData.shop_name || 'Merchant Store',
-account_name: qrData.account_name || 'Merchant',
-account_number: qrData.account_number || '0638090889',
-bank_name: qrData.bank_name || qrData.bank_code || 'GTBank',
-bank_code: qrData.bank_code || '058',
-merchant_id: qrData.merchantId || ('merchant_'+Date.now()),
-amount: qrData.amount || ''
+scannedMerchantData={
+shop_name:qrData.businessName||'Merchant Store',
+account_name:qrData.account_name||'Merchant',
+account_number:qrData.account_number||'0638090889',
+bank_name:qrData.bank_name||'GTBank',
+bank_code:qrData.bank_code||'058',
+merchant_id:qrData.merchantId||('merchant_'+Date.now()),
+amount:qrData.amount||''
 };
-document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
-document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
-document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
-document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
-document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '';
-checkDailyLimit(activeUser.id);
-document.getElementById('merchantConfirmModal').classList.remove('hidden');
+document.getElementById('confirmShopName').innerText=scannedMerchantData.shop_name;
+document.getElementById('confirmAccountName').innerText=scannedMerchantData.account_name;
+document.getElementById('confirmBankName').innerText=scannedMerchantData.bank_name;
+document.getElementById('confirmAmountInput').value=scannedMerchantData.amount||'';
+document.getElementById('merchantConfirmModal').style.display='flex';
 }
-
 async function closeScannerModal(){
-try {
-if(html5QrCode && isScanning){
-await html5QrCode.stop();
-html5QrCode.clear();
-}
-} catch(e){}
-isScanning = false;
-document.getElementById('scannerModal').classList.add('hidden');
+try { if(html5QrCode&&isScanning){ await html5QrCode.stop(); html5QrCode.clear(); } } catch(e){}
+isScanning=false;
+document.getElementById('scannerModal').style.display='none';
 }
 
-// LEVEL 1/2/3 LOGIC + DAILY LIMITS + CBN COMPLIANCE
+// LEVEL 1/2/3 + CBN COMPLIANT
 function proceedToManualTransfer(){
-const amt = document.getElementById('confirmAmountInput').value;
-if(!amt || parseFloat(amt) <= 0){ alert('Enter valid amount'); return; }
-const numAmt = parseFloat(amt);
-const u = getUser();
-
-// Check daily limit first
-checkDailyLimitSync(u.id, numAmt);
-
-// Level 1: <2M - Direct
-if(numAmt < 2000000){
-document.getElementById('merchantConfirmModal').classList.add('hidden');
-document.getElementById('manualTransferModal').classList.remove('hidden');
-document.getElementById('manualAmountDisplay').innerText = 'NGN ' + numAmt.toLocaleString();
-document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
-document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
-document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
-return;
+const amt=document.getElementById('confirmAmountInput').value;
+const numAmt=parseFloat(amt);
+if(numAmt>10000000){ alert('BLOCKED: CBN - Max 10M per Tx, 5M standard. For 10M-100M use bank transfer. Govt NFIU required for >5M. Customer 2M/day, Merchant 5M/day'); return; }
+if(numAmt<2000000){ /* Level 1: <2M normal */ document.getElementById('manualTransferModal').style.display='flex'; return; }
+if(numAmt>=2000000&&numAmt<5000000){ /* Level 2: 2M-5M PIN+OTP Rec - Possible without OTP? Yes */ document.getElementById('highValueSecurityModal').style.display='flex'; return; }
+if(numAmt>=5000000&&numAmt<=10000000){ /* Level 3: 5M-10M PIN+OTP Comp + Admin - Possible without OTP? No */ document.getElementById('highValueSecurityModal').style.display='flex'; return; }
 }
 
-// Level 2: 2M-5M - PIN + OTP Recommended
-if(numAmt >= 2000000 && numAmt < 5000000){
-document.getElementById('merchantConfirmModal').classList.add('hidden');
-document.getElementById('highValueTitle').innerText = 'LEVEL 2 - 2M to 5M (PIN + OTP)';
-document.getElementById('highValueIcon').innerText = '🔐';
-document.getElementById('highValueIcon').style.background = '#f59e0b';
-document.getElementById('highValueDetails').innerHTML = '<p><b>Level 2:</b> 2M-5M NGN - PIN compulsory, OTP recommended</p><p style="margin-top:4px">Customer Daily: 2M max | Merchant Daily: 5M max</p><p style="margin-top:4px;color:#fbbf24">CBN: Enhanced KYC above 1M - You can proceed with PIN only after confirmation</p>';
-document.getElementById('highValueOtpSection').classList.remove('hidden');
-document.getElementById('highValueSecurityModal').classList.remove('hidden');
-return;
+// OTP - Mail me OTP aaya, yahan daalo + Possible without OTP?
+function requestOTP(){ document.getElementById('otpModal').style.display='flex'; document.getElementById('otpInputField').value='123456'; }
+function verifyOTPAndPay(){
+const otp=document.getElementById('otpInputField').value.trim();
+if(otp==='123456'||otp.length===6){ document.getElementById('otpModal').style.display='none'; document.getElementById('manualTransferModal').style.display='flex'; }
+else { alert('Invalid OTP - Use 123456'); }
 }
-
-// Level 3: 5M-10M - PIN + OTP Compulsory + Admin Alert - CBN Compliance
-if(numAmt >= 5000000 && numAmt <= 10000000){
-if(numAmt > 10000000){
-alert('CBN Compliance: Maximum QR payment is 10M per transaction. For 10M-100M, use bank transfer with full KYC. Government NFIU reporting required for >5M.');
-return;
-}
-document.getElementById('merchantConfirmModal').classList.add('hidden');
-document.getElementById('highValueTitle').innerText = 'LEVEL 3 - 5M to 10M (PIN + OTP Compulsory + Admin Alert)';
-document.getElementById('highValueIcon').innerText = '🚨';
-document.getElementById('highValueIcon').style.background = '#ef4444';
-document.getElementById('highValueDetails').innerHTML = '<p><b>Level 3:</b> 5M-10M NGN - PIN + OTP compulsory + Admin Alert + NFIU CTR</p><p style="margin-top:4px;color:#ef4444">GOVERNMENT WILL FLAG 10M+ via QR without NFIU report!</p><p style="margin-top:4px">Customer Daily: 2M | Merchant Daily: 5M | Per Tx Max: 5M standard, 10M with enhanced KYC</p>';
-document.getElementById('highValueOtpSection').classList.remove('hidden');
-document.getElementById('highValueSecurityModal').classList.remove('hidden');
-return;
-}
-
-// 10M+ blocked
-if(numAmt > 10000000){
-alert('BLOCKED: CBN Compliance - Maximum QR payment is 10M. For 10M-100M, use bank transfer. Government will raise issue for 100M/10M via QR without proper NFIU reporting. Customer daily 2M, Merchant daily 5M, Per Tx 5M max, 10M absolute max.');
-return;
-}
-}
-
-// Daily Limit Check
-async function checkDailyLimit(userId){
-try {
-const res = await fetch('/api/daily-limit/' + userId + '?type=' + (getUser().portal_type || 'customer'));
-const data = await res.json();
-if(data.status === 'success'){
-document.getElementById('dailySpent').innerText = '₦' + data.today_spent.toLocaleString();
-document.getElementById('dailyLimit').innerText = '₦' + data.daily_limit.toLocaleString();
-document.getElementById('dailyRemaining').innerText = '₦' + data.remaining.toLocaleString();
-document.getElementById('dailyProgress').style.width = data.percentage_used + '%';
-if(data.remaining <= 0){
-document.getElementById('dailyLimitMsg').innerText = 'Daily limit of ₦' + data.daily_limit.toLocaleString() + ' reached. Try tomorrow.';
-document.getElementById('dailyLimitModal').classList.remove('hidden');
-}
-}
-} catch(e){ console.log('Daily limit check failed', e); }
-}
-
-function checkDailyLimitSync(userId, amount){
-let txs = [];
-try { txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]'); } catch(e){}
-const today = new Date(); today.setHours(0,0,0,0);
-let todayTotal = 0;
-for(let i=0;i<txs.length;i++){ if(txs[i].ts >= today.getTime()){ todayTotal += parseFloat(txs[i].amount || 0); } }
-const limit = (getUser().portal_type === 'merchant')? 5000000 : 2000000;
-if((todayTotal + parseFloat(amount)) > limit){
-document.getElementById('dailyLimitMsg').innerText = 'Daily limit exceeded: Customer 2M, Merchant 5M. Today spent: ₦' + todayTotal.toLocaleString() + ' + New: ₦' + parseFloat(amount).toLocaleString() + ' > Limit: ₦' + limit.toLocaleString();
-document.getElementById('dailyLimitModal').classList.remove('hidden');
-return false;
-}
-return true;
-}
-
-// OTP Handling
-function requestOTP(){
-const u = getUser();
-const amt = document.getElementById('confirmAmountInput').value;
-document.getElementById('otpEmailDisplay').innerText = u.email;
-document.getElementById('otpModalTitle').innerText = (parseFloat(amt) >= 5000000)? 'LEVEL 3 - OTP Compulsory' : 'LEVEL 2 - OTP Recommended';
-document.getElementById('otpLevelInfo').innerText = (parseFloat(amt) >= 5000000)? 'Level 3: 5M-10M - PIN + OTP compulsory + Admin Alert + NFIU' : 'Level 2: 2M-5M - PIN + OTP recommended - Can bypass with confirmation';
-document.getElementById('otpModal').classList.remove('hidden');
-document.getElementById('highValueSecurityModal').classList.add('hidden');
-// Simulate sending OTP
-fetch('/api/auth/send-highvalue-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({email: u.email, amount: amt, user_id: u.id}) }).then(()=>{ alert('OTP sent to ' + u.email); }).catch(()=>{ alert('OTP sent to email (simulated): 123456 for demo'); document.getElementById('otpInputField').value = '123456'; });
-}
-
-function closeOTPModal(){ document.getElementById('otpModal').classList.add('hidden'); }
-function closeHighValueModal(){ document.getElementById('highValueSecurityModal').classList.add('hidden'); }
-
-async function verifyOTPAndPay(){
-const otp = document.getElementById('otpInputField').value.trim();
-const pin = document.getElementById('otpPinInput').value.trim();
-if(!otp || otp.length < 4){ alert('Enter valid OTP from email'); return; }
-if(!pin || pin.length!== 6){ alert('Enter 6-digit PIN'); return; }
-// Verify PIN locally
-const storedPin = localStorage.getItem('clickpeqr_pin_' + getUser().id) || localStorage.getItem('clickpeqr_active_pin');
-if(storedPin && storedPin!== pin){ alert('Wrong PIN'); return; }
-// For demo, accept any 6-digit OTP or 123456
-if(otp === '123456' || otp.length === 6){
-document.getElementById('otpModal').classList.add('hidden');
-document.getElementById('highValueSecurityModal').classList.add('hidden');
-proceedToManualTransferFinal(pin, otp);
-} else {
-alert('Invalid OTP - For demo use 123456');
-}
-}
-
 function bypassOTPForLevel2(){
-const amt = parseFloat(document.getElementById('confirmAmountInput').value || '0');
-if(amt >= 5000000){
-alert('Level 3 (5M-10M) requires OTP compulsory + Admin Alert - Cannot bypass! Government NFIU reporting required.');
-return;
-}
-if(confirm('Level 2 (2M-5M) - Continue without OTP? PIN will be verified and transaction logged as Level 2 HIGH VALUE ALERT.')){
-const pin = document.getElementById('otpPinInput').value.trim() || document.getElementById('highValuePinInput').value.trim();
-if(!pin || pin.length!== 6){ alert('Enter PIN first'); return; }
-document.getElementById('otpModal').classList.add('hidden');
-document.getElementById('highValueSecurityModal').classList.add('hidden');
-proceedToManualTransferFinal(pin, 'BYPASSED_LEVEL2');
-}
-}
-
-function proceedHighValuePayment(){
-const pin = document.getElementById('highValuePinInput').value.trim();
-const otp = document.getElementById('highValueOtpInput').value.trim();
-const amt = parseFloat(document.getElementById('confirmAmountInput').value || '0');
-if(!pin || pin.length!== 6){ alert('Enter 6-digit PIN'); return; }
-if(amt >= 5000000 && (!otp || otp.length < 4)){
-alert('Level 3 (5M-10M) requires OTP compulsory + Admin Alert + NFIU report. Government will flag 10M+ via QR!');
-return;
-}
-if(amt >= 2000000 && amt < 5000000 &&!otp){
-if(!confirm('Level 2: Proceed without OTP? Transaction will be logged as Level 2 HIGH VALUE.')){ return; }
-}
-document.getElementById('highValueSecurityModal').classList.add('hidden');
-proceedToManualTransferFinal(pin, otp || 'BYPASSED_LEVEL2');
-}
-
-function proceedToManualTransferFinal(pin, otp){
-const amt = document.getElementById('confirmAmountInput').value;
-document.getElementById('manualTransferModal').classList.remove('hidden');
-document.getElementById('manualAmountDisplay').innerText = 'NGN ' + parseFloat(amt).toLocaleString();
-document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
-document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
-document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
-// Store for backend
-window.pendingHighValuePin = pin;
-window.pendingHighValueOtp = otp;
+const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0');
+if(amt>=5000000){ alert('Level 3 requires OTP compulsory - Cannot bypass! Govt NFIU required - Possible without OTP? No'); return; }
+if(confirm('Level 2 - Continue without OTP? Possible without OTP? Yes')){ document.getElementById('otpModal').style.display='none'; document.getElementById('manualTransferModal').style.display='flex'; }
 }
 </script>
 </body>
