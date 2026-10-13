@@ -202,7 +202,7 @@
 
 <footer class="w-full text-center py-4 px-4">
 <p class="text-[11px] text-slate-500">Powered by <span class="text-teal-400 font-semibold">MONNIFY</span> &bull; </p>
-<p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd. (RC-9810296)</p>
+<p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd. (9810296)</p>
 <p class="text-[10px] text-slate-600 mt-1">All Rights Reserved &copy; 2026 &bull; Secure Fintech & AI Payment Gateway</p>
 </footer>
 
@@ -869,7 +869,7 @@ checkDailyLimit(u.id);
 
 function showNotificationModal(){ document.getElementById('notificationModal').classList.remove('hidden'); }
 function showTransactionHistory(){ document.getElementById('transactionModal').classList.remove('hidden'); }
-function openAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
+function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
 function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
 function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
 function showComplaintModal(){ document.getElementById('complaintModal').classList.remove('hidden'); }
@@ -902,7 +902,7 @@ const name = document.getElementById('accountNameInput').value;
 if(acc.length !== 10 || !name){ alert('Enter valid account'); return; }
 let banks = [];
 try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]'); } catch(e){}
-banks.push({bank_name: 'GTBank', account_number: acc, account_name: name, is_primary: banks.length===0});
+banks.unshift({bank_name: 'GTBank', account_number: acc, account_name: name, is_primary: true});
 localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(banks));
 closeAddBankModal();
 fetchAndRenderBanks();
