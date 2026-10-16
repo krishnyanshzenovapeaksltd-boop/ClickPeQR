@@ -238,6 +238,51 @@
 <button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct</button>
 <button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
 </div>
+ <!-- OTP MODAL - FIX: OTP ka mail to aaya but daalne ki jagah nahi -->
+<div id="otpModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[80] p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+<div class="text-center"><div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">🔐</div>
+<h3 class="text-base font-bold text-white">Enter OTP - Mail OTP Input Box</h3>
+<p class="text-[11px] text-slate-400">Aapke mail me OTP aaya hai? Yahan daalo</p></div>
+<div class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-[11px] text-amber-300" id="otpLevelInfo">Level 2: 2M-5M OTP Recommended | Level 3: 5M-10M OTP Compulsory + Admin Alert</div>
+<div><label class="text-[11px] text-slate-400">OTP from Email</label>
+<input type="text" id="otpInputField" maxlength="6" placeholder="Enter 6-digit OTP from mail" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center tracking-widest text-lg font-bold text-white mt-1">
+<p class="text-[10px] text-slate-500 mt-1">Check email: <span id="otpEmailDisplay">your email</span> | Demo: 123456</p></div>
+<div><label class="text-[11px] text-slate-400">Your 6-digit PIN</label>
+<input type="password" id="otpPinInput" maxlength="6" placeholder="Enter PIN" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white mt-1"></div>
+<div class="flex gap-2"><button onclick="verifyOTPAndPay()" class="flex-1 bg-teal-500 text-slate-950 font-bold py-3 rounded-xl">Verify OTP & Pay</button>
+<button onclick="closeOTPModal()" class="flex-1 bg-slate-800 text-slate-300 py-3 rounded-xl">Cancel</button></div>
+<button onclick="bypassOTPForLevel2()" id="bypassOtpBtn" class="w-full bg-transparent text-slate-400 text-[11px] p-2 border border-dashed border-slate-700 rounded-lg">Continue WITHOUT OTP? (Level 2 only) - Possible without OTP? Yes</button>
+</div>
+</div>
+
+<!-- HIGH VALUE MODAL - Level 1/2/3 -->
+<div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[85] p-4">
+<div class="bg-slate-900 border border-amber-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4">
+<div class="text-center"><div id="highValueIcon" class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">⚠️</div>
+<h3 id="highValueTitle" class="text-base font-bold text-white">LEVEL 2 - 2M to 5M</h3>
+<p id="highValueDesc" class="text-[11px] text-slate-400">High value transaction - Extra security</p></div>
+<div id="highValueDetails" class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-[11px] text-slate-200">
+Level 1: <2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) | Level 3: 5M-10M PIN+OTP Comp+Admin (Possible without OTP? No) | Per Tx 5M max, 10M absolute max, 10M-100M blocked - Govt NFIU
+</div>
+<div><label class="text-[11px] text-slate-400">Enter PIN</label><input type="password" id="highValuePinInput" maxlength="6" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white mt-1"></div>
+<div id="highValueOtpSection" style="display:none"><label class="text-[11px] text-slate-400">OTP from Email (Compulsory for Level 3)</label><input type="text" id="highValueOtpInput" maxlength="6" placeholder="6-digit OTP" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white mt-1">
+<button onclick="requestOTP()" class="w-full mt-2 bg-slate-800 text-teal-300 text-[11px] py-2 rounded-lg">Request OTP to Email</button></div>
+<div class="flex gap-2"><button onclick="proceedHighValuePayment()" class="flex-1 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl">Verify & Continue</button>
+<button onclick="closeHighValueModal()" class="flex-1 bg-slate-800 text-slate-300 py-3 rounded-xl">Cancel</button></div>
+</div>
+</div>
+
+<!-- DAILY LIMIT MODAL - Customer 2M, Merchant 5M -->
+<div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[80] p-4">
+<div class="bg-slate-900 border border-rose-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
+<div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto">!</div>
+<h3 class="text-base font-bold text-white">Daily Limit Reached - CBN Compliant</h3>
+<p id="dailyLimitMsg" class="text-[11px] text-slate-400">Customer 2M, Merchant 5M, Per Tx 5M max</p>
+<div class="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl text-[11px] text-slate-200">Customer daily 2M ✅ | Merchant daily 5M ✅ | Per Tx 5M max ✅ | 10M-100M Blocked - Bank transfer use karo</div>
+<button onclick="document.getElementById('dailyLimitModal').classList.add('hidden')" class="w-full bg-slate-800 text-white py-3 rounded-xl">OK</button>
+</div>
+</div>
 </div>
 
 <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
