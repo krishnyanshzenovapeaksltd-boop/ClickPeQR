@@ -208,10 +208,13 @@
 <!-- MODALS -->
 <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
 <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
-<h3 class="text-sm font-bold text-white">Scan QR - Direct Bank to Bank</h3>
-<video id="cameraVideoFeed" autoplay playsinline class="w-full h-64 bg-slate-950 rounded-xl object-cover border border-teal-500/40"></video>
-<button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Scan Sample QR (Demo)</button>
-<button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
+<h3 class="text-sm font-bold text-white">Scan QR - Auto Detect Details Screen By Self - </h3>
+<p class="text-[11px] text-slate-400">Point camera at QR → auto shows merchant details screen by self — No picture pe click karne ki zarurat nahi — No Freeze</p>
+<div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-950 min-h-[200px] flex items-center justify-center"><p class="text-[11px] text-slate-500">Camera loading... No Freeze - Working Preview</p></div>
+<div id="scannerStatus" class="bg-teal-500/10 border border-teal-500/20 p-2 rounded-lg text-[10px] text-teal-300">Camera starting... Point at QR → Auto details screen by self - No Freeze - Working Preview</div>
+<button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Demo: Simulate Scan (Auto Details Screen By Self) - No Freeze</button>
+<button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close - No Freeze Fix</button>
+</div>
 </div>
 </div>
 
