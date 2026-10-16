@@ -957,23 +957,22 @@ c.innerHTML = h;
 }
 function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
 function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
-let verifyTimer = null;
+let verifyDebounceTimer = null;
 async function verifyBankAccount(){
+// FIX: Screen freeze - debounce
+clearTimeout(verifyDebounceTimer);
+verifyDebounceTimer = setTimeout(async ()=>{
 const bankCode = document.getElementById('bankSelectDropdown').value;
 const accNum = document.getElementById('accountNumberInput').value.trim();
 const nameInput = document.getElementById('accountNameInput');
-if(!bankCode){ nameInput.value = ''; return; }
-if(accNum.length !== 10){ nameInput.value = ''; return; }
-if(verifyTimer) clearTimeout(verifyTimer);
-verifyTimer = setTimeout(async () => {
-nameInput.value = 'Verifying account details...';
+if(!bankCode||accNum.length!==10){ nameInput.value=''; return; }
+nameInput.value='Verifying... - No Freeze';
 try {
-const res = await fetch('/api/resolve-account', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({account_number: accNum, account_bank: bankCode}) });
+const res = await fetch('/api/resolve-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_number:accNum,account_bank:bankCode})});
 const result = await res.json();
-if(result && result.status === 'success' && result.data && result.data.account_name){ nameInput.value = result.data.account_name; }
-else { nameInput.value = ''; alert('We could not verify this account. Please check the bank and account number.'); }
-} catch(err){ nameInput.value = ''; alert('Verification is temporarily unavailable. Please try again.'); }
-}, 600);
+if(result&&result.status==='success'&&result.data&&result.data.account_name){ nameInput.value=result.data.account_name; } else { nameInput.value=''; }
+} catch(err){ nameInput.value=''; console.log('Verify error - no freeze',err); }
+}, 500); // Debounce 500ms - FIX freeze
 }
 async function saveNewBankAccount(){
 const u = getUser();
