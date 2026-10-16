@@ -669,35 +669,51 @@ document.getElementById('merchantQRResult').classList.remove('hidden');
 /* ---------- Scanner & payment ---------- */
 let html5QrCode = null;
 let isScanning = false;
+
 async function openWorkingScanner(){
-document.getElementById('scannerModal').classList.remove('hidden');
-document.getElementById('scannerStatus').innerText='Starting camera... Auto details screen by self - No Freeze';
-try {
-html5QrCode = new Html5Qrcode("qr-reader");
-isScanning=true;
-await html5QrCode.start({facingMode:"environment"},{fps:5,qrbox:{width:200,height:200},aspectRatio:1.0},
-(decodedText)=>{ try{ let parsed=JSON.parse(decodedText); handleAutoScannedQR(parsed); }catch(e){ handleAutoScannedQR({account_number:decodedText}); } }, ()=>{});
-} catch(err){ document.getElementById('scannerStatus').innerText='Camera error: Use Demo QR - No Freeze'; }
-}
-async function closeScannerModal(){
-// FIX: No Freeze - Robust cleanup
-try{ if(html5QrCode&&isScanning){ try{ await html5QrCode.stop(); }catch(e){} try{ html5QrCode.clear(); }catch(e){} } }catch(e){}
-isScanning=false; html5QrCode=null;
-try{ document.querySelectorAll('video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
-document.getElementById('scannerModal').classList.add('hidden');
+  document.getElementById('scannerModal').style.display='flex';
+  document.getElementById('scannerStatus').innerText='Real QR scanner starting... Point at QR → auto payer details pop-up - Real QR For All';
+  try{
+    if(html5QrCode){ try{await html5QrCode.stop();}catch(e){} try{html5QrCode.clear();}catch(e){} }
+    html5QrCode = new Html5Qrcode("qr-reader");
+    isScanning=true;
+    await html5QrCode.start({facingMode:"environment"}, {fps:10, qrbox:{width:250,height:250}, aspectRatio:1.0},
+    (decodedText)=>{
+      document.getElementById('scannerStatus').innerText='QR Detected! Real QR → Opening payer details pop-up';
+      try{ let parsed=JSON.parse(decodedText); handleAutoScannedQR(parsed); }
+      catch(e){ handleAutoScannedQR({account_number:decodedText,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
+    }, ()=>{});
+  }catch(err){
+    console.log(err);
+    document.getElementById('scannerStatus').innerText='Camera error: '+err.message+' - Use Test Scan - Real QR needs HTTPS (Vercel works)';
+  }
 }
 
 function handleAutoScannedQR(qrData){
-closeScannerModal();
-scannedMerchantData={shop_name:qrData.businessName||'Merchant Store',account_name:qrData.account_name||'Merchant',account_number:qrData.account_number||'0638090889',bank_name:qrData.bank_name||'GTBank',bank_code:qrData.bank_code||'058',merchant_id:qrData.merchantId||'merchant_'+Date.now(),amount:qrData.amount||''};
-document.getElementById('confirmShopName').innerText=scannedMerchantData.shop_name;
-document.getElementById('confirmAccountName').innerText=scannedMerchantData.account_name;
-document.getElementById('confirmBankName').innerText=scannedMerchantData.bank_name;
-document.getElementById('confirmAmountInput').value=scannedMerchantData.amount||'510';
-document.getElementById('merchantConfirmModal').classList.remove('hidden');
+  closeScannerModal();
+  scannedMerchantData={
+    shop_name:qrData.businessName||qrData.shop_name||'Merchant Store',
+    account_name:qrData.account_name||'Merchant',
+    account_number:qrData.account_number||'0638090889',
+    bank_name:qrData.bank_name||'GTBank',
+    bank_code:qrData.bank_code||'058',
+    merchant_id:qrData.merchantId||('merchant_'+Date.now()),
+    amount:qrData.amount||''
+  };
+  document.getElementById('confirmShopName').innerText=scannedMerchantData.shop_name;
+  document.getElementById('confirmAccountName').innerText=scannedMerchantData.account_name;
+  document.getElementById('confirmBankName').innerText=scannedMerchantData.bank_name;
+  document.getElementById('confirmCustomerName').innerText=getUser().full_name||'Customer';
+  document.getElementById('confirmAmountInput').value=scannedMerchantData.amount||'';
+  document.getElementById('merchantConfirmModal').style.display='flex';
 }
-function simulateSuccessfulScan(){
-closeScannerModal();
+
+async function closeScannerModal(){
+  try{ if(html5QrCode&&isScanning){ try{await html5QrCode.stop();}catch(e){} try{html5QrCode.clear();}catch(e){} } }catch(e){}
+  isScanning=false; html5QrCode=null;
+  try{ document.querySelectorAll('video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
+  document.getElementById('scannerModal').style.display='none';
+}
 const activeUser = getUser();
 let qrData = null;
 try { const ls = localStorage.getItem('last_scanned_qr_payload'); if(ls) qrData = JSON.parse(ls); } catch(e){}
