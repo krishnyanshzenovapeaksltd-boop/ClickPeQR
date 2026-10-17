@@ -744,20 +744,95 @@ function proceedToManualTransfer(){
 const amt=document.getElementById('confirmAmountInput').value;
 if(!amt||parseFloat(amt)<=0){ alert('Enter valid amount'); return; }
 const numAmt=parseFloat(amt); const u=getUser();
-if(!checkDailyLimitSync(u.id,numAmt)) return;
-if(numAmt>10000000){ alert('BLOCKED: CBN - Max QR 10M (5M standard). 10M-100M blocked - Govt NFIU - Bank transfer use karo'); return; }
-if(numAmt<2000000){ document.getElementById('merchantConfirmModal').classList.add('hidden'); document.getElementById('manualTransferModal').classList.remove('hidden'); document.getElementById('manualAmountDisplay').innerText='NGN '+numAmt.toLocaleString(); document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number; document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')'; document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name; return; }
-if(numAmt>=2000000&&numAmt<5000000){ document.getElementById('merchantConfirmModal').classList.add('hidden'); document.getElementById('highValueTitle').innerText='LEVEL 2 - 2M to 5M (PIN + OTP Recommended)'; document.getElementById('highValueDetails').innerHTML='Level 2: 2M-5M - PIN+OTP Recommended - Possible without OTP? Yes'; document.getElementById('highValueOtpSection').style.display='block'; document.getElementById('highValueSecurityModal').classList.remove('hidden'); return; }
-if(numAmt>=5000000&&numAmt<=10000000){ document.getElementById('merchantConfirmModal').classList.add('hidden'); document.getElementById('highValueTitle').innerText='LEVEL 3 - 5M to 10M (PIN + OTP Compulsory + Admin)'; document.getElementById('highValueDetails').innerHTML='Level 3: 5M-10M - PIN+OTP Compulsory+Admin Alert+NFIU - 10M+ Blocked - Possible without OTP? No - CBN 5M max, 10M absolute max, Govt will raise issue for 10M/100M'; document.getElementById('highValueOtpSection').style.display='block'; document.getElementById('highValueSecurityModal').classList.remove('hidden'); return; }
+
+ if(!checkDailyLimitSync(u.id,numAmt)) return; // Daily 2M/5M check
+if(numAmt>10000000){ alert('BLOCKED: CBN Max QR 10M - 10M-100M blocked Govt NFIU'); return; } // CBN 5M/10M block
+if(numAmt<2000000){ 
+  document.getElementById('merchantConfirmModal').style.display='none';
+  document.getElementById('manualTransferModal').style.display='flex';
+  document.getElementById('manualAmountDisplay').innerText='NGN '+numAmt.toLocaleString();
+  document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
+  document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
+  document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
+  return; 
+}
+if(numAmt>=2000000&&numAmt<5000000){ 
+  document.getElementById('merchantConfirmModal').style.display='none';
+  document.getElementById('highValueTitle').innerText='LEVEL 2 - 2M to 5M (PIN + OTP Recommended)';
+  document.getElementById('highValueDetails').innerHTML='Level 2: 2M-5M - PIN + OTP Recommended - Possible without OTP? Yes';
+  document.getElementById('highValueOtpSection').style.display='block';
+  document.getElementById('highValueSecurityModal').style.display='flex'; 
+  return; 
+}
+if(numAmt>=5000000&&numAmt<=10000000){ 
+  document.getElementById('merchantConfirmModal').style.display='none';
+  document.getElementById('highValueTitle').innerText='LEVEL 3 - 5M to 10M (PIN + OTP Compulsory + Admin Alert)';
+  document.getElementById('highValueDetails').innerHTML='Level 3: 5M-10M - PIN + OTP Compulsory + Admin Alert + NFIU - Possible without OTP? No';
+  document.getElementById('highValueOtpSection').style.display='block';
+  document.getElementById('highValueSecurityModal').style.display='flex'; 
+  return; 
 }
 
-// OTP Functions - FIX for OTP ka mail to aaya but daalne ki jagah nahi
-function requestOTP(){ const u=getUser(); document.getElementById('otpEmailDisplay').innerText=u.email; document.getElementById('otpModal').classList.remove('hidden'); document.getElementById('highValueSecurityModal').classList.add('hidden'); document.getElementById('otpInputField').value='123456'; alert('OTP sent to '+u.email+' - Demo: 123456'); }
-function closeOTPModal(){ document.getElementById('otpModal').classList.add('hidden'); }
-function closeHighValueModal(){ document.getElementById('highValueSecurityModal').classList.add('hidden'); }
-function verifyOTPAndPay(){ const otp=document.getElementById('otpInputField').value.trim(); const pin=document.getElementById('otpPinInput').value.trim(); if(!otp||otp.length<4){ alert('Enter valid OTP from mail'); return; } if(!pin||pin.length!==6){ alert('Enter PIN'); return; } if(otp==='123456'||otp.length===6){ document.getElementById('otpModal').classList.add('hidden'); document.getElementById('highValueSecurityModal').classList.add('hidden'); document.getElementById('manualTransferModal').classList.remove('hidden'); window.pendingHighValuePin=pin; window.pendingHighValueOtp=otp; } else { alert('Invalid OTP - Use 123456'); } }
-function bypassOTPForLevel2(){ const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0'); if(amt>=5000000){ alert('Level 3 requires OTP compulsory - Cannot bypass! Possible without OTP? No'); return; } if(confirm('Level 2 - Continue without OTP? Possible without OTP? Yes')){ const pin=document.getElementById('otpPinInput').value.trim()||document.getElementById('highValuePinInput').value.trim(); if(!pin||pin.length!==6){ alert('Enter PIN first'); return; } document.getElementById('otpModal').classList.add('hidden'); document.getElementById('highValueSecurityModal').classList.add('hidden'); document.getElementById('manualTransferModal').classList.remove('hidden'); window.pendingHighValuePin=pin; window.pendingHighValueOtp='BYPASSED_LEVEL2'; } }
-function proceedHighValuePayment(){ const pin=document.getElementById('highValuePinInput').value.trim(); const otp=document.getElementById('highValueOtpInput').value.trim(); const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0'); if(!pin||pin.length!==6){ alert('Enter PIN'); return; } if(amt>=5000000&&(!otp||otp.length<4)){ alert('Level 3 requires OTP compulsory'); return; } document.getElementById('highValueSecurityModal').classList.add('hidden'); document.getElementById('manualTransferModal').classList.remove('hidden'); window.pendingHighValuePin=pin; window.pendingHighValueOtp=otp||'BYPASSED_LEVEL2'; }
+// OTP Functions - FIX for "OTP ka mail to aaya but daalne ki jagah nahi" - REAL INPUT BOX
+function requestOTP(){
+  const u=getUser();
+  document.getElementById('otpEmailDisplay').innerText=u.email||'your email';
+  document.getElementById('otpModal').style.display='flex';
+  document.getElementById('highValueSecurityModal').style.display='none';
+  document.getElementById('otpInputField').value='123456';
+  alert('OTP sent to '+(u.email||'email')+' - Demo OTP: 123456 - Real mail integration needed');
+}
+function closeOTPModal(){ document.getElementById('otpModal').style.display='none'; }
+function closeHighValueModal(){ document.getElementById('highValueSecurityModal').style.display='none'; }
+function verifyOTPAndPay(){
+  const otp=document.getElementById('otpInputField').value.trim();
+  const pin=document.getElementById('otpPinInput').value.trim();
+  if(!otp||otp.length<4){ alert('Enter valid OTP from mail - Real input box'); return; }
+  if(!pin||pin.length!==6){ alert('Enter 6-digit PIN'); return; }
+  if(otp==='123456'||otp.length===6){
+    document.getElementById('otpModal').style.display='none';
+    document.getElementById('highValueSecurityModal').style.display='none';
+    document.getElementById('manualTransferModal').style.display='flex';
+    document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
+    document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
+    document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
+    document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
+    window.pendingHighValuePin=pin;
+    window.pendingHighValueOtp=otp;
+  }else{ alert('Invalid OTP - Use 123456 for demo'); }
+}
+function bypassOTPForLevel2(){
+  const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0');
+  if(amt>=5000000){ alert('Level 3 requires OTP compulsory - Cannot bypass! Possible without OTP? No'); return; }
+  if(confirm('Level 2 - Continue WITHOUT OTP? Possible without OTP? Yes')){
+    const pin=document.getElementById('otpPinInput').value.trim()||document.getElementById('highValuePinInput').value.trim();
+    if(!pin||pin.length!==6){ alert('Enter PIN first'); return; }
+    document.getElementById('otpModal').style.display='none';
+    document.getElementById('highValueSecurityModal').style.display='none';
+    document.getElementById('manualTransferModal').style.display='flex';
+    document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
+    document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
+    document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
+    document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
+    window.pendingHighValuePin=pin;
+    window.pendingHighValueOtp='BYPASSED_LEVEL2';
+  }
+}
+function proceedHighValuePayment(){
+  const pin=document.getElementById('highValuePinInput').value.trim();
+  const otp=document.getElementById('highValueOtpInput').value.trim();
+  const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0');
+  if(!pin||pin.length!==6){ alert('Enter PIN'); return; }
+  if(amt>=5000000&&(!otp||otp.length<4)){ alert('Level 3 requires OTP compulsory - Possible without OTP? No'); return; }
+  document.getElementById('highValueSecurityModal').style.display='none';
+  document.getElementById('manualTransferModal').style.display='flex';
+  document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
+  document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
+  document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
+  document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
+  window.pendingHighValuePin=pin;
+  window.pendingHighValueOtp=otp||'BYPASSED_LEVEL2';
+}
 async function handleManualPaid(){ await handleManualPaidDirectUPI(); }
 async function handleManualPaidDirectUPI(){
 const amtInput = document.getElementById('confirmAmountInput');
