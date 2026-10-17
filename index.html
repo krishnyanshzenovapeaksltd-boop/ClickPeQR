@@ -723,7 +723,7 @@ document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_
 document.getElementById('confirmCustomerName').innerText = activeUser.full_name || 'Customer';
 document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '510';
 document.getElementById('merchantConfirmModal').classList.remove('hidden');
-}
+
 function checkDailyLimitSync(userId,amount){
 let txs=[]; try{ txs=JSON.parse(localStorage.getItem('clickpeqr_txs')||'[]'); }catch(e){ txs=[]; }
 const today=new Date(); today.setHours(0,0,0,0); let todayTotal=0;
