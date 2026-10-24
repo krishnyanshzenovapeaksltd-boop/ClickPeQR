@@ -397,26 +397,24 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 </div>
 <script>
 const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[STRIPPED 126 bytes].5Z';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
+let supabaseClient = null;
+try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){}
 
 const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
-const SUPPORT = { 【entity-whatsapp¦canonical_name=WhatsApp】: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
+const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
 
 const nigerianBanksList = [
-{ name: "【entity-Access Bank¦canonical_name=Access Bank】", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "Ecobank Nigeria", code: "050" },
+{ name: "【entity-Access Bank¦canonical_name=Access Bank】", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "【entity-Ecobank Nigeria¦canonical_name=Ecobank Nigeria】", code: "050" },
 { name: "Fidelity Bank", code: "070" }, { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
 { name: "GTBank", code: "058" }, { name: "Heritage Bank", code: "030" }, { name: "Keystone Bank", code: "082" },
 { name: "Polaris Bank", code: "076" }, { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
 { name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" }, { name: "Union Bank", code: "032" },
-{ name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "【entity-Zenith Bank¦canonical_name=Zenith Bank】", code: "057" },
+{ name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "Zenith Bank", code: "057" },
 { name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
-{ name: "Kuda Bank", code: "50211" }, { name: "【entity-Moniepoint¦canonical_name=Moniepoint】 MFB", code: "50515" }, { name: "【entity-OPay¦canonical_name=OPay】", code: "999992" },
-{ name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }, { name: "Sparkle", code: "51310" },
-{ name: "Airtel Smartcash PSB", code: "120004" }, { name: "MTN Momo PSB", code: "120003" }, { name: "9PSB", code: "120001" },
-{ name: "Hope PSBank", code: "120002" }, { name: "Parallex Bank", code: "104" }, { name: "Globus Bank", code: "103" },
-{ name: "Signature Bank", code: "106" }, { name: "Titan Trust Bank", code: "102" }
+{ name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" }, { name: "OPay", code: "999992" },
+{ name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }
 ];
 
 let currentAuthMode = 'login';
