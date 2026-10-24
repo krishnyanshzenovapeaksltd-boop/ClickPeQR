@@ -405,19 +405,48 @@ const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
 
-const nigerianBanksList = [
-{ name: "【entity-Access Bank¦canonical_name=Access Bank】", code: "044" }, { name: "Citibank Nigeria", code: "023" }, { name: "【entity-Ecobank Nigeria¦canonical_name=Ecobank Nigeria】", code: "050" },
-{ name: "Fidelity Bank", code: "070" }, { name: "First Bank of Nigeria", code: "011" }, { name: "FCMB", code: "214" },
-{ name: "GTBank", code: "058" }, { name: "Heritage Bank", code: "030" }, { name: "Keystone Bank", code: "082" },
-{ name: "Polaris Bank", code: "076" }, { name: "Providus Bank", code: "101" }, { name: "Stanbic IBTC Bank", code: "221" },
-{ name: "Standard Chartered Bank", code: "068" }, { name: "Sterling Bank", code: "232" }, { name: "Union Bank", code: "032" },
-{ name: "UBA", code: "033" }, { name: "Unity Bank", code: "215" }, { name: "Wema Bank", code: "035" }, { name: "Zenith Bank", code: "057" },
-{ name: "Jaiz Bank", code: "301" }, { name: "Taj Bank", code: "302" }, { name: "Lotus Bank", code: "303" },
-{ name: "Kuda Bank", code: "50211" }, { name: "Moniepoint MFB", code: "50515" }, { name: "OPay", code: "999992" },
-{ name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" }, { name: "VFD MFB", code: "566" }
+const nigerianBanksList
+let cconst nigerianBanksList = [
+{ name: "Access", code: "044" }, { name: "Citibank", code: "023" }, { name: "Diamond", code: "063" },
+{ name: "Ecobank", code: "050" }, { name: "Fidelity", code: "070" }, { name: "First Bank", code: "011" },
+{ name: "FCMB", code: "214" }, { name: "GTB", code: "058" }, { name: "Heritage", code: "030" },
+{ name: "Keystone", code: "082" }, { name: "Polaris", code: "076" }, { name: "Providus", code: "101" },
+{ name: "Stanbic IBTC", code: "221" }, { name: "Standard Chartered", code: "068" }, { name: "Sterling", code: "232" },
+{ name: "Union", code: "032" }, { name: "UBA", code: "033" }, { name: "Unity", code: "215" },
+{ name: "Wema", code: "035" }, { name: "Zenith", code: "057" }, { name: "Globus", code: "103" },
+{ name: "Parallex", code: "104" }, { name: "PremiumTrust", code: "105" }, { name: "Titan Trust", code: "102" },
+{ name: "SunTrust", code: "100" }, { name: "Signature", code: "106" }, { name: "Jaiz", code: "301" },
+{ name: "Taj", code: "302" }, { name: "Lotus", code: "303" }, { name: "Coronation Merchant", code: "559" },
+{ name: "FBNQuest Merchant", code: "060" }, { name: "FSDH Merchant", code: "601" }, { name: "Rand Merchant", code: "502" },
+{ name: "Nova Merchant", code: "561" }, { name: "Greenwich Merchant", code: "562" }, { name: "9PSB", code: "120001" },
+{ name: "Hope PSB", code: "120002" }, { name: "MTN MoMo PSB", code: "120003" }, { name: "Airtel SmartCash PSB", code: "120004" },
+{ name: "GLOBACOM XWallet PSB", code: "120005" }, { name: "Kuda MFB", code: "50211" }, { name: "Moniepoint MFB", code: "50515" },
+{ name: "OPay", code: "999992" }, { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" },
+{ name: "VFD MFB", code: "566" }, { name: "Sparkle MFB", code: "51310" }, { name: "Rubies MFB", code: "125" },
+{ name: "Mint MFB", code: "50304" }, { name: "Carbon", code: "565" }, { name: "FairMoney MFB", code: "51318" },
+{ name: "GoMoney", code: "100022" }, { name: "SafeHaven MFB", code: "51113" }, { name: "RenMoney MFB", code: "51293" },
+{ name: "Eyowo MFB", code: "50126" }, { name: "Abbey MFB", code: "51205" }, { name: "Lagos Building MFB", code: "51201" },
+{ name: "Infinity MFB", code: "50457" }, { name: "Accion MFB", code: "50314" }, { name: "Addosser MFB", code: "50307" },
+{ name: "Advans La Fayette MFB", code: "50117" }, { name: "AMML MFB", code: "50072" }, { name: "ASO Savings", code: "401" },
+{ name: "Bowen MFB", code: "50931" }, { name: "CEMCS MFB", code: "50823" }, { name: "FBN MFB", code: "51314" },
+{ name: "First Generation MFB", code: "50572" }, { name: "Hasal MFB", code: "50383" }, { name: "IBILE MFB", code: "50453" },
+{ name: "Imperial Homes Mortgage", code: "415" }, { name: "Jubilee-Life Mortgage", code: "402" }, { name: "LAPO MFB", code: "50604" },
+{ name: "Mainstreet MFB", code: "50164" }, { name: "Mutual Benefits MFB", code: "50629" }, { name: "NOVA MFB", code: "51316" },
+{ name: "NPF MFB", code: "50629" }, { name: "Parallex MFB", code: "104" }, { name: "Personnel MFB", code: "50548" },
+{ name: "Rephidim MFB", code: "50548" }, { name: "Seed Capital MFB", code: "51206" }, { name: "Stellas MFB", code: "51253" },
+{ name: "SunTrust MFB", code: "100" }, { name: "Trust MFB", code: "51211" }, { name: "Unical MFB", code: "50871" },
+{ name: "Gowans MFB", code: "50439" }, { name: "FCMB MFB", code: "214" }, { name: "ALAT by Wema", code: "035" },
+{ name: "ALAT MFB", code: "035" }, { name: "OneBank (Sterling)", code: "232" }, { name: "GTB MFB", code: "058" },
+{ name: "UBA MFB", code: "033" }, { name: "Zenith MFB", code: "057" }, { name: "Access MFB", code: "044" },
+{ name: "Assets MFB", code: "50036" }, { name: "Astra Polaris MFB", code: "076" }, { name: "Auchi MFB", code: "50910" },
+{ name: "Baobab MFB", code: "50992" }, { name: "Boaz MFB", code: "50992" }, { name: "BOS MFB", code: "50902" },
+{ name: "Bricks MFB", code: "50645" }, { name: "Bridge MFB", code: "50645" }, { name: "Coastline MFB", code: "50910" },
+{ name: "Consumer MFB", code: "50922" }, { name: "Daylight MFB", code: "50563" }, { name: "Dot MFB", code: "50126" },
+{ name: "Eagle Flight MFB", code: "50138" }, { name: "Fast MFB", code: "50611" }, { name: "Finca MFB", code: "50302" },
+{ name: "Firmus MFB", code: "51113" }, { name: "Fullrange MFB", code: "51100" }, { name: "Gashua MFB", code: "50591" },
+{ name: "Gateway MFB", code: "50533" }, { name: "Globus MFB", code: "103" },
 ];
-
-let currentAuthMode = 'login';
+urrentAuthMode = 'login';
 let currentPortalType = 'customer';
 let scannedMerchantData = null;
 let speakerChannel = null;
