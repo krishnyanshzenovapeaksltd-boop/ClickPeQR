@@ -83,6 +83,7 @@
 <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
 </div>
 </aside>
+
 <main class="flex-grow flex items-center justify-center p-4">
 <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl anim-fadeUp">
 <div class="text-center mb-5 flex flex-col items-center">
@@ -118,6 +119,7 @@
 </div>
 
 <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4 anim-fadeUp">
+
 <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
 <div class="flex justify-between items-center">
 <h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
@@ -192,6 +194,7 @@
 </div>
 <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
 </div>
+
 </div>
 </main>
 
@@ -200,6 +203,7 @@
 <p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd. (9810296) </p>
 <p class="text-[10px] text-slate-600 mt-1">All Rights Reserved &copy; 2026 &bull; Secure Fintech & AI Payment Gateway</p>
 </footer>
+
 <!-- MODALS -->
 <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
 <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
@@ -246,7 +250,7 @@
 </div>
 </div>
 
-<!-- HIGH VALUE MODAL -->
+<!-- HIGH VALUE MODAL - Level 1/2/3 -->
 <div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[85] p-4">
 <div class="bg-slate-900 border border-amber-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4">
 <div class="text-center"><div id="highValueIcon" class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">⚠️</div>
@@ -263,6 +267,7 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 </div>
 </div>
 
+<!-- DAILY LIMIT MODAL - Customer 2M, Merchant 5M -->
 <div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[80] p-4">
 <div class="bg-slate-900 border border-rose-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
 <div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto">!</div>
@@ -332,7 +337,7 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 
 <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
 <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
+  <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
 <div class="flex items-center gap-3">
 <img id="settingsAvatarPreview" src="logo.png" class="user-avatar-display w-14 h-14 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="avatar">
 <button onclick="document.getElementById('dpFileInput').click()" class="text-[11px] bg-slate-800 text-teal-300 px-3 py-2 rounded-xl">Change Picture</button>
@@ -395,18 +400,18 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! I&apos;m your ClickPeQR assistant. Ask me anything about payments, QR codes, bank linking, points, or support. &#128522;</div></div>
 <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter')sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
 </div>
+
 <script>
 const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
 let supabaseClient = null;
-try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){}
+try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){ console.log('Supabase deferred', e); supabaseClient = { from: ()=>({ select: ()=>Promise.resolve({data:[],error:null}), insert: ()=>Promise.resolve({}), update: ()=>({eq:()=>Promise.resolve({})}), upsert: ()=>Promise.resolve({}), delete: ()=>({eq:()=>Promise.resolve({})}) }), channel: ()=>({ on: ()=>({ subscribe: ()=>{} }) }) }; }
 
 const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
 
-const nigerianBanksList
-let cconst nigerianBanksList = [
+const nigerianBanksList = [
 { name: "Access", code: "044" }, { name: "Citibank", code: "023" }, { name: "Diamond", code: "063" },
 { name: "Ecobank", code: "050" }, { name: "Fidelity", code: "070" }, { name: "First Bank", code: "011" },
 { name: "FCMB", code: "214" }, { name: "GTB", code: "058" }, { name: "Heritage", code: "030" },
@@ -446,7 +451,8 @@ let cconst nigerianBanksList = [
 { name: "Firmus MFB", code: "51113" }, { name: "Fullrange MFB", code: "51100" }, { name: "Gashua MFB", code: "50591" },
 { name: "Gateway MFB", code: "50533" }, { name: "Globus MFB", code: "103" },
 ];
-urrentAuthMode = 'login';
+
+let currentAuthMode = 'login';
 let currentPortalType = 'customer';
 let scannedMerchantData = null;
 let speakerChannel = null;
@@ -461,6 +467,7 @@ speakerChannel = new BroadcastChannel('clickpeqr_payments');
 speakerChannel.onmessage = (e) => { if(e.data && e.data.type === 'payment_success'){ triggerVirtualSpeaker(e.data.amount, e.data.txId); } };
 } catch(e){}
 
+/* ---------- UI helpers ---------- */
 function toggleSidebar(){
 document.getElementById('appSidebar').classList.toggle('-translate-x-full');
 document.getElementById('sidebarOverlay').classList.toggle('hidden');
@@ -468,6 +475,7 @@ document.getElementById('sidebarOverlay').classList.toggle('hidden');
 function switchView(){ window.scrollTo({top:0, behavior:'smooth'}); }
 function copyToClipboard(t){ if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('Copied: '+t)); } }
 
+/* ---------- Auth ---------- */
 function switchAuthTab(m){
 currentAuthMode = m;
 const l = document.getElementById('loginTabBtn'), r = document.getElementById('registerTabBtn');
@@ -550,6 +558,7 @@ updateNotifBadge();
 }
 function handleLogout(){ localStorage.removeItem('clickpeqr_active_user'); window.location.href = window.location.pathname; }
 
+/* ---------- Profile ---------- */
 function handleDPChange(event){
 const file = event.target.files[0];
 if(!file) return;
@@ -607,6 +616,7 @@ pushNotification('Profile updated', 'Your profile details were saved successfull
 alert('Profile saved successfully.');
 }
 
+/* ---------- Corrected Helper Functions ---------- */
 function primaryBankOf(userId){
   const u = getUser();
   const emailKey = (u.email || '').toLowerCase();
@@ -666,7 +676,7 @@ try { supabaseClient.from('users').update({permanent_qr_id: 'CUST_'+u.id+'_'+u.p
 alert('Your new Permanent Customer QR is ready.');
 }
 function generateMerchantDynamicQR(){
-const amt = document.getElementById('merchantDynAmt').value;
+ const amt = document.getElementById('merchantDynAmt').value;
 if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
 const c = document.getElementById('dynamicQRContainer');
 c.innerHTML = "";
@@ -676,6 +686,7 @@ new QRCode(c, { text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id
 document.getElementById('merchantQRResult').classList.remove('hidden');
 }
 
+/* ---------- Scanner & payment ---------- */
 let html5QrCode = null;
 let isScanning = false;
 
@@ -723,6 +734,7 @@ async function closeScannerModal(){
   try{ document.querySelectorAll('video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
   document.getElementById('scannerModal').style.display='none';
 }
+// DEFERRED INITIALIZATION - avoid blocking first paint and DO NOT auto-open modal
 window.addEventListener('DOMContentLoaded', () => {
   const activeUser = getUser();
   let qrData = null;
@@ -732,6 +744,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {
     qrData = null;
   }
+
   if (qrData && qrData.account_number) {
     scannedMerchantData = {
       shop_name: qrData.businessName || 'Merchant Store',
@@ -754,6 +767,8 @@ window.addEventListener('DOMContentLoaded', () => {
       amount: ''
     };
   }
+
+  // update DOM fields but DO NOT auto-open the confirm modal
   const setTextIf = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
   setTextIf('confirmShopName', scannedMerchantData.shop_name);
   setTextIf('confirmAccountName', scannedMerchantData.account_name);
@@ -761,6 +776,8 @@ window.addEventListener('DOMContentLoaded', () => {
   setTextIf('confirmCustomerName', activeUser.full_name || 'Customer');
   const confirmAmountInput = document.getElementById('confirmAmountInput');
   if (confirmAmountInput) confirmAmountInput.value = scannedMerchantData.amount || '510';
+
+  // light deferred rendering so browser paints first
   setTimeout(() => {
     if (activeUser && activeUser.id) {
       if ((activeUser.portal_type || 'customer') === 'merchant') {
@@ -789,6 +806,7 @@ function proceedToManualTransfer(){
 const amt=document.getElementById('confirmAmountInput').value;
 if(!amt||parseFloat(amt)<=0){ alert('Enter valid amount'); return; }
 const numAmt=parseFloat(amt); const u=getUser();
+
  if(!checkDailyLimitSync(u.id,numAmt)) return;
 if(numAmt>10000000){ alert('BLOCKED: CBN Max QR 10M - 10M-100M blocked Govt NFIU'); return; }
 if(numAmt<2000000){ 
@@ -818,6 +836,7 @@ if(numAmt>=5000000&&numAmt<=10000000){
 }
 }
 
+// OTP Functions - FIX for "OTP ka mail to aaya but daalne ki jagah nahi" - REAL INPUT BOX
 function requestOTP(){
   const u=getUser();
   document.getElementById('otpEmailDisplay').innerText=u.email||'your email';
@@ -918,6 +937,7 @@ alert('Payment could not be completed: ' + (result.message || 'Please try again.
 }
 function executeLiveFlutterwavePayment(){ handleManualPaidDirectUPI(); }
 
+/* ---------- Speaker ---------- */
 function enableSpeaker(){
 isSpeakerEnabled = true;
 document.getElementById('enableSpeakerBtn').innerText = 'Voice ON';
@@ -970,6 +990,7 @@ const d = document.getElementById('speakerLiveDot'); if(d) d.className = 'w-2 h-
 } catch(e){}
 }
 
+/* ---------- Transactions (3 months) ---------- */
 async function saveTransactionToSupabase(amount, txId){
 const u = getUser();
 const tx = { amount: parseFloat(amount), type: 'Direct Transfer', merchant: (scannedMerchantData && scannedMerchantData.shop_name) || 'Merchant', date: new Date().toLocaleString(), ts: Date.now(), txId: String(txId) };
@@ -993,12 +1014,13 @@ let h = '';
 for(let i = 0; i < recent.length; i++){
 const t = recent[i];
 h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white text-[11px]">' + t.type + ' - ' + t.merchant + '</p><p class="text-[10px] text-slate-400">' + t.date + ' | ID: ' + t.txId + '</p></div><span class="text-teal-400 font-mono font-bold text-xs">\u20A6' + t.amount + '</span></div>';
-}
+} 
 c.innerHTML = h;
 }
 document.getElementById('transactionModal').classList.remove('hidden');
 }
 
+/* ---------- Notifications (3 months) ---------- */
 function pushNotification(title, body){
 let n = [];
 try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
@@ -1042,6 +1064,7 @@ localStorage.setItem('clickpeqr_notif_seen', String(Date.now()));
 setTimeout(updateNotifBadge, 300);
 }
 
+/* ---------- Points ---------- */
 function getPointsData(userId){
 try {
 const d = JSON.parse(localStorage.getItem('clickpeqr_points_'+userId) || '{"balance":0,"history":[]}');
@@ -1085,6 +1108,7 @@ updatePointsUI();
 document.getElementById('pointsModal').classList.remove('hidden');
 }
 
+/* ---------- Banks ---------- */
 async function fetchAndRenderBanks(userId){
 const c = document.getElementById('linkedBanksListContainer');
 if(!c) return;
@@ -1209,21 +1233,22 @@ fetchAndRenderBanks(userId);
 alert('Bank account removed.');
 }
 
+/* ---------- About / FAQ / Complaints ---------- */
 function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
 function showComplaintModal(){ document.getElementById('complaintModal').classList.remove('hidden'); }
-function showComplaintWhatsApp(){ window.open(SUPPORT.【entity-whatsapp¦canonical_name=WhatsApp】 + '?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help', '_blank'); }
+function showComplaintWhatsApp(){ window.open(SUPPORT.whatsapp + '?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help', '_blank'); }
 
 const FAQ_DATA = [
 {q: "What is ClickPeQR?", a: "ClickPeQR is a secure payment gateway by Krishnyansh Zenova Peaks Ltd (RC-9810296). It lets merchants receive payments instantly through QR codes, and lets customers pay directly from their bank accounts."},
 {q: "How do I receive payments as a merchant?", a: "Sign in as a merchant, link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives."},
 {q: "How do I pay as a customer?", a: "Sign in as a customer, tap \u201CPay (Scan QR)\u201D, scan the merchant\u2019s QR code, confirm the amount, and complete the transfer. Your payment is confirmed instantly."},
 {q: "How do I link my bank account?", a: "Go to \u201CBank Accounts\u201D and tap \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, and wait for your account name to be verified automatically. Then tap \u201CVerify & Save\u201D."},
-{q: "Which banks are supported?", a: "All major Nigerian banks are supported, including GTBank, 【entity-Access Bank¦canonical_name=Access Bank】, First Bank, UBA, Zenith Bank, and digital banks like Kuda, OPay, PalmPay and Moniepoint."},
+{q: "Which banks are supported?", a: "All major Nigerian banks are supported, including GTBank, Access Bank, First Bank, UBA, Zenith Bank, and digital banks like Kuda, OPay, PalmPay and Moniepoint."},
 {q: "Is my money safe?", a: "Yes. Payments go directly between verified bank accounts, your details are stored securely, and every transaction is recorded in your history."},
 {q: "What are reward points and how do they work?", a: "Every successful transaction earns you points \u2014 customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app."},
 {q: "How do I update my profile?", a: "Open the menu, tap \u201CSettings\u201D, and you can update your profile picture, full name, email address and phone number."},
 {q: "What should I do if a payment fails?", a: "First check your internet connection and confirm the merchant\u2019s account details. If the problem continues, contact us through \u201CComplaints\u201D in the menu \u2014 we respond within 24 hours."},
-{q: "How do I file a complaint?", a: "Tap \u201CComplaints\u201D in the menu. You can reach us instantly on 【entity-WhatsApp¦canonical_name=WhatsApp】 (+234 906 786 2223) or by email at Info@krishnyanshzenovapeaks.com."},
+{q: "How do I file a complaint?", a: "Tap \u201CComplaints\u201D in the menu. You can reach us instantly on WhatsApp (+234 906 786 2223) or by email at Info@krishnyanshzenovapeaks.com."},
 {q: "How far back can I see my history?", a: "Your transaction history and notifications are available for the last 3 months, so you always have a clear record of your activity."},
 {q: "Who built ClickPeQR?", a: "ClickPeQR was designed and built by Krishnyansh Zenova Peaks Ltd, a registered Nigerian company (RC-9810296), to make digital payments simple for every small business."}
 ];
@@ -1242,13 +1267,14 @@ if(items[i]) items[i].classList.toggle('faq-open');
 }
 function showFAQModal(){ buildFAQ(); document.getElementById('faqModal').classList.remove('hidden'); }
 
+/* ---------- AI Assistant ---------- */
 function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
 const BOT_KB = [
 {k: ['hello','hi ','hey','good morning','good afternoon','good evening'], r: "Hello! Welcome to ClickPeQR. I can help with payments, QR codes, bank linking, reward points, and support. What would you like to know?"},
 {k: ['point','reward','cashback','earn'], r: "You earn reward points on every successful transaction: customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app \u2014 tap it anytime to view your points history."},
-{k: ['fail','not receive','pending','stuck','error ','unsuccessful','did not receive'], r: "I\u2019m sorry about that. Please check your internet connection and confirm the merchant\u2019s account details, then try again. If the issue continues, use \u201CComplaints\u201D in the menu to reach us on 【entity-WhatsApp¦canonical_name=WhatsApp】 (+234 906 786 2223) or email \u2014 we respond within 24 hours."},
+{k: ['fail','not receive','pending','stuck','error ','unsuccessful','did not receive'], r: "I\u2019m sorry about that. Please check your internet connection and confirm the merchant\u2019s account details, then try again. If the issue continues, use \u201CComplaints\u201D in the menu to reach us on WhatsApp (+234 906 786 2223) or email \u2014 we respond within 24 hours."},
 {k: ['refund','reverse','money back','returned'], r: "For refund requests, please contact our support team through \u201CComplaints\u201D with your transaction ID and amount. We will review it and respond within 24 hours."},
-{k: ['complain','support','help','contact','【entity-whatsapp¦canonical_name=WhatsApp】','human','agent','email','issue','problem'], r: "Our support team is here for you. You can reach us on WhatsApp at +234 906 786 2223, or by email at Info@krishnyanshzenovapeaks.com and Krishnyanshzenovapeaksltd@gmail.com. We respond within 24 hours. You can also tap \u201CComplaints\u201D in the menu for direct links."},
+{k: ['complain','support','help','contact','whatsapp','human','agent','email','issue','problem'], r: "Our support team is here for you. You can reach us on WhatsApp at +234 906 786 2223, or by email at Info@krishnyanshzenovapeaks.com and Krishnyanshzenovapeaksltd@gmail.com. We respond within 24 hours. You can also tap \u201CComplaints\u201D in the menu for direct links."},
 {k: ['receive','accept payment','collect','merchant','sell ','sale'], r: "As a merchant: link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives, and it appears in your transaction history."},
 {k: ['qr code','dynamic qr','permanent qr','change qr','new qr'], r: "Merchants have two QR types: a Permanent Shop QR for everyday use, and a Dynamic QR with a fixed amount for single sales. You can generate a new permanent QR anytime from your dashboard \u2014 the old one will stop working."},
 {k: ['link bank','add bank','bank account','connect bank'], r: "To link your bank: open the menu, tap \u201CBank Accounts\u201D, then \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, wait for your account name to be verified, then tap \u201CVerify & Save\u201D."},
@@ -1295,6 +1321,7 @@ c.scrollTop = c.scrollHeight;
 }, 500);
 }
 
+/* -------- Init -------- */
 window.addEventListener('DOMContentLoaded', () => {
 const d = document.getElementById('bankSelectDropdown');
 if(d){
