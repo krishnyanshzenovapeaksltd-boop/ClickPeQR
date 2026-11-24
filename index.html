@@ -421,7 +421,27 @@ const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
 let supabaseClient = null;
 try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){ console.log('Supabase deferred', e); supabaseClient = null; }
-if(!supabaseClient){ supabaseClient = { from: ()=>({ select: ()=>Promise.resolve({data:[],[STRIPPED] insert: ()=>Promise.resolve({error:null}), update: ()=>({eq:()=>Promise.resolve({error:null})}), upsert: ()=>Promise.resolve({error:null}), delete: ()=>({eq:()=>Promise.resolve({error:null})}) }), channel: ()=>({ on: ()=>({ subscribe: ()=>{} }) }) }; }
+if(!supabaseClient){
+  var _stubRes = { data: [], error: null };
+  var _chain = {};
+  _chain.select = function(){ return _chain; };
+  _chain.eq = function(){ return _chain; };
+  _chain.order = function(){ return _chain; };
+  _chain.then = function(fn){ return Promise.resolve(_stubRes).then(fn); };
+  _chain.catch = function(fn){ return Promise.resolve(_stubRes).catch(fn); };
+  supabaseClient = {
+    from: function(){
+      return {
+        select: function(){ return _chain; },
+        insert: function(){ return Promise.resolve(_stubRes); },
+        update: function(){ return _chain; },
+        upsert: function(){ return Promise.resolve(_stubRes); },
+        delete: function(){ return _chain; }
+      };
+    },
+    channel: function(){ return { on: function(){ return { subscribe: function(){} }; } }; }
+  };
+}
 
 const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
