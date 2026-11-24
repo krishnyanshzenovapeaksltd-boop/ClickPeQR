@@ -20,6 +20,9 @@
 .shimmer{background:linear-gradient(90deg,#0f172a 25%,#1e293b 50%,#0f172a 75%);background-size:800px 100%;animation:shimmer 1.6s infinite linear}
 .faq-a{max-height:0;overflow:hidden;transition:max-height.3s ease}
 .faq-open .faq-a{max-height:220px}
+.scan-frame{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.scan-frame div{width:70%;height:55%;border:2px solid #2dd4bf;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.25)}
+#qr-reader video{width:100%!important;height:auto!important;object-fit:cover}
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between relative overflow-x-hidden">
@@ -138,6 +141,8 @@
 <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">&#128247;</div>
 <div><h4 class="text-sm font-bold text-white">Pay (Scan QR) - Direct Bank to Bank</h4><p class="text-xs text-slate-400">Instant settlement, no extra pages</p></div>
 </button>
+<button onclick="handleClickPayViaQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-amber-400 transition">Click &amp; Pay via QR — Upload QR Image</button>
+<button onclick="openManualQRInput()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-700 transition">Paste QR Code Text</button>
 </div>
 
 <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
@@ -209,10 +214,23 @@
 <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
 <h3 class="text-sm font-bold text-white">Scan QR - Auto Detect Details Screen By Self - </h3>
 <p class="text-[11px] text-slate-400">Point camera at QR → auto shows merchant details screen by self — No picture pe click karne ki zarurat nahi — No Freeze</p>
-<div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-950 min-h-[200px] flex items-center justify-center"><p class="text-[11px] text-slate-500">Camera loading... No Freeze - Working Preview</p></div>
+<div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-950 min-h-[200px] flex items-center justify-center relative"><p class="text-[11px] text-slate-500">Camera loading... No Freeze - Working Preview</p><div class="scan-frame"><div></div></div></div>
 <div id="scannerStatus" class="bg-teal-500/10 border border-teal-500/20 p-2 rounded-lg text-[10px] text-teal-300">Camera starting... Point at QR → Auto details screen by self - No Freeze - Working Preview</div>
+<input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
+<button onclick="handleClickPayViaQR()" class="w-full bg-amber-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Click &amp; Pay via QR — Upload QR Image</button>
+<button onclick="openManualQRInput()" class="w-full bg-slate-800 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Paste QR Code Text</button>
 <button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Demo: Simulate Scan (Auto Details Screen By Self) - No Freeze</button>
 <button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close - No Freeze Fix</button>
+</div>
+</div>
+
+<div id="manualQRModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
+<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
+<h3 class="text-sm font-bold text-white">Paste QR Code Text</h3>
+<textarea id="manualQRText" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="Paste the exact QR JSON here"></textarea>
+<p class="text-[10px] text-slate-500">Paste QR from screenshot / gallery. Same auto details screen will open.</p>
+<button onclick="payFromManualQR()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm">Continue to Payment</button>
+<button onclick="document.getElementById('manualQRModal').classList.add('hidden');document.getElementById('manualQRModal').style.display='none'" class="w-full bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs">Cancel</button>
 </div>
 </div>
 
@@ -226,7 +244,7 @@
 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
-<div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTB - GTBank</span></div>
+<div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">【entity-GTB - GTBank¦canonical_name=GTBank】</span></div>
 <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
 </div>
 <div>
@@ -250,7 +268,6 @@
 </div>
 </div>
 
-<!-- HIGH VALUE MODAL - Level 1/2/3 -->
 <div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[85] p-4">
 <div class="bg-slate-900 border border-amber-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4">
 <div class="text-center"><div id="highValueIcon" class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">⚠️</div>
@@ -267,7 +284,6 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 </div>
 </div>
 
-<!-- DAILY LIMIT MODAL - Customer 2M, Merchant 5M -->
 <div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[80] p-4">
 <div class="bg-slate-900 border border-rose-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
 <div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto">!</div>
@@ -364,7 +380,7 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-rose-400">&#9888;&#65039; Complaint & Support</h3><button onclick="document.getElementById('complaintModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
 <p class="text-[11px] text-slate-400">Facing an issue? Reach us directly on any channel below - we respond within 24 hours.</p>
 <a href="https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help" target="_blank" class="flex items-center gap-3 bg-green-500/10 border border-green-500/30 p-3 rounded-xl hover:bg-green-500/20 transition">
-<span class="text-xl">&#128241;</span><div><p class="text-xs font-bold text-white">WhatsApp Us</p><p class="text-[11px] text-green-300">+234 906 786 2223</p></div>
+<span class="text-xl">&#128241;</span><div><p class="text-xs font-bold text-white"> WhatsApp Us</p><p class="text-[11px] text-green-300">+234 906 786 2223</p></div>
 </a>
 <a href="mailto:Info@krishnyanshzenovapeaks.com?subject=ClickPeQR%20Complaint" class="flex items-center gap-3 bg-slate-950 border border-slate-800 p-3 rounded-xl hover:border-teal-500/40 transition">
 <span class="text-xl">&#128231;</span><div><p class="text-xs font-bold text-white">Email Us</p><p class="text-[11px] text-teal-300 break-all">Info@krishnyanshzenovapeaks.com</p></div>
@@ -400,24 +416,24 @@ Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) 
 <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! I&apos;m your ClickPeQR assistant. Ask me anything about payments, QR codes, bank linking, points, or support. &#128522;</div></div>
 <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter')sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
 </div>
-
 <script>
 const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
 let supabaseClient = null;
-try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){ console.log('Supabase deferred', e); supabaseClient = { from: ()=>({ select: ()=>Promise.resolve({data:[],error:null}), insert: ()=>Promise.resolve({}), update: ()=>({eq:()=>Promise.resolve({})}), upsert: ()=>Promise.resolve({}), delete: ()=>({eq:()=>Promise.resolve({})}) }), channel: ()=>({ on: ()=>({ subscribe: ()=>{} }) }) }; }
+try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){ console.log('Supabase deferred', e); supabaseClient = null; }
+if(!supabaseClient){ supabaseClient = { from: ()=>({ select: ()=>Promise.resolve({data:[],[STRIPPED] insert: ()=>Promise.resolve({error:null}), update: ()=>({eq:()=>Promise.resolve({error:null})}), upsert: ()=>Promise.resolve({error:null}), delete: ()=>({eq:()=>Promise.resolve({error:null})}) }), channel: ()=>({ on: ()=>({ subscribe: ()=>{} }) }) }; }
 
 const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
 
 const nigerianBanksList = [
-{ name: "Access", code: "044" }, { name: "Citibank", code: "023" }, { name: "Diamond", code: "063" },
+{ name: "【entity-Access¦canonical_name=Access Bank】", code: "044" }, { name: "【entity-Citibank¦canonical_name=Citibank】", code: "023" }, { name: "Diamond", code: "063" },
 { name: "Ecobank", code: "050" }, { name: "Fidelity", code: "070" }, { name: "First Bank", code: "011" },
-{ name: "FCMB", code: "214" }, { name: "GTB", code: "058" }, { name: "Heritage", code: "030" },
+{ name: "【entity-FCMB¦canonical_name=FCMB】", code: "214" }, { name: "【entity-GTB¦canonical_name=GTBank】", code: "058" }, { name: "Heritage", code: "030" },
 { name: "Keystone", code: "082" }, { name: "Polaris", code: "076" }, { name: "Providus", code: "101" },
-{ name: "Stanbic IBTC", code: "221" }, { name: "Standard Chartered", code: "068" }, { name: "Sterling", code: "232" },
-{ name: "Union", code: "032" }, { name: "UBA", code: "033" }, { name: "Unity", code: "215" },
+{ name: "【entity-Stanbic IBTC¦canonical_name=Stanbic IBTC】", code: "221" }, { name: "Standard Chartered", code: "068" }, { name: "Sterling", code: "232" },
+{ name: "Union", code: "032" }, { name: "UBA", code: "033" }, { name: "【entity-Unity¦canonical_name=Unity】", code: "215" },
 { name: "Wema", code: "035" }, { name: "Zenith", code: "057" }, { name: "Globus", code: "103" },
 { name: "Parallex", code: "104" }, { name: "PremiumTrust", code: "105" }, { name: "Titan Trust", code: "102" },
 { name: "SunTrust", code: "100" }, { name: "Signature", code: "106" }, { name: "Jaiz", code: "301" },
@@ -425,8 +441,8 @@ const nigerianBanksList = [
 { name: "FBNQuest Merchant", code: "060" }, { name: "FSDH Merchant", code: "601" }, { name: "Rand Merchant", code: "502" },
 { name: "Nova Merchant", code: "561" }, { name: "Greenwich Merchant", code: "562" }, { name: "9PSB", code: "120001" },
 { name: "Hope PSB", code: "120002" }, { name: "MTN MoMo PSB", code: "120003" }, { name: "Airtel SmartCash PSB", code: "120004" },
-{ name: "GLOBACOM XWallet PSB", code: "120005" }, { name: "Kuda MFB", code: "50211" }, { name: "Moniepoint MFB", code: "50515" },
-{ name: "OPay", code: "999992" }, { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" },
+{ name: "GLOBACOM XWallet PSB", code: "120005" }, { name: "Kuda MFB", code: "50211" }, { name: "【entity-Moniepoint¦canonical_name=Moniepoint】 MFB", code: "50515" },
+{ name: "【entity-OPay¦canonical_name=OPay】", code: "999992" }, { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" },
 { name: "VFD MFB", code: "566" }, { name: "Sparkle MFB", code: "51310" }, { name: "Rubies MFB", code: "125" },
 { name: "Mint MFB", code: "50304" }, { name: "Carbon", code: "565" }, { name: "FairMoney MFB", code: "51318" },
 { name: "GoMoney", code: "100022" }, { name: "SafeHaven MFB", code: "51113" }, { name: "RenMoney MFB", code: "51293" },
@@ -440,8 +456,8 @@ const nigerianBanksList = [
 { name: "NPF MFB", code: "50629" }, { name: "Parallex MFB", code: "104" }, { name: "Personnel MFB", code: "50548" },
 { name: "Rephidim MFB", code: "50548" }, { name: "Seed Capital MFB", code: "51206" }, { name: "Stellas MFB", code: "51253" },
 { name: "SunTrust MFB", code: "100" }, { name: "Trust MFB", code: "51211" }, { name: "Unical MFB", code: "50871" },
-{ name: "Gowans MFB", code: "50439" }, { name: "FCMB MFB", code: "214" }, { name: "ALAT by Wema", code: "035" },
-{ name: "ALAT MFB", code: "035" }, { name: "OneBank (Sterling)", code: "232" }, { name: "GTB MFB", code: "058" },
+{ name: "Gowans MFB", code: "50439" }, { name: "【entity-FCMB¦canonical_name=FCMB】 MFB", code: "214" }, { name: "ALAT by Wema", code: "035" },
+{ name: "ALAT MFB", code: "035" }, { name: "OneBank (Sterling)", code: "232" }, { name: "【entity-GTB¦canonical_name=GTBank】 MFB", code: "058" },
 { name: "UBA MFB", code: "033" }, { name: "Zenith MFB", code: "057" }, { name: "Access MFB", code: "044" },
 { name: "Assets MFB", code: "50036" }, { name: "Astra Polaris MFB", code: "076" }, { name: "Auchi MFB", code: "50910" },
 { name: "Baobab MFB", code: "50992" }, { name: "Boaz MFB", code: "50992" }, { name: "BOS MFB", code: "50902" },
@@ -467,7 +483,6 @@ speakerChannel = new BroadcastChannel('clickpeqr_payments');
 speakerChannel.onmessage = (e) => { if(e.data && e.data.type === 'payment_success'){ triggerVirtualSpeaker(e.data.amount, e.data.txId); } };
 } catch(e){}
 
-/* ---------- UI helpers ---------- */
 function toggleSidebar(){
 document.getElementById('appSidebar').classList.toggle('-translate-x-full');
 document.getElementById('sidebarOverlay').classList.toggle('hidden');
@@ -475,7 +490,6 @@ document.getElementById('sidebarOverlay').classList.toggle('hidden');
 function switchView(){ window.scrollTo({top:0, behavior:'smooth'}); }
 function copyToClipboard(t){ if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('Copied: '+t)); } }
 
-/* ---------- Auth ---------- */
 function switchAuthTab(m){
 currentAuthMode = m;
 const l = document.getElementById('loginTabBtn'), r = document.getElementById('registerTabBtn');
@@ -558,7 +572,6 @@ updateNotifBadge();
 }
 function handleLogout(){ localStorage.removeItem('clickpeqr_active_user'); window.location.href = window.location.pathname; }
 
-/* ---------- Profile ---------- */
 function handleDPChange(event){
 const file = event.target.files[0];
 if(!file) return;
@@ -616,7 +629,6 @@ pushNotification('Profile updated', 'Your profile details were saved successfull
 alert('Profile saved successfully.');
 }
 
-/* ---------- Corrected Helper Functions ---------- */
 function primaryBankOf(userId){
   const u = getUser();
   const emailKey = (u.email || '').toLowerCase();
@@ -625,29 +637,17 @@ function primaryBankOf(userId){
   if(banks.length === 0){
     try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
   }
-  return banks.find(b => b.is_primary) || banks[0] || { bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: 'GTBank' };
+  return banks.find(b => b.is_primary) || banks[0] || { bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: ' GTBank' };
 }
-  
 function renderPermanentShopQR(user){
   const c = document.getElementById('permanentShopQRContainer');
   if(!c) return;
   c.innerHTML = "";
   const ver = user.permanent_qr_version || Date.now();
   const pb = primaryBankOf(user.id);
-  const payload = { 
-    type: "MERCHANT_PERMANENT", 
-    merchantId: user.id, 
-    businessName: user.business_name || user.full_name, 
-    version: ver, 
-    permanent_id: 'PERM_'+user.id+'_'+ver, 
-    bank_code: pb.bank_code, 
-    account_number: pb.account_number, 
-    account_name: pb.account_name, 
-    bank_name: pb.bank_name 
-  };
+  const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
   new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
 }
-
 function renderCustomerPermanentQR(user){
 const c = document.getElementById('customerPermanentQRContainer');
 if(!c) return;
@@ -685,39 +685,67 @@ const pb = primaryBankOf(u.id);
 new QRCode(c, { text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name}), width: 140, height: 140 });
 document.getElementById('merchantQRResult').classList.remove('hidden');
 }
-
-/* ---------- Scanner & payment ---------- */
+/* ---------- Scanner & payment - FIXED ---------- */
 let html5QrCode = null;
 let isScanning = false;
+let qrAlreadyHandled = false;
+let scannerBusy = false;
 
-async function openWorkingScanner(){
-  document.getElementById('scannerModal').style.display='flex';
-  document.getElementById('scannerStatus').innerText='Real QR scanner starting... Point at QR → auto payer details pop-up - Real QR For All';
+async function stopScannerQuietly(){
+  if(scannerBusy) return;
+  scannerBusy = true;
   try{
-    if(html5QrCode){ try{await html5QrCode.stop();}catch(e){} try{html5QrCode.clear();}catch(e){} }
+    if(html5QrCode){
+      try{ const p = html5QrCode.stop(); if(p && p.then) await Promise.race([p, new Promise(r=>setTimeout(r,800))]); }catch(e){}
+      try{ html5QrCode.clear(); }catch(e){}
+    }
+  }catch(e){}
+  isScanning = false;
+  try{ document.querySelectorAll('#qr-reader video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
+  scannerBusy = false;
+}
+async function openWorkingScanner(){
+  if(scannerBusy) return;
+  qrAlreadyHandled = false;
+  const m = document.getElementById('scannerModal');
+  m.classList.remove('hidden'); m.style.display='flex';
+  document.getElementById('scannerStatus').innerText='Scanning... Point at QR — No tap needed. Auto details by self.';
+  await stopScannerQuietly();
+  try{
+    if(!window.Html5Qrcode) throw new Error('Scanner library failed to load.');
     html5QrCode = new Html5Qrcode("qr-reader");
-    isScanning=true;
-    await html5QrCode.start({facingMode:"environment"}, {fps:10, qrbox:{width:250,height:250}, aspectRatio:1.0},
-    (decodedText)=>{
-      document.getElementById('scannerStatus').innerText='QR Detected! Real QR → Opening payer details pop-up';
-      try{ let parsed=JSON.parse(decodedText); handleAutoScannedQR(parsed); }
-      catch(e){ handleAutoScannedQR({account_number:decodedText,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
-    }, ()=>{});
+    isScanning = true;
+    const onScanSuccess = (decodedText)=>{
+      if(qrAlreadyHandled || !isScanning) return;
+      qrAlreadyHandled = true; isScanning = false;
+      document.getElementById('scannerStatus').innerText='QR Detected! Opening details...';
+      stopScannerQuietly().then(()=>{
+        try{ handleAutoScannedQR(JSON.parse(decodedText)); }
+        catch(e){ handleAutoScannedQR({account_number:decodedText,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
+      });
+    };
+    const config = {fps:10, qrbox:{width:250,height:250}, aspectRatio:1.0, disableFlip:false};
+    try{ await html5QrCode.start({facingMode:"environment"}, config, onScanSuccess, ()=>{}); }
+    catch(e1){
+      const cams = await Html5Qrcode.getCameras();
+      if(!cams || !cams.length) throw e1;
+      const back = cams.find(c=>/back|rear|environment/i.test(c.label)) || cams[0];
+      await html5QrCode.start(back.id, config, onScanSuccess, ()=>{});
+    }
   }catch(err){
-    console.log(err);
-    document.getElementById('scannerStatus').innerText='Camera error: '+err.message+' - Use Test Scan - Real QR needs HTTPS (Vercel works)';
+    console.log(err); isScanning = false;
+    document.getElementById('scannerStatus').innerText='Camera error: '+err.message+' - Use Click & Pay via QR - Upload / Paste. Camera needs HTTPS.';
   }
 }
-
 function handleAutoScannedQR(qrData){
   closeScannerModal();
   scannedMerchantData={
-    shop_name:qrData.businessName||qrData.shop_name||'Merchant Store',
-    account_name:qrData.account_name||'Merchant',
-    account_number:qrData.account_number||'0638090889',
-    bank_name:qrData.bank_name||'GTBank',
-    bank_code:qrData.bank_code||'058',
-    merchant_id:qrData.merchantId||('merchant_'+Date.now()),
+    shop_name:qrData.businessName||qrData.shop_name||qrData.business_name||'Merchant Store',
+    account_name:qrData.account_name||qrData.accountName||'Merchant',
+    account_number:qrData.account_number||qrData.accountNumber||'0638090889',
+    bank_name:qrData.bank_name||qrData.bankName||' GTBank',
+    bank_code:qrData.bank_code||qrData.bankCode||'058',
+    merchant_id:qrData.merchantId||qrData.merchant_id||('merchant_'+Date.now()),
     amount:qrData.amount||''
   };
   document.getElementById('confirmShopName').innerText=scannedMerchantData.shop_name;
@@ -725,50 +753,77 @@ function handleAutoScannedQR(qrData){
   document.getElementById('confirmBankName').innerText=scannedMerchantData.bank_name;
   document.getElementById('confirmCustomerName').innerText=getUser().full_name||'Customer';
   document.getElementById('confirmAmountInput').value=scannedMerchantData.amount||'';
-  document.getElementById('merchantConfirmModal').style.display='flex';
+  const mm = document.getElementById('merchantConfirmModal');
+  mm.classList.remove('hidden'); mm.style.display='flex';
 }
-
 async function closeScannerModal(){
-  try{ if(html5QrCode&&isScanning){ try{await html5QrCode.stop();}catch(e){} try{html5QrCode.clear();}catch(e){} } }catch(e){}
-  isScanning=false; html5QrCode=null;
-  try{ document.querySelectorAll('video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
-  document.getElementById('scannerModal').style.display='none';
+  const m = document.getElementById('scannerModal');
+  m.style.display='none'; m.classList.add('hidden');
+  stopScannerQuietly();
+  html5QrCode = null;
 }
-// DEFERRED INITIALIZATION - avoid blocking first paint and DO NOT auto-open modal
+function handleClickPayViaQR(){ const inp = document.getElementById('qrFileInput'); if(inp) inp.click(); }
+async function handleQRFileUpload(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const sm = document.getElementById('scannerModal');
+  sm.classList.remove('hidden'); sm.style.display='flex';
+  document.getElementById('scannerStatus').innerText='Reading QR from image...';
+  try{
+    let decoded = null;
+    if(window.Html5Qrcode){ const tmp = new Html5Qrcode("qr-reader"); decoded = await tmp.scanFile(file, true); }
+    else { throw new Error('Scanner library unavailable.'); }
+    event.target.value='';
+    try{ handleAutoScannedQR(JSON.parse(decoded)); }
+    catch(e){ handleAutoScannedQR({account_number:decoded,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'【entity-GTBank¦canonical_name=GTBank】',bank_code:'058'}); }
+  }catch(e1){
+    try{
+      if('BarcodeDetector' in window){
+        const bmp = await createImageBitmap(file);
+        const det = new BarcodeDetector({formats:['qr_code']});
+        const codes = await det.detect(bmp);
+        if(codes && codes.length){
+          event.target.value='';
+          try{ handleAutoScannedQR(JSON.parse(codes[0].rawValue)); }
+          catch(e){ handleAutoScannedQR({account_number:codes[0].rawValue,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
+          return;
+        }
+      }
+      throw new Error('Could not read QR from this image. Try a clearer photo.');
+    }catch(e2){
+      event.target.value='';
+      document.getElementById('scannerStatus').innerText='Could not read QR from image. Try clearer photo or Paste QR.';
+      alert(e2.message || 'Could not read QR from this image.');
+    }
+  }
+}
+function openManualQRInput(){
+  const sm = document.getElementById('scannerModal');
+  sm.style.display='none'; sm.classList.add('hidden');
+  const m = document.getElementById('manualQRModal');
+  m.classList.remove('hidden'); m.style.display='flex';
+}
+function payFromManualQR(){
+  const v = document.getElementById('manualQRText').value.trim();
+  if(!v){ alert('Paste QR text first.'); return; }
+  const m = document.getElementById('manualQRModal');
+  m.classList.add('hidden'); m.style.display='none';
+  try{ handleAutoScannedQR(JSON.parse(v)); }
+  catch(e){ handleAutoScannedQR({account_number:v,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:' 【entity-GTBank¦canonical_name=GTBank】',bank_code:'058'}); }
+}
+function simulateSuccessfulScan(){ handleAutoScannedQR({businessName:'ZENOVA PEAK TECH HUB',account_name:'RUBY GARG',account_number:'0638090889',bank_name:'GTBank',bank_code:'058',merchantId:'zenova_demo',amount:'510'}); }
+
 window.addEventListener('DOMContentLoaded', () => {
+  if(window.__clickpeqr_init_done) return; window.__clickpeqr_init_done = true;
   const activeUser = getUser();
   let qrData = null;
-  try {
-    const ls = localStorage.getItem('last_scanned_qr_payload');
-    if (ls) qrData = JSON.parse(ls);
-  } catch (e) {
-    qrData = null;
-  }
-
+  try { const ls = localStorage.getItem('last_scanned_qr_payload'); if (ls) qrData = JSON.parse(ls); } catch (e) { qrData = null; }
   if (qrData && qrData.account_number) {
-    scannedMerchantData = {
-      shop_name: qrData.businessName || 'Merchant Store',
-      account_name: qrData.account_name,
-      account_number: qrData.account_number,
-      bank_name: qrData.bank_name || 'GTBank',
-      bank_code: qrData.bank_code || '',
-      merchant_id: qrData.merchantId || ('merchant_' + Date.now()),
-      amount: qrData.amount || ''
-    };
+    scannedMerchantData = { shop_name: qrData.businessName || 'Merchant Store', account_name: qrData.account_name, account_number: qrData.account_number, bank_name: qrData.bank_name || 'GTBank', bank_code: qrData.bank_code || '', merchant_id: qrData.merchantId || ('merchant_' + Date.now()), amount: qrData.amount || '' };
   } else {
     const pb = primaryBankOf(activeUser.id);
-    scannedMerchantData = {
-      shop_name: 'ZENOVA PEAK TECH HUB',
-      account_name: pb.account_name,
-      account_number: pb.account_number,
-      bank_name: pb.bank_name,
-      bank_code: pb.bank_code,
-      merchant_id: 'zenova_' + (activeUser.id || Date.now()),
-      amount: ''
-    };
+    scannedMerchantData = { shop_name: 'ZENOVA PEAK TECH HUB', account_name: pb.account_name, account_number: pb.account_number, bank_name: pb.bank_name, bank_code: pb.bank_code, merchant_id: 'zenova_' + (activeUser.id || Date.now()), amount: '' };
   }
-
-  // update DOM fields but DO NOT auto-open the confirm modal
   const setTextIf = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
   setTextIf('confirmShopName', scannedMerchantData.shop_name);
   setTextIf('confirmAccountName', scannedMerchantData.account_name);
@@ -776,15 +831,9 @@ window.addEventListener('DOMContentLoaded', () => {
   setTextIf('confirmCustomerName', activeUser.full_name || 'Customer');
   const confirmAmountInput = document.getElementById('confirmAmountInput');
   if (confirmAmountInput) confirmAmountInput.value = scannedMerchantData.amount || '510';
-
-  // light deferred rendering so browser paints first
   setTimeout(() => {
     if (activeUser && activeUser.id) {
-      if ((activeUser.portal_type || 'customer') === 'merchant') {
-        renderPermanentShopQR(activeUser);
-      } else {
-        renderCustomerPermanentQR(activeUser);
-      }
+      if ((activeUser.portal_type || 'customer') === 'merchant') { renderPermanentShopQR(activeUser); } else { renderCustomerPermanentQR(activeUser); }
     }
     fetchAndRenderBanks(activeUser.id);
     updatePointsUI();
@@ -806,7 +855,6 @@ function proceedToManualTransfer(){
 const amt=document.getElementById('confirmAmountInput').value;
 if(!amt||parseFloat(amt)<=0){ alert('Enter valid amount'); return; }
 const numAmt=parseFloat(amt); const u=getUser();
-
  if(!checkDailyLimitSync(u.id,numAmt)) return;
 if(numAmt>10000000){ alert('BLOCKED: CBN Max QR 10M - 10M-100M blocked Govt NFIU'); return; }
 if(numAmt<2000000){ 
@@ -835,8 +883,6 @@ if(numAmt>=5000000&&numAmt<=10000000){
   return; 
 }
 }
-
-// OTP Functions - FIX for "OTP ka mail to aaya but daalne ki jagah nahi" - REAL INPUT BOX
 function requestOTP(){
   const u=getUser();
   document.getElementById('otpEmailDisplay').innerText=u.email||'your email';
@@ -937,7 +983,6 @@ alert('Payment could not be completed: ' + (result.message || 'Please try again.
 }
 function executeLiveFlutterwavePayment(){ handleManualPaidDirectUPI(); }
 
-/* ---------- Speaker ---------- */
 function enableSpeaker(){
 isSpeakerEnabled = true;
 document.getElementById('enableSpeakerBtn').innerText = 'Voice ON';
@@ -990,7 +1035,6 @@ const d = document.getElementById('speakerLiveDot'); if(d) d.className = 'w-2 h-
 } catch(e){}
 }
 
-/* ---------- Transactions (3 months) ---------- */
 async function saveTransactionToSupabase(amount, txId){
 const u = getUser();
 const tx = { amount: parseFloat(amount), type: 'Direct Transfer', merchant: (scannedMerchantData && scannedMerchantData.shop_name) || 'Merchant', date: new Date().toLocaleString(), ts: Date.now(), txId: String(txId) };
@@ -1020,7 +1064,6 @@ c.innerHTML = h;
 document.getElementById('transactionModal').classList.remove('hidden');
 }
 
-/* ---------- Notifications (3 months) ---------- */
 function pushNotification(title, body){
 let n = [];
 try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
@@ -1064,7 +1107,6 @@ localStorage.setItem('clickpeqr_notif_seen', String(Date.now()));
 setTimeout(updateNotifBadge, 300);
 }
 
-/* ---------- Points ---------- */
 function getPointsData(userId){
 try {
 const d = JSON.parse(localStorage.getItem('clickpeqr_points_'+userId) || '{"balance":0,"history":[]}');
@@ -1108,14 +1150,16 @@ updatePointsUI();
 document.getElementById('pointsModal').classList.remove('hidden');
 }
 
-/* ---------- Banks ---------- */
 async function fetchAndRenderBanks(userId){
 const c = document.getElementById('linkedBanksListContainer');
 if(!c) return;
 const u = getUser();
 const emailKey = (u.email || '').toLowerCase();
 try {
-const res = await supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false});
+const res = await Promise.race([
+  supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false}),
+  new Promise(r=>setTimeout(()=>r({error:{message:'timeout'},data:[]}), 3000))
+]);
 if(!res.error && res.data && res.data.length > 0){
 renderBankRows(c, res.data, userId);
 localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(res.data));
@@ -1233,7 +1277,6 @@ fetchAndRenderBanks(userId);
 alert('Bank account removed.');
 }
 
-/* ---------- About / FAQ / Complaints ---------- */
 function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
 function showComplaintModal(){ document.getElementById('complaintModal').classList.remove('hidden'); }
 function showComplaintWhatsApp(){ window.open(SUPPORT.whatsapp + '?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help', '_blank'); }
@@ -1267,7 +1310,6 @@ if(items[i]) items[i].classList.toggle('faq-open');
 }
 function showFAQModal(){ buildFAQ(); document.getElementById('faqModal').classList.remove('hidden'); }
 
-/* ---------- AI Assistant ---------- */
 function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
 const BOT_KB = [
 {k: ['hello','hi ','hey','good morning','good afternoon','good evening'], r: "Hello! Welcome to ClickPeQR. I can help with payments, QR codes, bank linking, reward points, and support. What would you like to know?"},
@@ -1321,8 +1363,8 @@ c.scrollTop = c.scrollHeight;
 }, 500);
 }
 
-/* -------- Init -------- */
 window.addEventListener('DOMContentLoaded', () => {
+if(window.__clickpeqr_init_done) return;
 const d = document.getElementById('bankSelectDropdown');
 if(d){
 d.innerHTML = '<option value="">Select Bank</option>';
@@ -1336,7 +1378,7 @@ buildFAQ();
 try {
 const remember = localStorage.getItem('clickpeqr_remember') === 'true';
 const a = localStorage.getItem('clickpeqr_active_user');
-if(remember && a){ loadDashboard(JSON.parse(a)); }
+if(remember && a){ setTimeout(()=>loadDashboard(JSON.parse(a)), 50); }
 else {
 document.getElementById('authScreen').classList.remove('hidden');
 document.getElementById('dashboardScreen').classList.add('hidden');
