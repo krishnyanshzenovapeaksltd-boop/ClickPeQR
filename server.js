@@ -23,6 +23,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
+
 // ---------------------------------------------------------------------------
 // 1. Configuration
 // ---------------------------------------------------------------------------
@@ -40,6 +41,7 @@ const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY || "";
 const MONNIFY_CONTRACT_CODE = process.env.MONNIFY_CONTRACT_CODE || "";
 const MONNIFY_WALLET_ACCOUNT = process.env.MONNIFY_WALLET_ACCOUNT || "";
 const isMonnifyLive = MONNIFY_BASE_URL.includes("api.monnify.com");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 const POINTS = {
   customerPer100: parseInt(process.env.POINTS_CUSTOMER_PER_100 || "1", 10),
@@ -574,6 +576,26 @@ app.get('/api/health', (req, res) => {
 app.post('/webhook', (req, res) => {
   console.log("Webhook received");
   res.sendStatus(200);
+});
+
+app.post('/api/chat', async (req, res) => {
+  try{
+    const userMsg = req.body.message || '';
+    if(!userMsg) return res.json({ reply: 'Kya puchna chahte ho?' });
+    if(!GEMINI_API_KEY) return res.json({ reply: '' });
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'You are ClickPeQR Assistant, a helpful support bot for Nigerian payment app ClickPeQR by Krishnyansh Zenova Peaks Ltd. Answer in simple Hinglish / English, short and helpful. Never invent bank details or transaction status. If user asks about payment failure, ask for transaction ID and tell to contact WhatsApp +234 906 786 2223. User question: ' + userMsg }] }]
+      })
+    });
+    const data = await r.json();
+    const reply = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) || '';
+    res.json({ reply: reply || '' });
+  }catch(e){
+    res.json({ reply: '' });
+  }
 });
 
 app.get('*', (req, res) => {
