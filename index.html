@@ -1232,4 +1232,836 @@
     }
 
     // 6. LIMITS, TIERED SECURITY & DIRECT PAYMENT
-    function validateUserPin(entered
+    function validateUserPin(enteredPin) {
+      const u = getUser();
+      if (!/^\d{6}$/.test(enteredPin)) return false;
+      if (u.pin && enteredPin !== u.pin) return false;
+      return true;
+    }
+
+    function checkDailyLimitSync(userId, amount) {
+      let txs = [];
+      try {
+        txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+      } catch (e) {}
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let todayTotal = 0;
+
+      for (let i = 0; i < Math.min(txs.length, 100); i++) {
+        if (txs[i].ts >= today.getTime()) {
+          todayTotal += parseFloat(txs[i].amount || 0);
+        }
+      }
+
+      const limit = (getUser().portal_type === 'merchant') ? 5000000 : 2000000;
+      if ((todayTotal + parseFloat(amount)) > limit) {
+        document.getElementById('dailyLimitMsg').innerText =
+          'Daily limit exceeded. Today: ₦' + todayTotal.toLocaleString() +
+          ' + New: ₦' + parseFloat(amount).toLocaleString() +
+          ' > Limit: ₦' + limit.toLocaleString();
+        showModal('dailyLimitModal');
+        return false;
+      }
+      return true;
+    }
+
+    function openManualTransferView(numAmt) {
+      showModal('manualTransferModal', 'flex');
+      document.getElementById('manualAmountDisplay').innerText = 'NGN ' + numAmt.toLocaleString();
+      document.getElementById('manualAccountNumber').innerText = scannedMerchantData.account_number;
+      document.getElementById('manualBankNameDisplay').innerText = scannedMerchantData.bank_name + ' (' + scannedMerchantData.bank_code + ')';
+      document.getElementById('manualBeneficiaryName').innerText = scannedMerchantData.account_name + ' / ' + scannedMerchantData.shop_name;
+    }
+
+    function proceedToManualTransfer() {
+      const amt = document.getElementById('confirmAmountInput').value;
+      const numAmt = parseFloat(amt);
+      if (!amt || isNaN(numAmt) || numAmt <= 0) {
+        alert('Enter a valid amount.');
+        return;
+      }
+
+      const u = getUser();
+      if (!checkDailyLimitSync(u.id, numAmt)) return;
+
+      if (numAmt > 10000000) {
+        alert('BLOCKED: Maximum single QR transaction is ₦10,000,000.');
+        return;
+      }
+
+      if (numAmt < 2000000) {
+        hideModal('merchantConfirmModal');
+        openManualTransferView(numAmt);
+        return;
+      }
+
+      if (numAmt >= 2000000 && numAmt < 5000000) {
+        hideModal('merchantConfirmModal');
+        document.getElementById('highValueTitle').innerText = 'LEVEL 2 - ₦2M to ₦5M (PIN + OTP Recommended)';
+        document.getElementById('highValueDetails').innerText = 'Level 2: ₦2M–₦5M — PIN + OTP Recommended';
+        document.getElementById('highValueOtpSection').classList.remove('hidden');
+        showModal('highValueSecurityModal');
+        return;
+      }
+
+      if (numAmt >= 5000000 && numAmt <= 10000000) {
+        hideModal('merchantConfirmModal');
+        document.getElementById('highValueTitle').innerText = 'LEVEL 3 - ₦5M to ₦10M (PIN + OTP Compulsory)';
+        document.getElementById('highValueDetails').innerText = 'Level 3: ₦5M–₦10M — PIN + OTP Compulsory';
+        document.getElementById('highValueOtpSection').classList.remove('hidden');
+        showModal('highValueSecurityModal');
+      }
+    }
+
+    function requestOTP() {
+      const u = getUser();
+      document.getElementById('otpEmailDisplay').innerText = u.email || 'your email';
+      showModal('otpModal');
+      hideModal('highValueSecurityModal');
+      document.getElementById('otpInputField').value = '123456';
+      alert('OTP sent to your email — Demo code: 123456');
+    }
+
+    function closeOTPModal() {
+      hideModal('otpModal');
+    }
+
+    function closeHighValueModal() {
+      hideModal('highValueSecurityModal');
+    }
+
+    function verifyOTPAndPay() {
+      const otp = document.getElementById('otpInputField').value.trim();
+      const pin = document.getElementById('otpPinInput').value.trim();
+      const numAmt = parseFloat(document.getElementById('confirmAmountInput').value || '0');
+
+      if (!/^\d{4,6}$/.test(otp)) {
+        alert('Enter a valid OTP.');
+        return;
+      }
+      if (!validateUserPin(pin)) {
+        alert('Invalid 6-digit PIN.');
+        return;
+      }
+
+      hideModal('otpModal');
+      hideModal('highValueSecurityModal');
+      openManualTransferView(numAmt);
+      window.pendingHighValuePin = pin;
+      window.pendingHighValueOtp = otp;
+    }
+
+    function bypassOTPForLevel2() {
+      const numAmt = parseFloat(document.getElementById('confirmAmountInput').value || '0');
+      if (numAmt >= 5000000) {
+        alert('Level 3 requires OTP compulsory.');
+        return;
+      }
+      if (confirm('Level 2 — Continue WITHOUT OTP?')) {
+        const pin = document.getElementById('otpPinInput').value.trim() || document.getElementById('highValuePinInput').value.trim();
+        if (!validateUserPin(pin)) {
+          alert('Enter your valid 6-digit PIN first.');
+          return;
+        }
+        hideModal('otpModal');
+        hideModal('highValueSecurityModal');
+        openManualTransferView(numAmt);
+        window.pendingHighValuePin = pin;
+        window.pendingHighValueOtp = 'BYPASSED_LEVEL2';
+      }
+    }
+
+    function proceedHighValuePayment() {
+      const pin = document.getElementById('highValuePinInput').value.trim();
+      const otp = document.getElementById('highValueOtpInput').value.trim();
+      const numAmt = parseFloat(document.getElementById('confirmAmountInput').value || '0');
+
+      if (!validateUserPin(pin)) {
+        alert('Enter your valid 6-digit PIN.');
+        return;
+      }
+      if (numAmt >= 5000000 && !/^\d{4,6}$/.test(otp)) {
+        alert('Level 3 requires OTP compulsory.');
+        return;
+      }
+
+      hideModal('highValueSecurityModal');
+      openManualTransferView(numAmt);
+    }
+
+    async function handleManualPaid() {
+      await handleManualPaidDirectUPI();
+    }
+
+    async function handleManualPaidDirectUPI() {
+      const amt = (document.getElementById('confirmAmountInput') || {}).value || '0';
+      if (!amt || parseFloat(amt) <= 0) {
+        alert('Enter valid amount.');
+        return;
+      }
+
+      const u = getUser();
+      const merchant = scannedMerchantData;
+      if (!u.id || !merchant) {
+        alert('Session or merchant details missing. Please scan again.');
+        return;
+      }
+
+      const primaryBank = primaryBankOf(u.id);
+
+      try {
+        const res = await fetch('/api/direct-account-to-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_id: u.id,
+            merchant_id: merchant.merchant_id,
+            amount: amt,
+            transaction_id: 'TXN_' + Date.now(),
+            merchant_account: merchant.account_number,
+            merchant_bank_code: merchant.bank_code,
+            merchant_account_name: merchant.account_name,
+            merchant_bank_name: merchant.bank_name,
+            customer_account: primaryBank.account_number || '',
+            customer_bank_code: primaryBank.bank_code || ''
+          })
+        });
+
+        const result = await res.json();
+        if (result.status === 'success') {
+          const txId = (result.transfer && result.transfer.data && result.transfer.data.id) || Date.now();
+          await saveTransactionToSupabase(amt, txId);
+          awardPoints(
+            u.id,
+            Math.floor(parseFloat(amt) / 100) * POINTS.customerPer100,
+            'Payment of ₦' + amt + ' to ' + merchant.shop_name
+          );
+          if (speakerChannel) {
+            speakerChannel.postMessage({ type: 'payment_success', amount: amt, txId: String(txId) });
+          }
+          triggerVirtualSpeaker(amt, txId);
+          pushNotification('Payment successful', '₦' + amt + ' paid to ' + merchant.shop_name);
+          hideModal('manualTransferModal');
+          alert('Payment successful. ₦' + amt + ' sent to ' + merchant.shop_name + '.');
+        } else {
+          alert('Payment could not be completed: ' + (result.message || 'Try again.'));
+        }
+      } catch (e) {
+        alert('Payment could not be completed. Please check your internet connection.');
+      }
+    }
+
+    // 7. VIRTUAL SPEAKER & REALTIME
+    function enableSpeaker() {
+      isSpeakerEnabled = true;
+      document.getElementById('enableSpeakerBtn').innerText = 'Voice ON';
+      const dot = document.getElementById('speakerLiveDot');
+      if (dot) dot.className = 'w-2 h-2 bg-emerald-400 rounded-full animate-pulse inline-block';
+      speakMoneyReceived(0, true);
+    }
+
+    function testSpeakerVoice() {
+      if (!isSpeakerEnabled) enableSpeaker();
+      speakMoneyReceived('510', false);
+    }
+
+    function triggerVirtualSpeaker(amount, txId) {
+      const se = document.getElementById('speakerStatus');
+      if (se) se.innerText = 'Payment received: ₦' + amount;
+
+      const logEl = document.getElementById('lastPaymentLog');
+      if (logEl) {
+        logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg text-teal-300">Payment: ₦' +
+          escapeHTML(amount) + ' - ' + escapeHTML(new Date().toLocaleTimeString()) + '</div>';
+      }
+
+      const salesEl = document.getElementById('todaysSales');
+      if (salesEl) {
+        const cur = parseFloat(salesEl.innerText.replace(/[^0-9.]/g, '')) || 0;
+        salesEl.innerText = '₦ ' + (cur + parseFloat(amount)).toLocaleString(undefined, { minimumFractionDigits: 2 });
+      }
+
+      speakMoneyReceived(amount, false);
+    }
+
+    function speakMoneyReceived(amount, isTest) {
+      if (!isSpeakerEnabled && !isTest) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const text = isTest
+        ? 'Voice alerts enabled. You will hear an announcement for every payment received.'
+        : 'Payment received successfully. ' + amount + ' Naira received.';
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-NG';
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function initMerchantRealtime(merchantId) {
+      try {
+        supabaseClient
+          .channel('merchant:' + merchantId)
+          .on('broadcast', { event: 'payment_success' }, function (payload) {
+            if (payload && payload.payload) {
+              triggerVirtualSpeaker(payload.payload.amount, payload.payload.txId);
+            }
+          })
+          .subscribe(function (status) {
+            if (status === 'SUBSCRIBED') {
+              const se = document.getElementById('speakerStatus');
+              if (se) se.innerText = 'Live - Waiting for payments...';
+            }
+          });
+      } catch (e) {}
+    }
+
+    // 8. TRANSACTIONS, NOTIFICATIONS & REWARDS
+    async function saveTransactionToSupabase(amount, txId) {
+      const u = getUser();
+      const tx = {
+        amount: parseFloat(amount),
+        type: 'Direct Transfer',
+        merchant: (scannedMerchantData && scannedMerchantData.shop_name) || 'Merchant',
+        date: new Date().toLocaleString(),
+        ts: Date.now(),
+        txId: String(txId)
+      };
+
+      let txs = [];
+      try {
+        txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+      } catch (e) {}
+      txs.unshift(tx);
+      localStorage.setItem('clickpeqr_txs', JSON.stringify(txs.slice(0, 200)));
+
+      try {
+        await supabaseClient.from('transactions').insert([{
+          transaction_ref: String(txId),
+          user_id: u.id,
+          sender_id: u.id,
+          merchant_id: (scannedMerchantData && scannedMerchantData.merchant_id) || u.id,
+          amount: parseFloat(amount),
+          status: 'success',
+          type: 'Direct Transfer'
+        }]);
+      } catch (e) {}
+    }
+
+    function showTransactionHistory() {
+      const c = document.getElementById('transactionListContainer');
+      let txs = [];
+      try {
+        txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]');
+      } catch (e) {}
+
+      const recent = txs.filter(t => t.ts && within3Months(t.ts));
+      if (!recent.length) {
+        c.innerHTML = '<p class="text-slate-500 text-center py-4">No transactions in the last 3 months.</p>';
+      } else {
+        c.innerHTML = recent.map(t =>
+          '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between">' +
+            '<div>' +
+              '<p class="font-bold text-[11px]">' + escapeHTML(t.type) + ' - ' + escapeHTML(t.merchant) + '</p>' +
+              '<p class="text-[10px] text-slate-400">' + escapeHTML(t.date) + ' | ID: ' + escapeHTML(t.txId) + '</p>' +
+            '</div>' +
+            '<span class="text-teal-400 font-bold text-xs">₦' + escapeHTML(t.amount) + '</span>' +
+          '</div>'
+        ).join('');
+      }
+      showModal('transactionModal');
+    }
+
+    function pushNotification(title, body) {
+      let n = [];
+      try {
+        n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]');
+      } catch (e) {}
+      n.unshift({ title, body, ts: Date.now(), date: new Date().toLocaleString() });
+      localStorage.setItem('clickpeqr_notifs', JSON.stringify(n.slice(0, 100)));
+
+      try {
+        const u = getUser();
+        if (u.id) {
+          supabaseClient.from('notifications').insert([{ user_id: u.id, title, body }]).then(() => {});
+        }
+      } catch (e) {}
+
+      updateNotifBadge();
+      if (!document.getElementById('notificationModal').classList.contains('hidden')) {
+        renderNotifications();
+      }
+    }
+
+    function updateNotifBadge() {
+      let n = [];
+      try {
+        n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]');
+      } catch (e) {}
+      const lastSeen = parseInt(localStorage.getItem('clickpeqr_notif_seen') || '0', 10);
+      const hasNew = n.some(x => x.ts > lastSeen);
+      const badge = document.getElementById('notifBadge');
+      if (badge) badge.classList.toggle('hidden', !hasNew);
+    }
+
+    function renderNotifications() {
+      const c = document.getElementById('notificationListContainer');
+      let n = [];
+      try {
+        n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]');
+      } catch (e) {}
+
+      const recent = n.filter(x => within3Months(x.ts));
+      if (!recent.length) {
+        c.innerHTML = '<p class="text-slate-500 text-center py-4">No notifications.</p>';
+      } else {
+        c.innerHTML = recent.map(x =>
+          '<div class="bg-slate-950 p-3 rounded-xl border border-slate-800">' +
+            '<p class="font-bold text-[11px]">' + escapeHTML(x.title) + '</p>' +
+            '<p class="text-[11px] text-slate-400">' + escapeHTML(x.body) + '</p>' +
+            '<p class="text-[9px] text-slate-500 mt-1">' + escapeHTML(x.date) + '</p>' +
+          '</div>'
+        ).join('');
+      }
+    }
+
+    function showNotificationModal() {
+      renderNotifications();
+      showModal('notificationModal');
+      localStorage.setItem('clickpeqr_notif_seen', String(Date.now()));
+      setTimeout(updateNotifBadge, 300);
+    }
+
+    function getPointsData(userId) {
+      try {
+        const d = JSON.parse(localStorage.getItem('clickpeqr_points_' + userId) || '{"balance":0,"history":[]}');
+        if (typeof d.balance !== 'number') d.balance = 0;
+        if (!Array.isArray(d.history)) d.history = [];
+        return d;
+      } catch (e) {
+        return { balance: 0, history: [] };
+      }
+    }
+
+    function awardPoints(userId, pts, reason) {
+      if (!userId || !pts || pts <= 0) return;
+      const d = getPointsData(userId);
+      d.balance += pts;
+      d.history.unshift({ pts, reason, date: new Date().toLocaleString(), ts: Date.now() });
+      localStorage.setItem('clickpeqr_points_' + userId, JSON.stringify({
+        balance: d.balance,
+        history: d.history.slice(0, 100)
+      }));
+
+      try {
+        supabaseClient.from('reward_points').upsert([{ user_id: userId, balance: d.balance }], { onConflict: 'user_id' }).then(() => {});
+      } catch (e) {}
+      updatePointsUI();
+    }
+
+    function updatePointsUI() {
+      const u = getUser();
+      const bal = u.id ? getPointsData(u.id).balance : 0;
+      document.querySelectorAll('.customerPointsVal, .merchantPointsVal').forEach(el => { el.textContent = bal; });
+      const hp = document.getElementById('headerPoints');
+      if (hp) hp.textContent = bal;
+      const sp = document.getElementById('sidebarPoints');
+      if (sp) sp.textContent = bal;
+      const bb = document.getElementById('pointsBalanceBig');
+      if (bb) bb.textContent = bal;
+    }
+
+    function openPointsModal() {
+      const u = getUser();
+      const d = u.id ? getPointsData(u.id) : { balance: 0, history: [] };
+      const c = document.getElementById('pointsHistoryList');
+      if (!d.history.length) {
+        c.innerHTML = '<p class="text-slate-500 text-center py-3">No points yet. Make a payment to start earning.</p>';
+      } else {
+        c.innerHTML = d.history.map(x =>
+          '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between">' +
+            '<div>' +
+              '<p class="text-[11px]">' + escapeHTML(x.reason) + '</p>' +
+              '<p class="text-[9px] text-slate-500">' + escapeHTML(x.date) + '</p>' +
+            '</div>' +
+            '<span class="text-amber-300 font-bold text-xs">+' + escapeHTML(x.pts) + '</span>' +
+          '</div>'
+        ).join('');
+      }
+      updatePointsUI();
+      showModal('pointsModal');
+    }
+
+    // 9. BANK ACCOUNT MANAGEMENT
+    async function fetchAndRenderBanks(userId) {
+      const c = document.getElementById('linkedBanksListContainer');
+      if (!c) return;
+      const u = getUser();
+      const emailKey = (u.email || '').toLowerCase();
+
+      try {
+        const res = await Promise.race([
+          supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', { ascending: false }),
+          new Promise(r => setTimeout(() => r({ error: { message: 'timeout' }, data: [] }), 3000))
+        ]);
+        if (!res.error && res.data && res.data.length > 0) {
+          renderBankRows(c, res.data, userId);
+          localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(res.data));
+          return;
+        }
+      } catch (e) {}
+
+      let localBanks = [];
+      try {
+        const a = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
+        const b = JSON.parse(localStorage.getItem('clickpeqr_banks_' + emailKey) || '[]');
+        localBanks = b.length > 0 ? b : a;
+      } catch (e) {}
+
+      if (!localBanks.length) {
+        c.innerHTML = '<p class="text-xs text-slate-500 text-center py-3">No bank linked yet. Tap + Link Bank.</p>';
+        return;
+      }
+      renderBankRows(c, localBanks, userId);
+    }
+
+    function renderBankRows(c, banks, userId) {
+      c.innerHTML = banks.map((a, i) => {
+        const tag = a.is_primary
+          ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded ml-1">Primary</span>'
+          : '';
+        return (
+          '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">' +
+            '<div>' +
+              '<p class="text-xs font-bold">' + escapeHTML(a.bank_name) + tag + '</p>' +
+              '<p class="text-[10px] text-slate-400">' + escapeHTML(a.account_number) + ' - ' + escapeHTML(a.account_name) + '</p>' +
+            '</div>' +
+            '<div class="flex gap-1">' +
+              '<button type="button" onclick="switchPrimaryBank(\'' + escapeHTML(userId) + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button>' +
+              '<button type="button" onclick="deleteBankAccount(\'' + escapeHTML(userId) + '\',' + i + ')" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">Remove</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    function openAddBankModal() { showModal('addBankModal'); }
+    function closeAddBankModal() { hideModal('addBankModal'); }
+
+    let verifyDebounceTimer = null;
+    async function verifyBankAccount() {
+      clearTimeout(verifyDebounceTimer);
+      verifyDebounceTimer = setTimeout(async function () {
+        const bankCode = document.getElementById('bankSelectDropdown').value;
+        const accNum = document.getElementById('accountNumberInput').value.trim();
+        const nameInput = document.getElementById('accountNameInput');
+
+        if (!bankCode || accNum.length !== 10) {
+          nameInput.value = '';
+          return;
+        }
+        nameInput.value = 'Verifying...';
+
+        try {
+          const res = await fetch('/api/resolve-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_number: accNum, account_bank: bankCode })
+          });
+          const result = await res.json();
+          if (result && result.status === 'success' && result.data && result.data.account_name) {
+            nameInput.value = result.data.account_name;
+          } else {
+            nameInput.value = '';
+          }
+        } catch (err) {
+          nameInput.value = '';
+        }
+      }, 500);
+    }
+
+    async function saveNewBankAccount() {
+      const u = getUser();
+      if (!u.id) {
+        alert('Please sign in first.');
+        return;
+      }
+
+      const dd = document.getElementById('bankSelectDropdown');
+      const bankName = dd.options[dd.selectedIndex] ? dd.options[dd.selectedIndex].text : '';
+      const bankCode = dd.value;
+      const accNum = document.getElementById('accountNumberInput').value.trim();
+      const accName = document.getElementById('accountNameInput').value.trim();
+
+      if (!bankCode || accNum.length !== 10 || !accName || accName === 'Verifying...') {
+        alert('Select bank, enter 10-digit account number, and wait for account name verification.');
+        return;
+      }
+
+      const emailKey = (u.email || '').toLowerCase();
+      let localBanks = [];
+      try {
+        const a = JSON.parse(localStorage.getItem('clickpeqr_banks_' + u.id) || '[]');
+        const b = JSON.parse(localStorage.getItem('clickpeqr_banks_' + emailKey) || '[]');
+        localBanks = b.length > 0 ? b : a;
+      } catch (e) {}
+
+      if (localBanks.some(b => b.account_number === accNum)) {
+        alert('This bank account is already linked.');
+        return;
+      }
+
+      const newBank = {
+        user_id: u.id,
+        bank_name: bankName,
+        bank_code: bankCode,
+        account_number: accNum,
+        account_name: accName,
+        is_primary: localBanks.length === 0,
+        email: emailKey,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        await supabaseClient.from('linked_accounts').insert([newBank]);
+      } catch (e) {}
+
+      localBanks.push(newBank);
+      localStorage.setItem('clickpeqr_banks_' + u.id, JSON.stringify(localBanks));
+      localStorage.setItem('clickpeqr_banks_' + emailKey, JSON.stringify(localBanks));
+
+      closeAddBankModal();
+      fetchAndRenderBanks(u.id);
+      if (u.portal_type === 'merchant') renderPermanentShopQR(u);
+      pushNotification('Bank linked', bankName + ' (' + accNum + ') linked.');
+      alert('Bank linked successfully.');
+
+      document.getElementById('accountNumberInput').value = '';
+      document.getElementById('accountNameInput').value = '';
+    }
+
+    async function switchPrimaryBank(userId, idx) {
+      const u = getUser();
+      const emailKey = (u.email || '').toLowerCase();
+      let banks = [];
+      try {
+        banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
+        if (!banks.length) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + emailKey) || '[]');
+      } catch (e) {}
+
+      if (!banks[idx]) return;
+      banks.forEach((a, i) => { a.is_primary = (i === idx); });
+
+      localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(banks));
+      localStorage.setItem('clickpeqr_banks_' + emailKey, JSON.stringify(banks));
+
+      try {
+        await supabaseClient.from('linked_accounts').update({ is_primary: false }).eq('user_id', userId);
+        await supabaseClient.from('linked_accounts').update({ is_primary: true }).eq('user_id', userId).eq('account_number', banks[idx].account_number);
+      } catch (e) {}
+
+      fetchAndRenderBanks(userId);
+      if (u.portal_type === 'merchant') renderPermanentShopQR(u);
+      alert('Primary bank updated.');
+    }
+
+    async function deleteBankAccount(userId, idx) {
+      if (!confirm('Remove this bank account?')) return;
+      const u = getUser();
+      const emailKey = (u.email || '').toLowerCase();
+      let banks = [];
+      try {
+        banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
+        if (!banks.length) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + emailKey) || '[]');
+      } catch (e) {}
+
+      const toDelete = banks[idx];
+      banks.splice(idx, 1);
+      if (banks.length > 0 && !banks.some(b => b.is_primary)) {
+        banks[0].is_primary = true;
+      }
+
+      localStorage.setItem('clickpeqr_banks_' + userId, JSON.stringify(banks));
+      localStorage.setItem('clickpeqr_banks_' + emailKey, JSON.stringify(banks));
+
+      try {
+        if (toDelete) {
+          await supabaseClient.from('linked_accounts').delete().eq('user_id', userId).eq('account_number', toDelete.account_number);
+        }
+      } catch (e) {}
+
+      fetchAndRenderBanks(userId);
+      if (u.portal_type === 'merchant') renderPermanentShopQR(u);
+      alert('Bank removed.');
+    }
+
+    // 10. MODALS, FAQ & AI CHATBOT
+    function showAboutModal() { showModal('aboutModal'); }
+    function showComplaintModal() { showModal('complaintModal'); }
+
+    const FAQ_DATA = [
+      { q: "What is ClickPeQR?", a: "ClickPeQR is a secure payment gateway by Krishnyansh Zenova Peaks Ltd (RC-9810296). Merchants receive payments via QR, and customers pay directly from their bank." },
+      { q: "How do I receive payments?", a: "Sign in as a merchant, link your bank account, and display your Permanent Shop QR. For fixed amounts, generate a Dynamic QR. Voice alerts announce incoming payments." },
+      { q: "How do I pay?", a: "Tap Pay (Scan QR), scan the merchant's QR code, confirm the amount, and complete the direct transfer." },
+      { q: "How do I link my bank?", a: "Open Bank Accounts > + Link Bank > select your bank > enter your 10-digit account number > wait for name verification > tap Verify & Save." },
+      { q: "What are reward points?", a: "Customers earn 1 pt per ₦100 spent; Merchants earn 2 pts per ₦100 received. 100 pts = ₦10 cashback." },
+      { q: "What if a payment fails?", a: "Check your internet connection and recipient account details, then retry. If the issue persists, open Complaints > WhatsApp +234 906 786 2223." }
+    ];
+
+    function buildFAQ() {
+      const c = document.getElementById('faqList');
+      if (!c) return;
+      c.innerHTML = FAQ_DATA.map((item, i) =>
+        '<div class="faq-item bg-slate-950 border border-slate-800 rounded-xl">' +
+          '<button type="button" onclick="toggleFaq(' + i + ')" class="w-full text-left p-3 flex justify-between gap-2">' +
+            '<span class="font-semibold text-[11px]">' + escapeHTML(item.q) + '</span>' +
+            '<span class="text-teal-400">+</span>' +
+          '</button>' +
+          '<div class="faq-a px-3"><p class="pb-3 text-slate-400 text-[11px]">' + escapeHTML(item.a) + '</p></div>' +
+        '</div>'
+      ).join('');
+    }
+
+    function toggleFaq(i) {
+      const items = document.querySelectorAll('#faqList .faq-item');
+      if (items[i]) items[i].classList.toggle('faq-open');
+    }
+
+    function showFAQModal() {
+      buildFAQ();
+      showModal('faqModal');
+    }
+
+    function toggleAIBot() {
+      const m = document.getElementById('aiBotModal');
+      if (m.classList.contains('hidden')) {
+        showModal('aiBotModal', 'flex');
+      } else {
+        hideModal('aiBotModal');
+      }
+    }
+
+    const BOT_KB = [
+      { k: ['hello', 'hi ', 'hey', 'good morning', 'good afternoon'], r: "Hello! Welcome to ClickPeQR. I can help with payments, QR codes, bank linking, reward points, and support." },
+      { k: ['point', 'reward', 'cashback', 'earn'], r: "Customers earn 1 pt per ₦100, and Merchants earn 2 pts per ₦100. 100 pts = ₦10 cashback. Your balance is displayed at the top of the screen." },
+      { k: ['fail', 'pending', 'stuck', 'error', 'unsuccessful'], r: "Please check your internet connection and merchant account details, then try again. If it continues, contact support via Complaints > WhatsApp +234 906 786 2223." },
+      { k: ['refund', 'reverse', 'money back'], r: "For refunds, please send your Transaction ID and amount via Complaints > WhatsApp or Email. Our team responds within 24 hours." },
+      { k: ['complain', 'support', 'help', 'contact', 'whatsapp', 'human', 'agent', 'email'], r: "Reach our support team on WhatsApp at +234 906 786 2223 or Email info@krishnyanshzenovapeaks.com. We respond within 24 hours." },
+      { k: ['receive', 'accept payment', 'collect', 'merchant', 'sell'], r: "Merchants: Link your bank account and display your Permanent Shop QR. For fixed amounts, generate a Dynamic QR. You will receive a voice alert upon payment." },
+      { k: ['qr code', 'dynamic qr', 'permanent qr', 'change qr'], r: "Use your Permanent Shop QR for daily counter payments, or generate a Dynamic QR for a specific invoice amount." },
+      { k: ['link bank', 'add bank', 'bank account'], r: "Go to Menu > Bank Accounts > + Link Bank > select your bank > enter your 10-digit account number > wait for name verification > tap Verify & Save." },
+      { k: ['pay ', 'send money', 'make payment'], r: "Tap Pay (Scan QR) > scan the merchant's QR > confirm the amount and beneficiary > complete the direct transfer to earn reward points." },
+      { k: ['history', 'record', 'past payment'], r: "Open Menu > Transaction History to view your payment records from the past 3 months." },
+      { k: ['speaker', 'voice', 'sound'], r: "On the Merchant Terminal, tap Enable Voice and use Test Voice to verify audio payment alerts." },
+      { k: ['fee', 'charge', 'cost'], r: "Transaction fees are minimal and are clearly displayed before you confirm any payment." },
+      { k: ['which bank', 'supported bank', 'kuda', 'opay', 'palmpay'], r: "All major Nigerian commercial banks plus Kuda, OPay, PalmPay, and Moniepoint are supported." },
+      { k: ['safe', 'secure', 'trust'], r: "Payments move directly between verified bank accounts, and account names are verified before transfer." },
+      { k: ['about', 'company', 'zenova', 'built'], r: "ClickPeQR is built by Krishnyansh Zenova Peaks Ltd (RC-9810296) to help businesses accept digital payments as effortlessly as cash." },
+      { k: ['pin', 'login', 'password', 'log out', 'logout'], r: "Sign in using your Name, Email, and 6-digit PIN. Keep your PIN confidential at all times." },
+      { k: ['thank', 'great', 'nice'], r: "You are very welcome! Let me know if you need help with anything else." }
+    ];
+
+    function botReplyText(t) {
+      const l = ' ' + t.toLowerCase() + ' ';
+      for (let i = 0; i < BOT_KB.length; i++) {
+        const item = BOT_KB[i];
+        for (let j = 0; j < item.k.length; j++) {
+          if (l.indexOf(item.k[j]) >= 0) return item.r;
+        }
+      }
+      return "I want to make sure I give you the right answer. Ask about payments, QR codes, bank linking, reward points, or contact support via WhatsApp (+234 906 786 2223).";
+    }
+
+    async function sendBotMessage() {
+      const i = document.getElementById('botInputText');
+      const c = document.getElementById('botChatMessages');
+      const t = i.value.trim();
+      if (!t) return;
+
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bg-teal-500/10 text-teal-200 p-2.5 rounded-xl text-right';
+      userBubble.textContent = t;
+      c.appendChild(userBubble);
+      i.value = '';
+      c.scrollTop = c.scrollHeight;
+
+      const kbReply = botReplyText(t);
+      const isGeneric = kbReply.indexOf('I want to make sure') >= 0;
+
+      const showReply = function (msg) {
+        const r = document.createElement('div');
+        r.className = 'bg-slate-950 p-2.5 rounded-xl';
+        r.textContent = msg;
+        c.appendChild(r);
+        c.scrollTop = c.scrollHeight;
+      };
+
+      if (!isGeneric) {
+        setTimeout(() => showReply(kbReply), 300);
+        return;
+      }
+
+      const thinkingBubble = document.createElement('div');
+      thinkingBubble.className = 'bg-slate-950 p-2.5 rounded-xl text-slate-400 italic';
+      thinkingBubble.textContent = 'Thinking...';
+      c.appendChild(thinkingBubble);
+      c.scrollTop = c.scrollHeight;
+
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => { try { ctrl.abort(); } catch (e) {} }, 8000);
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: t }),
+          signal: ctrl.signal
+        });
+        clearTimeout(timer);
+        const data = await res.json();
+        thinkingBubble.remove();
+        showReply((data && data.reply) ? data.reply : kbReply);
+      } catch (e) {
+        thinkingBubble.remove();
+        showReply(kbReply);
+      }
+    }
+
+    // 11. INITIALIZATION
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.__clickpeqr_init_done) return;
+      window.__clickpeqr_init_done = true;
+
+      const dropdown = document.getElementById('bankSelectDropdown');
+      if (dropdown) {
+        dropdown.innerHTML = '<option value="">Select Bank</option>';
+        NIGERIAN_BANKS.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.code;
+          opt.textContent = b.name;
+          dropdown.appendChild(opt);
+        });
+      }
+
+      buildFAQ();
+
+      try {
+        const remember = localStorage.getItem('clickpeqr_remember') === 'true';
+        const activeUser = localStorage.getItem('clickpeqr_active_user');
+        if (remember && activeUser) {
+          setTimeout(() => loadDashboard(JSON.parse(activeUser)), 50);
+        } else {
+          document.getElementById('authScreen').classList.remove('hidden');
+          document.getElementById('dashboardScreen').classList.add('hidden');
+          document.getElementById('mainHeader').classList.add('hidden');
+        }
+      } catch (e) {}
+
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.getVoices(); } catch (e) {}
+      }
+      updateNotifBadge();
+    });
+  </script>
+</body>
+</html>
