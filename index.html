@@ -1,1418 +1,1235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClickPeQR - Secure Fintech & AI Payment Gateway</title>
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,191,.35)}50%{box-shadow:0 0 0 10px rgba(45,212,191,0)}}
-@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-.anim-fadeUp{animation:fadeUp.45s ease both}
-.live-dot{width:8px;height:8px;border-radius:9999px;background:#34d399;animation:glowPulse 1.8s infinite}
-.grad-text{background:linear-gradient(90deg,#2dd4bf,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
-.card-hover{transition:transform.2s ease,box-shadow.2s ease}
-.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px rgba(45,212,191,.25)}
-.shimmer{background:linear-gradient(90deg,#0f172a 25%,#1e293b 50%,#0f172a 75%);background-size:800px 100%;animation:shimmer 1.6s infinite linear}
-.faq-a{max-height:0;overflow:hidden;transition:max-height.3s ease}
-.faq-open .faq-a{max-height:220px}
-.scan-frame{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
-.scan-frame div{width:70%;height:55%;border:2px solid #2dd4bf;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.25)}
-#qr-reader video{width:100%!important;height:auto!important;object-fit:cover}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#020617">
+  <title>ClickPeQR - Secure Fintech &amp; AI Payment Gateway</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- External Libraries -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.35); }
+      50% { box-shadow: 0 0 0 10px rgba(45, 212, 191, 0); }
+    }
+    .anim-fadeUp { animation: fadeUp 0.45s ease both; }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background: #34d399;
+      animation: glowPulse 1.8s infinite;
+    }
+    .grad-text {
+      background: linear-gradient(90deg, #2dd4bf, #fbbf24);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px -8px rgba(45, 212, 191, 0.25);
+    }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-open .faq-a { max-height: 220px; }
+    .scan-frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scan-frame div {
+      width: 70%;
+      height: 55%;
+      border: 2px solid #2dd4bf;
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+    }
+    #qr-reader video {
+      width: 100% !important;
+      height: auto !important;
+      object-fit: cover;
+    }
+    .bot-btn { animation: glowPulse 2.2s infinite; }
+  </style>
+  <!--
+    PRODUCTION NOTES:
+    1) GEMINI_API_KEY belongs ONLY in server.js / Render env vars, NEVER in this file. Frontend calls /api/chat.
+    2) Replace SUPABASE_ANON_KEY placeholder with your live Supabase anon key.
+    3) Place icon.png, logo.png, and manifest.json in the SAME folder as index.html.
+    4) Test camera scanning over HTTPS on your deployed domain.
+  -->
 </head>
+
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between relative overflow-x-hidden">
 
-<header id="mainHeader" class="w-full bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
-<div class="flex items-center space-x-3">
-<button onclick="toggleSidebar()" class="text-teal-400 p-1 rounded-lg hover:bg-slate-800 transition text-xl">&#9776;</button>
-<div class="flex items-center space-x-2">
-<img src="logo.png" alt="Logo" class="user-avatar-display w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
-<h1 class="text-lg font-bold tracking-wide"><span class="grad-text">ClickPeQR</span></h1>
-<span class="live-dot" title="Live"></span>
-</div>
-</div>
-<div class="flex items-center space-x-2">
-<button onclick="openPointsModal()" class="flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-full hover:bg-amber-500/25 transition">&#11088; <span id="headerPoints">0</span> pts</button>
-<button onclick="showNotificationModal()" class="relative p-2 text-slate-300 hover:text-teal-400 transition">&#128276;<span id="notifBadge" class="hidden absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span></button>
-<span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full font-semibold uppercase">Customer</span>
-</div>
-</header>
+  <!-- TOP HEADER -->
+  <header id="mainHeader" class="w-full bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 hidden">
+    <div class="flex items-center space-x-3">
+      <button type="button" onclick="toggleSidebar()" aria-label="Open Menu" class="text-teal-400 p-1 rounded-lg hover:bg-slate-800 text-xl">☰</button>
+      <div class="flex items-center space-x-2">
+        <img src="logo.png" alt="ClickPeQR Logo" class="user-avatar-display w-9 h-9 object-cover rounded-xl border border-teal-500/30 bg-slate-950">
+        <h1 class="text-lg font-bold"><span class="grad-text">ClickPeQR</span></h1>
+        <span class="live-dot"></span>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button type="button" onclick="openPointsModal()" class="flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-full">
+        ⭐ <span id="headerPoints">0</span> pts
+      </button>
+      <button type="button" onclick="showNotificationModal()" aria-label="Notifications" class="relative p-2 text-slate-300">
+        🔔
+        <span id="notifBadge" class="hidden absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+      </button>
+      <span id="userRoleHeader" class="text-[10px] bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full font-semibold uppercase">Customer</span>
+    </div>
+  </header>
 
-<div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleSidebar()"></div>
-<aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl overflow-y-auto">
-<div>
-<div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
-<div class="relative cursor-pointer" onclick="document.getElementById('dpFileInput').click()" title="Change picture">
-<img id="sidebarUserDP" src="logo.png" class="user-avatar-display w-12 h-12 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="DP">
-<span class="absolute bottom-0 right-0 bg-teal-500 text-slate-950 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">+</span>
-</div>
-<input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
-<div class="overflow-hidden">
-<h4 class="user-profile-name text-sm font-bold text-white truncate">User Name</h4>
-<p id="sidebarUserEmail" class="text-[10px] text-slate-400 truncate">email@example.com</p>
-<p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
-</div>
-</div>
-<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-3 mb-4 flex justify-between items-center card-hover cursor-pointer" onclick="toggleSidebar();openPointsModal()">
-<div><p class="text-[10px] text-slate-400 uppercase tracking-wide">Reward Points</p><p class="text-lg font-bold text-amber-300">&#11088; <span id="sidebarPoints">0</span></p></div>
-<span class="text-[10px] text-teal-300 font-semibold">View &rarr;</span>
-</div>
-<div id="dailyLimitDisplay" style="background:#020617;border:1px solid #1e293b;border-radius:0.75rem;padding:0.75rem;margin-bottom:1rem">
-<p style="font-size:10px;color:#94a3b8;text-transform:uppercase">Daily Limit (CBN Compliant)</p>
-<p style="font-size:12px;color:#fff;margin-top:4px"><span id="dailySpent">₦0</span> / <span id="dailyLimit">₦2,000,000</span></p>
-<div style="width:100%;height:6px;background:#1e293b;border-radius:9999px;margin-top:6px;overflow:hidden"><div id="dailyProgress" style="height:100%;background:#14b8a6;width:0%;transition:width 0.3s"></div></div>
-<p style="font-size:9px;color:#64748b;margin-top:4px">Remaining: <span id="dailyRemaining">₦2,000,000</span> | Customer 2M, Merchant 5M, Per Tx 5M max, 10M absolute max</p>
-</div>
-<nav class="space-y-1.5 text-sm"> 
-<a href="#" onclick="toggleSidebar();switchView('home')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#127968; <span>Home</span></a>
-<a href="#" onclick="toggleSidebar();openPointsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#11088; <span>Points & Rewards</span></a>
-<a href="#" onclick="toggleSidebar();showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128276; <span>Notifications</span></a>
-<a href="#" onclick="toggleSidebar();showTransactionHistory()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128202; <span>Transaction History</span></a>
-<a href="#" onclick="toggleSidebar();openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#127974; <span>Bank Accounts</span></a>
-<a href="#" onclick="toggleSidebar();openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#9881;&#65039; <span>Settings</span></a>
-<a href="#" onclick="toggleSidebar();showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#8505;&#65039; <span>About ClickPeQR</span></a>
-<a href="#" onclick="toggleSidebar();toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#128172; <span>Help & Support (24/7)</span></a>
-<a href="#" onclick="toggleSidebar();showComplaintModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300 transition">&#9888;&#65039; <span>Complaints</span></a>
-<a href="#" onclick="toggleSidebar();showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-200 transition">&#10067; <span>FAQ</span></a>
-</nav>
-</div>
-<div class="pt-4 border-t border-slate-800 space-y-2">
-<p class="text-center text-[10px] text-slate-500">Powered by <span class="text-teal-400 font-semibold"> monnify </span></p>
-<button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
-</div>
-</aside>
+  <!-- SIDEBAR DRAWER -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/70 z-50 hidden" onclick="toggleSidebar()"></div>
+  <aside id="appSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 overflow-y-auto">
+    <div>
+      <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-slate-800">
+        <div class="relative cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
+          <img id="sidebarUserDP" src="logo.png" alt="User Avatar" class="user-avatar-display w-12 h-12 rounded-full object-cover border-2 border-teal-500">
+          <span class="absolute bottom-0 right-0 bg-teal-500 text-slate-950 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">+</span>
+        </div>
+        <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="handleDPChange(event)">
+        <div class="min-w-0">
+          <h4 class="user-profile-name text-sm font-bold truncate">User Name</h4>
+          <p id="sidebarUserEmail" class="text-[10px] text-slate-400 truncate">email@example.com</p>
+          <p id="sidebarModeLabel" class="text-xs text-teal-400">Customer Mode</p>
+        </div>
+      </div>
 
-<main class="flex-grow flex items-center justify-center p-4">
-<div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl anim-fadeUp">
-<div class="text-center mb-5 flex flex-col items-center">
-<img src="logo.png" alt="Logo" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30 shadow-md">
-<h2 class="text-2xl font-bold"><span class="grad-text">ClickPeQR</span> <span class="text-teal-400">Network</span></h2>
-<p class="text-xs text-slate-400 mt-1">Secure Fintech & AI Payment Gateway</p>
-<div class="flex items-center gap-1 mt-2 text-[10px] text-teal-300"><span class="live-dot"></span> Live & Secure</div>
-</div>
-<div class="flex bg-slate-950 p-1 rounded-xl mb-4">
-<button onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition">Existing Login</button>
-<button onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">New KYC Register</button>
-</div>
-<div class="mb-4">
-<div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-<button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400 transition">Customer</button>
-<button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 transition">Merchant</button>
-</div>
-</div>
-<form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
-<div id="businessNameField" class="hidden">
-<input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Store / Business Name">
-</div>
-<div><input type="text" id="fullNameInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="Enter Full Name"></div>
-<div><input type="email" id="emailInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="name@example.com"></div>
-<div id="kycFields" class="space-y-3 hidden">
-<input type="text" id="ninInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="NIN Number (11 digits)">
-<input type="text" id="bvnInput" maxlength="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="BVN Number (11 digits)">
-</div>
-<div><input type="password" id="pinInput" required maxlength="6" inputmode="numeric" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-teal-500 outline-none" placeholder="6-digit PIN"></div>
-<button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-teal-400 transition shadow-lg">Sign In Securely</button>
-</form>
-<p class="text-center text-[10px] text-slate-500 mt-4">Powered by <span class="text-teal-400 font-semibold"> MONNIFY </span> &bull; RC-9810296</p>
-</div>
+      <div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-3 mb-4 flex justify-between items-center cursor-pointer" onclick="toggleSidebar(); openPointsModal()">
+        <div>
+          <p class="text-[10px] text-slate-400 uppercase">Reward Points</p>
+          <p class="text-lg font-bold text-amber-300">⭐ <span id="sidebarPoints">0</span></p>
+        </div>
+        <span class="text-[10px] text-teal-300">View →</span>
+      </div>
 
-<div id="dashboardScreen" class="w-full max-w-md hidden space-y-4 anim-fadeUp">
+      <nav class="space-y-1.5 text-sm">
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); switchView()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">🏠 <span>Home</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); openPointsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">⭐ <span>Points &amp; Rewards</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); showNotificationModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">🔔 <span>Notifications</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); showTransactionHistory()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">📊 <span>Transaction History</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); openAddBankModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">🏦 <span>Bank Accounts</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); openSettingsModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">⚙ <span>Settings</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); showAboutModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">ℹ <span>About</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); toggleAIBot()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">💬 <span>Help &amp; Support (24/7)</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); showComplaintModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-rose-300">⚠ <span>Complaints</span></a>
+        <a href="#" onclick="event.preventDefault(); toggleSidebar(); showFAQModal()" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800">❓ <span>FAQ</span></a>
+      </nav>
+    </div>
 
-<div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
-<div class="flex justify-between items-center">
-<h2 class="text-xl font-bold text-teal-400">Scan & Pay Hub</h2>
-<span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
-</div>
-<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-4 rounded-xl flex justify-between items-center card-hover cursor-pointer" onclick="openPointsModal()">
-<div><p class="text-[10px] text-slate-400 uppercase tracking-wide">My Reward Points</p><p class="text-xl font-bold text-amber-300">&#11088; <span class="customerPointsVal">0</span> pts</p><p class="text-[10px] text-slate-500">Earn on every payment</p></div>
-<span class="text-[11px] bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-full">Rewards</span>
-</div>
-<div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-<h4 class="text-xs font-semibold text-teal-300 mb-1">Your Permanent Customer QR</h4>
-<div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center mt-2"></div>
-<button onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">&#128260; Change Permanent QR</button>
-</div>
-<button onclick="openWorkingScanner()" class="w-full bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl text-left hover:bg-teal-500/20 transition flex items-center space-x-3 card-hover">
-<div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">&#128247;</div>
-<div><h4 class="text-sm font-bold text-white">Pay (Scan QR) - Direct Bank to Bank</h4><p class="text-xs text-slate-400">Instant settlement, no extra pages</p></div>
-</button>
-<button onclick="handleClickPayViaQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-amber-400 transition">Click &amp; Pay via QR — Upload QR Image</button>
-<button onclick="openManualQRInput()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-700 transition">Paste QR Code Text</button>
-</div>
+    <div class="pt-4 border-t border-slate-800">
+      <button type="button" onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-500/20 transition">Log Out</button>
+    </div>
+  </aside>
 
-<div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
-<div class="flex justify-between items-center">
-<h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
-<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
-</div>
-<div id="virtualSpeakerPanel" class="bg-slate-950 p-4 rounded-xl border border-teal-500/40 shadow-inner">
-<div class="flex justify-between items-center mb-2">
-<h4 class="text-xs font-bold text-teal-300 flex items-center gap-2">&#128266; Virtual Speaker - Live <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span></h4>
-<button onclick="enableSpeaker()" id="enableSpeakerBtn" class="text-[10px] bg-teal-500 text-slate-950 px-2 py-1 rounded-full font-bold">Enable Voice</button>
-</div>
-<div id="speakerStatus" class="text-[11px] text-slate-400 mb-2">Speaker idle - Waiting for payment...</div>
-<div id="speakerVisual" class="h-10 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
-<div id="speakerWave" class="hidden items-center gap-1">
-<span class="w-1 h-3 bg-teal-400 animate-bounce"></span><span class="w-1 h-6 bg-teal-400 animate-bounce"></span><span class="w-1 h-4 bg-teal-400 animate-bounce"></span><span class="w-1 h-7 bg-teal-400 animate-bounce"></span><span class="w-1 h-3 bg-teal-400 animate-bounce"></span>
-</div>
-<span id="speakerIdleText" class="text-[10px] text-slate-500">No audio - Click Enable Voice</span>
-</div>
-<div class="flex gap-2 mt-2">
-<button onclick="testSpeakerVoice()" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Test Voice</button>
-<button onclick="document.getElementById('speakerStatus').textContent='Speaker idle - Waiting...'" class="flex-1 text-[10px] bg-slate-800 text-slate-300 py-1.5 rounded-lg">Clear</button>
-</div>
-<div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
-</div>
-<div class="grid grid-cols-2 gap-3">
-<div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-<p class="text-[10px] text-slate-400 uppercase">Today&apos;s Sales</p>
-<h3 class="text-xl font-bold text-teal-300 mt-1" id="todaysSales">&#8358; 0.00</h3>
-</div>
-<div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-3 rounded-xl card-hover cursor-pointer" onclick="openPointsModal()">
-<p class="text-[10px] text-slate-400 uppercase">Reward Points</p>
-<p class="text-xl font-bold text-amber-300">&#11088; <span class="merchantPointsVal">0</span></p>
-</div>
-</div>
-<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center flex flex-col items-center">
-<h4 class="text-xs font-semibold text-teal-300 mb-1">Permanent Shop QR</h4>
-<p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR - Contains your bank for direct payment</p>
-<div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg shadow-inner min-h-[140px] min-w-[140px] flex justify-center items-center"></div>
-<button onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full hover:bg-slate-700 transition">&#128260; Change Permanent Shop QR</button>
-</div>
-<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-<input type="number" id="merchantDynAmt" placeholder="Enter Amount (&#8358;)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-xs text-white mb-2 outline-none">
-<button onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs hover:bg-amber-400 transition">Generate Dynamic QR</button>
-<div id="merchantQRResult" class="mt-2 hidden"><div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block shadow-inner"></div></div>
-</div>
-<button onclick="openWorkingScanner()" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-center text-xs font-semibold text-teal-300 hover:bg-slate-700 transition">&#128247; Scan Supplier QR</button>
-</div>
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow flex items-center justify-center p-4">
 
-<div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
-<div class="flex justify-between items-center mb-3">
-<h3 class="text-sm font-bold text-white">Linked Bank Accounts</h3>
-<button onclick="openAddBankModal()" class="text-xs bg-teal-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold">+ Link Bank</button>
-</div>
-<div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
-</div>
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl anim-fadeUp">
+      <div class="text-center mb-5 flex flex-col items-center">
+        <img src="logo.png" alt="ClickPeQR" class="w-16 h-16 object-cover mb-2 rounded-2xl border border-teal-500/30">
+        <h2 class="text-2xl font-bold"><span class="grad-text">ClickPeQR</span> <span class="text-teal-400">Network</span></h2>
+        <p class="text-xs text-slate-400 mt-1">Secure Fintech &amp; AI Payment Gateway</p>
+        <div class="flex items-center gap-1.5 mt-2 text-[10px] text-teal-300"><span class="live-dot"></span> Live &amp; Secure</div>
+      </div>
 
-</div>
-</main>
+      <div class="flex bg-slate-950 p-1 rounded-xl mb-4">
+        <button type="button" onclick="switchAuthTab('login')" id="loginTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950">Existing Login</button>
+        <button type="button" onclick="switchAuthTab('register')" id="registerTabBtn" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400">New KYC Register</button>
+      </div>
 
-<footer class="w-full text-center py-4 px-4">
-<p class="text-[11px] text-slate-500">Powered by <span class="text-teal-400 font-semibold"> MONNIFY </span> &bull; </p>
-<p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd. (9810296) </p>
-<p class="text-[10px] text-slate-600 mt-1">All Rights Reserved &copy; 2026 &bull; Secure Fintech & AI Payment Gateway</p>
-</footer>
+      <div class="mb-4">
+        <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button type="button" onclick="setPortalType('customer')" id="typeCustomerBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400">Customer</button>
+          <button type="button" onclick="setPortalType('merchant')" id="typeMerchantBtn" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400">Merchant</button>
+        </div>
+      </div>
 
-<!-- MODALS -->
-<div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center z-50 p-4">
-<div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
-<h3 class="text-sm font-bold text-white">Scan QR - Auto Detect Details Screen By Self - </h3>
-<p class="text-[11px] text-slate-400">Point camera at QR → auto shows merchant details screen by self — No picture pe click karne ki zarurat nahi — No Freeze</p>
-<div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-950 min-h-[200px] flex items-center justify-center relative"><p class="text-[11px] text-slate-500">Camera loading... No Freeze - Working Preview</p><div class="scan-frame"><div></div></div></div>
-<div id="scannerStatus" class="bg-teal-500/10 border border-teal-500/20 p-2 rounded-lg text-[10px] text-teal-300">Camera starting... Point at QR → Auto details screen by self - No Freeze - Working Preview</div>
-<input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
-<button onclick="handleClickPayViaQR()" class="w-full bg-amber-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Click &amp; Pay via QR — Upload QR Image</button>
-<button onclick="openManualQRInput()" class="w-full bg-slate-800 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Paste QR Code Text</button>
-<button onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Demo: Simulate Scan (Auto Details Screen By Self) - No Freeze</button>
-<button onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close - No Freeze Fix</button>
-</div>
-</div>
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <div id="businessNameField" class="hidden">
+          <input type="text" id="businessNameInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="Store / Business Name">
+        </div>
+        <div>
+          <input type="text" id="fullNameInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="Enter Full Name">
+        </div>
+        <div>
+          <input type="email" id="emailInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="name@example.com">
+        </div>
+        <div id="kycFields" class="space-y-3 hidden">
+          <input type="text" id="ninInput" maxlength="11" inputmode="numeric" pattern="\d{11}" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="NIN Number (11 digits)">
+          <input type="text" id="bvnInput" maxlength="11" inputmode="numeric" pattern="\d{11}" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="BVN Number (11 digits)">
+        </div>
+        <div>
+          <input type="password" id="pinInput" required maxlength="6" minlength="6" inputmode="numeric" pattern="\d{6}" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm outline-none focus:border-teal-500" placeholder="6-digit PIN">
+        </div>
+        <button type="submit" id="authSubmitBtn" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold py-3 rounded-xl transition">Sign In Securely</button>
+      </form>
+      <p class="text-center text-[10px] text-slate-500 mt-4">Powered by <span class="text-teal-400 font-semibold">MONNIFY</span> • RC-9810296</p>
+    </div>
 
-<div id="manualQRModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
-<h3 class="text-sm font-bold text-white">Paste QR Code Text</h3>
-<textarea id="manualQRText" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="Paste the exact QR JSON here"></textarea>
-<p class="text-[10px] text-slate-500">Paste QR from screenshot / gallery. Same auto details screen will open.</p>
-<button onclick="payFromManualQR()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm">Continue to Payment</button>
-<button onclick="document.getElementById('manualQRModal').classList.add('hidden');document.getElementById('manualQRModal').style.display='none'" class="w-full bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs">Cancel</button>
-</div>
-</div>
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboardScreen" class="w-full max-w-md hidden space-y-4 anim-fadeUp">
 
-<div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center z-[60] p-4">
-<div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900 anim-fadeUp">
-<div class="text-center">
-<div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">&#10003;</div>
-<h3 class="text-base font-bold text-slate-900">Confirm Payment - Direct</h3>
-<p class="text-[11px] text-slate-500 mt-1">Money moves directly bank to bank - fast & secure</p>
-</div>
-<div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left space-y-2">
-<div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
-<div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
-<div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">【entity-GTB - GTBank¦canonical_name=GTBank】</span></div>
-<div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
-</div>
-<div>
-<label class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
-<input type="number" id="confirmAmountInput" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold text-slate-900 outline-none mt-1" placeholder="510" value="510">
-</div>
-<button onclick="proceedToManualTransfer()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl text-sm hover:bg-teal-600 transition shadow-lg">Confirm & Pay Direct</button>
-<button onclick="document.getElementById('merchantConfirmModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
-</div>
-</div>
+      <!-- CUSTOMER PORTAL -->
+      <div id="customerPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-teal-400">Scan &amp; Pay Hub</h2>
+          <span class="bg-teal-500/20 text-teal-400 text-[10px] px-2 py-1 rounded font-bold">CUSTOMER</span>
+        </div>
 
-<div id="otpModal" style="position:fixed;inset:0;background:rgba(2,6,23,0.9);display:none;align-items:center;justify-content:center;z-index:80;padding:1rem">
-<div style="width:100%;max-width:24rem;background:#0f172a;border:1px solid #1e293b;padding:1.25rem;border-radius:1rem;display:flex;flex-direction:column;gap:1rem">
-<h3>Enter OTP - Mail OTP Input Box</h3>
-<input type="text" id="otpInputField" maxlength="6" placeholder="Enter 6-digit OTP from mail" style="text-align:center;letter-spacing:0.3rem;font-size:1.25rem;font-weight:700">
-<p>Email: <span id="otpEmailDisplay">your email</span> | Demo: 123456</p>
-<input type="password" id="otpPinInput" maxlength="6" placeholder="Enter PIN">
-<button onclick="verifyOTPAndPay()">Verify OTP & Pay - Real</button>
-<button onclick="closeOTPModal()">Cancel</button>
-<button onclick="bypassOTPForLevel2()">Continue WITHOUT OTP? (Level 2 only) - Yes possible</button>
-</div>
-</div>
+        <div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-4 rounded-xl flex justify-between items-center cursor-pointer" onclick="openPointsModal()">
+          <div>
+            <p class="text-[10px] text-slate-400 uppercase">My Reward Points</p>
+            <p class="text-xl font-bold text-amber-300">⭐ <span class="customerPointsVal">0</span> pts</p>
+          </div>
+          <span class="text-[11px] bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-full">Rewards</span>
+        </div>
 
-<div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[85] p-4">
-<div class="bg-slate-900 border border-amber-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4">
-<div class="text-center"><div id="highValueIcon" class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">⚠️</div>
-<h3 id="highValueTitle" class="text-base font-bold text-white">LEVEL 2 - 2M to 5M</h3>
-<p id="highValueDesc" class="text-[11px] text-slate-400">High value transaction - Extra security</p></div>
-<div id="highValueDetails" class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-[11px] text-slate-200">
-Level 1: &lt;2M normal | Level 2: 2M-5M PIN+OTP Rec (Possible without OTP? Yes) | Level 3: 5M-10M PIN+OTP Comp+Admin (Possible without OTP? No) | Per Tx 5M max, 10M absolute max, 10M-100M blocked - Govt NFIU
-</div>
-<div><label class="text-[11px] text-slate-400">Enter PIN</label><input type="password" id="highValuePinInput" maxlength="6" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white mt-1"></div>
-<div id="highValueOtpSection" style="display:none"><label class="text-[11px] text-slate-400">OTP from Email (Compulsory for Level 3)</label><input type="text" id="highValueOtpInput" maxlength="6" placeholder="6-digit OTP" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white mt-1">
-<button onclick="requestOTP()" class="w-full mt-2 bg-slate-800 text-teal-300 text-[11px] py-2 rounded-lg">Request OTP to Email</button></div>
-<div class="flex gap-2"><button onclick="proceedHighValuePayment()" class="flex-1 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl">Verify & Continue</button>
-<button onclick="closeHighValueModal()" class="flex-1 bg-slate-800 text-slate-300 py-3 rounded-xl">Cancel</button></div>
-</div>
-</div>
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+          <h4 class="text-xs font-semibold text-teal-300">Your Permanent Customer QR</h4>
+          <div id="customerPermanentQRContainer" class="p-3 bg-white inline-block rounded-lg min-h-[140px] min-w-[140px] mt-2"></div>
+          <div>
+            <button type="button" onclick="regenerateCustomerQR()" class="mt-3 text-[10px] bg-slate-800 border border-slate-700 text-teal-300 px-3 py-1.5 rounded-full">🔄 Change Permanent QR</button>
+          </div>
+        </div>
 
-<div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center z-[80] p-4">
-<div class="bg-slate-900 border border-rose-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
-<div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto">!</div>
-<h3 class="text-base font-bold text-white">Daily Limit Reached - CBN Compliant</h3>
-<p id="dailyLimitMsg" class="text-[11px] text-slate-400">Customer 2M, Merchant 5M, Per Tx 5M max</p>
-<div class="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl text-[11px] text-slate-200">Customer daily 2M ✅ | Merchant daily 5M ✅ | Per Tx 5M max ✅ | 10M-100M Blocked - Bank transfer use karo</div>
-<button onclick="document.getElementById('dailyLimitModal').classList.add('hidden')" class="w-full bg-slate-800 text-white py-3 rounded-xl">OK</button>
-</div>
-</div>
+        <button type="button" onclick="openWorkingScanner()" class="w-full bg-teal-500/10 hover:bg-teal-500/15 border border-teal-500/30 p-4 rounded-xl text-left flex items-center space-x-3 transition">
+          <div class="bg-teal-500 text-slate-950 p-2.5 rounded-lg font-bold">📷</div>
+          <div>
+            <h4 class="text-sm font-bold">Pay (Scan QR) - Direct Bank to Bank</h4>
+            <p class="text-xs text-slate-400">Instant settlement, no extra pages</p>
+          </div>
+        </button>
 
-<div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex flex-col z-[70] overflow-y-auto">
-<div class="bg-teal-50 border-b border-teal-100 p-3 text-center"><p class="text-[12px] text-slate-700"><span class="font-bold">Direct Transfer - Bank to Bank</span></p></div>
-<div class="p-4 flex-1">
-<h2 class="text-[15px] font-semibold text-slate-800 mb-4">Confirm Direct Transfer</h2>
-<div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
-<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Amount</p><span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span></div>
-<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Account Number</p><span id="manualAccountNumber" class="text-[20px] font-bold tracking-wide text-slate-900">0638090889</span></div>
-<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Bank Name</p><p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900 mt-1">GTBank - GTB (058)</p></div>
-<div class="p-4"><p class="text-[11px] text-slate-500 uppercase tracking-wide">Beneficiary</p><p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900 mt-1">RUBY GARG / ZENOVA PEAK TECH HUB</p></div>
-</div>
-<div class="mt-6 space-y-3">
-<button onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl text-[15px] hover:bg-slate-900 transition">I Have Paid - Confirm</button>
-<button onclick="document.getElementById('manualTransferModal').classList.add('hidden')" class="w-full text-teal-600 text-[14px] font-semibold py-2">Cancel</button>
-</div>
-</div>
-</div>
+        <button type="button" onclick="handleClickPayViaQR()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition">Click &amp; Pay via QR — Upload QR Image</button>
+        <button type="button" onclick="openManualQRInput()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl text-xs font-semibold text-teal-300 transition">Paste QR Code Text</button>
+      </div>
 
-<div id="addBankModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
-<h3 class="text-base font-bold text-white">Link Bank Account</h3>
-<p class="text-[11px] text-slate-400">Your account name is verified live with the bank before saving.</p>
-<select id="bankSelectDropdown" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none"><option value="">Select Bank</option></select>
-<input type="text" id="accountNumberInput" maxlength="10" inputmode="numeric" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none" placeholder="10-digit account number">
-<input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 font-semibold outline-none" placeholder="Account holder name appears here after verification">
-<div class="flex space-x-2">
-<button onclick="closeAddBankModal()" class="flex-1 bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancel</button>
-<button onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Verify & Save</button>
-</div>
-</div>
-</div>
+      <!-- MERCHANT PORTAL -->
+      <div id="merchantPortalView" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-amber-400">Merchant Terminal</h2>
+          <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-1 rounded font-bold">MERCHANT</span>
+        </div>
 
-<div id="notificationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Notifications <span class="text-[10px] text-slate-500 font-normal">(last 3 months)</span></h3><button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div id="notificationListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs"></div>
-</div>
-</div>
+        <div class="bg-slate-950 p-4 rounded-xl border border-teal-500/40">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-xs font-bold text-teal-300 flex items-center gap-1.5">
+              🔊 Virtual Speaker - Live
+              <span id="speakerLiveDot" class="w-2 h-2 bg-rose-500 rounded-full animate-pulse inline-block"></span>
+            </h4>
+            <button type="button" onclick="enableSpeaker()" id="enableSpeakerBtn" class="text-[10px] bg-teal-500 text-slate-950 px-2.5 py-1 rounded-full font-bold">Enable Voice</button>
+          </div>
+          <div id="speakerStatus" class="text-[11px] text-slate-400 mb-2">Speaker idle - Waiting for payment...</div>
+          <div class="flex gap-2">
+            <button type="button" onclick="testSpeakerVoice()" class="flex-1 text-[10px] bg-slate-800 hover:bg-slate-700 py-1.5 rounded-lg">Test Voice</button>
+            <button type="button" onclick="document.getElementById('speakerStatus').textContent='Speaker idle - Waiting for payment...'" class="flex-1 text-[10px] bg-slate-800 hover:bg-slate-700 py-1.5 rounded-lg">Clear</button>
+          </div>
+          <div id="lastPaymentLog" class="mt-2 text-[10px] text-slate-500"></div>
+        </div>
 
-<div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Transaction History <span class="text-[10px] text-slate-500 font-normal">(last 3 months)</span></h3><button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div id="transactionListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs text-slate-300"></div>
-</div>
-</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <p class="text-[10px] text-slate-400 uppercase">Today's Sales</p>
+            <h3 class="text-xl font-bold text-teal-300 mt-1" id="todaysSales">₦ 0.00</h3>
+          </div>
+          <div class="bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 p-3 rounded-xl cursor-pointer" onclick="openPointsModal()">
+            <p class="text-[10px] text-slate-400 uppercase">Reward Points</p>
+            <p class="text-xl font-bold text-amber-300">⭐ <span class="merchantPointsVal">0</span></p>
+          </div>
+        </div>
 
-<div id="aboutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-3 max-h-[85vh] overflow-y-auto anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">About ClickPeQR</h3><button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div class="text-center"><img src="logo.png" class="w-14 h-14 rounded-2xl mx-auto mb-2 border border-teal-500/30" alt="logo"><p class="font-bold text-white text-sm">ClickPeQR</p><p class="text-[10px] text-slate-500">by KRISHNYANSH ZENOVA PEAKS LTD. &bull; RC-9810296</p></div>
-<div><p class="font-bold text-teal-300 mb-1">Why we built ClickPeQR</p><p class="text-slate-400"> businesses in Nigeria lose sales every day to slow transfers, failed payments and complicated checkout pages. We built ClickPeQR so any shop owner can receive money in seconds with one simple QR - no machine, no stress, no technical knowledge needed.</p></div>
-<div><p class="font-bold text-teal-300 mb-1">Who it is for</p><p class="text-slate-400">Market traders, small shops, restaurants, service providers - and their customers who want to pay fast and safely. If you have a bank account, you can use ClickPeQR.</p></div>
-<div><p class="font-bold text-teal-300 mb-1">Our Vision</p><p class="text-slate-400">A Nigeria where every small business - from Lagos to Kano - can accept digital payments as easily as receiving cash.</p></div>
-<div><p class="font-bold text-teal-300 mb-1">Our Mission</p><p class="text-slate-400">To give every merchant instant, secure, low-cost payment tools with real-time voice confirmation, and to reward every customer and merchant with points on every transaction.</p></div>
-<p class="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-800">Powered by FLUTTERWAVE & MONNIFY &bull; Designed by Krishnyansh Zenova Peaks Ltd<br>All Rights Reserved &copy; 2026</p>
-</div>
-</div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <h4 class="text-xs font-semibold text-teal-300">Permanent Shop QR</h4>
+          <p id="merchantStoreNameLabel" class="text-[10px] text-slate-400 mb-2">Store QR</p>
+          <div id="permanentShopQRContainer" class="p-3 bg-white inline-block rounded-lg min-h-[140px] min-w-[140px]"></div>
+          <div>
+            <button type="button" onclick="regenerateMerchantQR()" class="mt-3 text-[10px] bg-slate-800 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-full">🔄 Change Permanent Shop QR</button>
+          </div>
+        </div>
 
-<div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3 anim-fadeUp">
-  <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-teal-400">Edit Profile</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div class="flex items-center gap-3">
-<img id="settingsAvatarPreview" src="logo.png" class="user-avatar-display w-14 h-14 rounded-full object-cover border-2 border-teal-500 bg-slate-950" alt="avatar">
-<button onclick="document.getElementById('dpFileInput').click()" class="text-[11px] bg-slate-800 text-teal-300 px-3 py-2 rounded-xl">Change Picture</button>
-</div>
-<div class="space-y-3 text-xs">
-<div><label class="text-slate-400">Full Name</label><input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Full Name"></div>
-<div><label class="text-slate-400">Email</label><input type="email" id="settingsEmail" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Email address"></div>
-<div id="settingsBizField" class="hidden"><label class="text-slate-400">Business Name</label><input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" placeholder="Business Name"></div>
-<div><label class="text-slate-400">Phone</label><input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white outline-none mt-1" value="+2349067862223"></div>
-<button onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl hover:bg-teal-400 transition">Save Changes</button>
-</div>
-</div>
-</div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <input type="number" id="merchantDynAmt" min="1" placeholder="Enter Amount (₦)" class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs outline-none mb-2 focus:border-amber-500">
+          <button type="button" onclick="generateMerchantDynamicQR()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-lg text-xs transition">Generate Dynamic QR</button>
+          <div id="merchantQRResult" class="mt-3 hidden">
+            <div id="dynamicQRContainer" class="p-3 bg-white rounded-lg inline-block"></div>
+          </div>
+        </div>
 
-<div id="faqModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 max-h-[85vh] overflow-y-auto anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h3 class="text-sm font-bold text-teal-400">Frequently Asked Questions</h3><button onclick="document.getElementById('faqModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div id="faqList" class="space-y-2"></div>
-</div>
-</div>
+        <button type="button" onclick="openWorkingScanner()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl text-xs font-semibold text-teal-300 transition">📷 Scan Supplier QR</button>
+      </div>
 
-<div id="complaintModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-rose-400">&#9888;&#65039; Complaint & Support</h3><button onclick="document.getElementById('complaintModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<p class="text-[11px] text-slate-400">Facing an issue? Reach us directly on any channel below - we respond within 24 hours.</p>
-<a href="https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help" target="_blank" class="flex items-center gap-3 bg-green-500/10 border border-green-500/30 p-3 rounded-xl hover:bg-green-500/20 transition">
-<span class="text-xl">&#128241;</span><div><p class="text-xs font-bold text-white"> WhatsApp Us</p><p class="text-[11px] text-green-300">+234 906 786 2223</p></div>
-</a>
-<a href="mailto:Info@krishnyanshzenovapeaks.com?subject=ClickPeQR%20Complaint" class="flex items-center gap-3 bg-slate-950 border border-slate-800 p-3 rounded-xl hover:border-teal-500/40 transition">
-<span class="text-xl">&#128231;</span><div><p class="text-xs font-bold text-white">Email Us</p><p class="text-[11px] text-teal-300 break-all">Info@krishnyanshzenovapeaks.com</p></div>
-</a>
-<a href="mailto:Krishnyanshzenovapeaksltd@gmail.com?subject=ClickPeQR%20Complaint" class="flex items-center gap-3 bg-slate-950 border border-slate-800 p-3 rounded-xl hover:border-teal-500/40 transition">
-<span class="text-xl">&#128231;</span><div><p class="text-xs font-bold text-white">Email Us (Alt)</p><p class="text-[11px] text-teal-300 break-all">Krishnyanshzenovapeaksltd@gmail.com</p></div>
-</a>
-<button onclick="toggleAIBot();document.getElementById('complaintModal').classList.add('hidden')" class="w-full bg-teal-500/10 border border-teal-500/30 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Chat with AI Assistant (24/7)</button>
-</div>
-</div>
+      <!-- LINKED BANK ACCOUNTS -->
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-bold">Linked Bank Accounts</h3>
+          <button type="button" onclick="openAddBankModal()" class="text-xs bg-teal-500 hover:bg-teal-400 text-slate-950 px-2.5 py-1 rounded-lg font-bold transition">+ Link Bank</button>
+        </div>
+        <div id="linkedBanksListContainer" class="space-y-2 max-h-40 overflow-y-auto"></div>
+      </div>
 
-<div id="pointsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-<div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2"><h3 class="text-sm font-bold text-amber-300">&#11088; Points & Rewards</h3><button onclick="document.getElementById('pointsModal').classList.add('hidden')" class="text-slate-400 text-xs">&#10005;</button></div>
-<div class="text-center bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-4">
-<p class="text-[10px] text-slate-400 uppercase tracking-wide">Your Balance</p>
-<p class="text-3xl font-bold text-amber-300">&#11088; <span id="pointsBalanceBig">0</span></p>
-<p class="text-[10px] text-slate-500 mt-1">100 pts = &#8358;10 cashback value</p>
-</div>
-<div class="text-[11px] text-slate-400 space-y-1">
-<p class="font-bold text-white">How it works</p>
-<p>&bull; Customers earn <b class="text-amber-300">1 pt per &#8358;100</b> on every successful payment.</p>
-<p>&bull; Merchants earn <b class="text-amber-300">2 pts per &#8358;100</b> on every sale received.</p>
-<p>&bull; Points never expire and are saved to your account.</p>
-</div>
-<div><p class="text-xs font-bold text-white mb-2">Points History</p><div id="pointsHistoryList" class="space-y-2 max-h-40 overflow-y-auto text-[11px]"></div></div>
-</div>
-</div>
+    </div>
+  </main>
 
-<div class="fixed bottom-4 right-4 z-40"><button onclick="toggleAIBot()" class="bg-teal-500 text-slate-950 p-3.5 rounded-full shadow-2xl font-bold flex items-center justify-center hover:scale-105 transition text-xl">&#129302;</button></div>
-<div id="aiBotModal" class="fixed bottom-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex flex-col h-96 anim-fadeUp">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2"><h4 class="text-xs font-bold text-teal-400">ClickPeQR Assistant - 24/7</h4><button onclick="toggleAIBot()" class="text-slate-400 text-xs">&#10005;</button></div>
-<div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1"><div class="bg-slate-950 p-2.5 rounded-xl">Hello! I&apos;m your ClickPeQR assistant. Ask me anything about payments, QR codes, bank linking, points, or support. &#128522;</div></div>
-<div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1"><input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs text-white outline-none" onkeypress="if(event.key==='Enter')sendBotMessage()"><button onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button></div>
-</div>
-<script>
-const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
-let supabaseClient = null;
-try { if(window.supabase){ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch(e){ console.log('Supabase deferred', e); supabaseClient = null; }
-if(!supabaseClient){
-  var _stubRes = { data: [], error: null };
-  var _chain = {};
-  _chain.select = function(){ return _chain; };
-  _chain.eq = function(){ return _chain; };
-  _chain.order = function(){ return _chain; };
-  _chain.then = function(fn){ return Promise.resolve(_stubRes).then(fn); };
-  _chain.catch = function(fn){ return Promise.resolve(_stubRes).catch(fn); };
-  supabaseClient = {
-    from: function(){
-      return {
-        select: function(){ return _chain; },
-        insert: function(){ return Promise.resolve(_stubRes); },
-        update: function(){ return _chain; },
-        upsert: function(){ return Promise.resolve(_stubRes); },
-        delete: function(){ return _chain; }
+  <!-- FOOTER -->
+  <footer class="w-full text-center py-4 px-4">
+    <p class="text-[11px] text-slate-500">Powered by <span class="text-teal-400 font-semibold">MONNIFY</span></p>
+    <p class="text-[10px] text-slate-500 mt-1">Designed by Krishnyansh Zenova Peaks Ltd. (RC-9810296)</p>
+    <p class="text-[10px] text-slate-600 mt-1">All Rights Reserved © 2026</p>
+  </footer>
+
+  <!-- ===================== MODALS ===================== -->
+
+  <!-- QR SCANNER MODAL -->
+  <div id="scannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex-col items-center justify-center z-50 p-4">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-3 anim-fadeUp">
+      <h3 class="text-sm font-bold">Scan QR - Auto Detect</h3>
+      <p class="text-[11px] text-slate-400">Point your camera at a QR code — merchant details will load automatically.</p>
+      <div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-950 min-h-[200px] flex items-center justify-center relative">
+        <p class="text-[11px] text-slate-500">Camera loading...</p>
+        <div class="scan-frame"><div></div></div>
+      </div>
+      <div id="scannerStatus" class="bg-teal-500/10 border border-teal-500/20 p-2 rounded-lg text-[10px] text-teal-300">Camera starting...</div>
+      <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
+      <button type="button" onclick="handleClickPayViaQR()" class="w-full bg-amber-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Click &amp; Pay via QR — Upload QR Image</button>
+      <button type="button" onclick="openManualQRInput()" class="w-full bg-slate-800 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Paste QR Code Text</button>
+      <button type="button" onclick="simulateSuccessfulScan()" class="w-full bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Demo: Simulate Scan</button>
+      <button type="button" onclick="closeScannerModal()" class="w-full bg-rose-500/20 text-rose-400 py-2.5 rounded-xl text-xs font-bold">Close</button>
+    </div>
+  </div>
+
+  <!-- MANUAL QR PASTE MODAL -->
+  <div id="manualQRModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-[60] p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+      <h3 class="text-sm font-bold">Paste QR Code Text</h3>
+      <textarea id="manualQRText" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-teal-500" placeholder="Paste the exact QR JSON or account number here"></textarea>
+      <button type="button" onclick="payFromManualQR()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-sm">Continue to Payment</button>
+      <button type="button" onclick="hideModal('manualQRModal')" class="w-full bg-slate-800 py-2.5 rounded-xl text-xs">Cancel</button>
+    </div>
+  </div>
+
+  <!-- MERCHANT CONFIRM MODAL -->
+  <div id="merchantConfirmModal" class="fixed inset-0 bg-slate-950/85 hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white w-full max-w-sm p-5 rounded-2xl space-y-4 text-slate-900 anim-fadeUp">
+      <div class="text-center">
+        <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white font-bold">✓</div>
+        <h3 class="text-base font-bold">Confirm Payment - Direct</h3>
+        <p class="text-[11px] text-slate-500 mt-1">Money moves directly bank to bank</p>
+      </div>
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+        <div class="flex justify-between"><span class="text-[11px] text-slate-500">Merchant Shop</span><span id="confirmShopName" class="text-xs font-bold">ZENOVA PEAK TECH HUB</span></div>
+        <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Name</span><span id="confirmAccountName" class="text-xs font-bold">RUBY GARG</span></div>
+        <div class="flex justify-between"><span class="text-[11px] text-slate-500">Bank</span><span id="confirmBankName" class="text-xs">GTBank</span></div>
+        <div class="flex justify-between"><span class="text-[11px] text-slate-500">Customer</span><span id="confirmCustomerName" class="text-xs">You</span></div>
+        <div class="flex justify-between"><span class="text-[11px] text-slate-500">Account Number</span><span id="confirmAccountNumber" class="text-xs font-bold">0638090889</span></div>
+      </div>
+      <div>
+        <label for="confirmAmountInput" class="text-[11px] text-slate-600 font-semibold">Enter Amount (NGN)</label>
+        <input type="number" id="confirmAmountInput" min="1" class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold outline-none mt-1" placeholder="510" value="510">
+      </div>
+      <button type="button" onclick="proceedToManualTransfer()" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 rounded-xl text-sm transition">Confirm &amp; Pay Direct</button>
+      <button type="button" onclick="hideModal('merchantConfirmModal')" class="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs">Cancel</button>
+    </div>
+  </div>
+
+  <!-- OTP MODAL (Standardized Tailwind Styling) -->
+  <div id="otpModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-[80] p-4">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col gap-3">
+      <h3 class="text-base font-bold text-teal-400">Enter OTP</h3>
+      <input type="text" id="otpInputField" maxlength="6" inputmode="numeric" placeholder="6-digit OTP" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-center tracking-[0.3rem] text-xl font-bold text-white outline-none">
+      <p class="text-[11px] text-slate-400 text-center">Email: <span id="otpEmailDisplay" class="text-slate-200">your email</span> | Demo: <span class="text-teal-400 font-mono">123456</span></p>
+      <input type="password" id="otpPinInput" maxlength="6" inputmode="numeric" placeholder="Enter 6-digit PIN" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white outline-none">
+      <button type="button" onclick="verifyOTPAndPay()" class="w-full bg-teal-500 text-slate-950 font-bold py-3 rounded-xl text-xs">Verify OTP &amp; Pay</button>
+      <button type="button" onclick="closeOTPModal()" class="w-full bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs">Cancel</button>
+      <button type="button" onclick="bypassOTPForLevel2()" class="w-full bg-amber-500/15 border border-amber-500/30 text-amber-300 py-2 rounded-xl text-[11px]">Continue WITHOUT OTP (Level 2 only)</button>
+    </div>
+  </div>
+
+  <!-- HIGH VALUE SECURITY MODAL -->
+  <div id="highValueSecurityModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-[85] p-4">
+    <div class="bg-slate-900 border border-amber-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4">
+      <div class="text-center">
+        <h3 id="highValueTitle" class="text-base font-bold text-amber-400">LEVEL 2 - ₦2M to ₦5M</h3>
+        <p class="text-[11px] text-slate-400">High value transaction - Extra security</p>
+      </div>
+      <div id="highValueDetails" class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-[11px] text-amber-200">
+        Level 1: &lt;₦2M normal | Level 2: ₦2M–₦5M PIN+OTP | Level 3: ₦5M–₦10M PIN+OTP Compulsory
+      </div>
+      <div>
+        <label for="highValuePinInput" class="text-[11px] text-slate-400">Enter 6-digit PIN</label>
+        <input type="password" id="highValuePinInput" maxlength="6" inputmode="numeric" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl mt-1 outline-none">
+      </div>
+      <div id="highValueOtpSection" class="hidden">
+        <label for="highValueOtpInput" class="text-[11px] text-slate-400">OTP from Email</label>
+        <input type="text" id="highValueOtpInput" maxlength="6" inputmode="numeric" placeholder="6-digit OTP" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl mt-1 outline-none">
+        <button type="button" onclick="requestOTP()" class="w-full mt-2 bg-slate-800 text-teal-300 text-[11px] py-2 rounded-lg">Request OTP to Email</button>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" onclick="proceedHighValuePayment()" class="flex-1 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl text-xs">Verify &amp; Continue</button>
+        <button type="button" onclick="closeHighValueModal()" class="flex-1 bg-slate-800 py-3 rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY LIMIT MODAL -->
+  <div id="dailyLimitModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-[80] p-4">
+    <div class="bg-slate-900 border border-rose-500/30 w-full max-w-sm p-5 rounded-2xl space-y-4 text-center">
+      <h3 class="text-base font-bold text-rose-400">Daily Limit Reached</h3>
+      <p id="dailyLimitMsg" class="text-[11px] text-slate-400">Customer limit: ₦2,000,000 | Merchant limit: ₦5,000,000</p>
+      <button type="button" onclick="hideModal('dailyLimitModal')" class="w-full bg-slate-800 py-3 rounded-xl text-xs">OK</button>
+    </div>
+  </div>
+
+  <!-- DIRECT TRANSFER CONFIRMATION MODAL -->
+  <div id="manualTransferModal" class="fixed inset-0 bg-white hidden flex-col z-[70] overflow-y-auto">
+    <div class="bg-teal-50 p-3 text-center">
+      <p class="text-[12px] text-slate-700 font-bold">Direct Transfer - Bank to Bank</p>
+    </div>
+    <div class="p-4 flex-1 max-w-md mx-auto w-full">
+      <h2 class="text-[15px] font-semibold text-slate-800 mb-4">Confirm Direct Transfer</h2>
+      <div class="border border-slate-200 rounded-xl divide-y">
+        <div class="p-4">
+          <p class="text-[11px] text-slate-500">Amount</p>
+          <span id="manualAmountDisplay" class="text-[20px] font-bold text-slate-900">NGN 510</span>
+        </div>
+        <div class="p-4">
+          <p class="text-[11px] text-slate-500">Account Number</p>
+          <span id="manualAccountNumber" class="text-[20px] font-bold text-slate-900">0638090889</span>
+        </div>
+        <div class="p-4">
+          <p class="text-[11px] text-slate-500">Bank Name</p>
+          <p id="manualBankNameDisplay" class="text-[16px] font-semibold text-slate-900">GTBank (058)</p>
+        </div>
+        <div class="p-4">
+          <p class="text-[11px] text-slate-500">Beneficiary</p>
+          <p id="manualBeneficiaryName" class="text-[16px] font-bold text-slate-900">RUBY GARG / ZENOVA PEAK TECH HUB</p>
+        </div>
+      </div>
+      <div class="mt-6 space-y-3">
+        <button type="button" onclick="handleManualPaid()" class="w-full bg-slate-950 text-white font-bold py-4 rounded-xl">I Have Paid - Confirm</button>
+        <button type="button" onclick="hideModal('manualTransferModal')" class="w-full text-teal-600 font-semibold py-2">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD BANK MODAL -->
+  <div id="addBankModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+      <h3 class="text-base font-bold">Link Bank Account</h3>
+      <select id="bankSelectDropdown" onchange="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs outline-none">
+        <option value="">Select Bank</option>
+      </select>
+      <input type="text" id="accountNumberInput" maxlength="10" inputmode="numeric" oninput="verifyBankAccount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs outline-none" placeholder="10-digit account number">
+      <input type="text" id="accountNameInput" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-teal-400 outline-none" placeholder="Account holder name appears here">
+      <div class="flex space-x-2">
+        <button type="button" onclick="closeAddBankModal()" class="flex-1 bg-slate-800 py-2.5 rounded-xl text-xs">Cancel</button>
+        <button type="button" onclick="saveNewBankAccount()" class="flex-1 bg-teal-500 text-slate-950 py-2.5 rounded-xl text-xs font-bold">Verify &amp; Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS MODAL -->
+  <div id="notificationModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-teal-400">Notifications</h3>
+        <button type="button" onclick="hideModal('notificationModal')" class="text-slate-400 text-xs">✕</button>
+      </div>
+      <div id="notificationListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION HISTORY MODAL -->
+  <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-teal-400">Transaction History</h3>
+        <button type="button" onclick="hideModal('transactionModal')" class="text-slate-400 text-xs">✕</button>
+      </div>
+      <div id="transactionListContainer" class="space-y-2 max-h-72 overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+
+  <!-- ABOUT MODAL -->
+  <div id="aboutModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs text-slate-300 space-y-3 max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between">
+        <h3 class="text-sm font-bold text-teal-400">About ClickPeQR</h3>
+        <button type="button" onclick="hideModal('aboutModal')" class="text-slate-400">✕</button>
+      </div>
+      <div class="text-center">
+        <img src="logo.png" alt="ClickPeQR" class="w-14 h-14 rounded-2xl mx-auto mb-2">
+        <p class="font-bold text-white">ClickPeQR</p>
+        <p class="text-[10px] text-slate-500">by KRISHNYANSH ZENOVA PEAKS LTD. • RC-9810296</p>
+      </div>
+      <p class="text-slate-400">ClickPeQR lets any shop receive money in seconds with one simple QR — no POS machine, no wallet lock-in, direct bank-to-bank settlement.</p>
+      <p class="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-800">Powered by FLUTTERWAVE &amp; MONNIFY</p>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-3">
+      <div class="flex justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-teal-400">Edit Profile</h3>
+        <button type="button" onclick="hideModal('settingsModal')" class="text-slate-400">✕</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <img id="settingsAvatarPreview" src="logo.png" alt="Profile Preview" class="user-avatar-display w-14 h-14 rounded-full object-cover border-2 border-teal-500">
+        <button type="button" onclick="document.getElementById('dpFileInput').click()" class="text-[11px] bg-slate-800 text-teal-300 px-3 py-2 rounded-xl">Change Picture</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label for="settingsFullName" class="text-slate-400">Full Name</label>
+          <input type="text" id="settingsFullName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl outline-none mt-1">
+        </div>
+        <div>
+          <label for="settingsEmail" class="text-slate-400">Email</label>
+          <input type="email" id="settingsEmail" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl outline-none mt-1">
+        </div>
+        <div id="settingsBizField" class="hidden">
+          <label for="settingsBizName" class="text-slate-400">Business Name</label>
+          <input type="text" id="settingsBizName" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl outline-none mt-1">
+        </div>
+        <div>
+          <label for="settingsPhone" class="text-slate-400">Phone</label>
+          <input type="text" id="settingsPhone" class="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl outline-none mt-1" value="+2349067862223">
+        </div>
+        <button type="button" onclick="saveProfileSettings()" class="w-full bg-teal-500 text-slate-950 font-bold py-2.5 rounded-xl">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ MODAL -->
+  <div id="faqModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-5 rounded-2xl text-xs max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between border-b border-slate-800 pb-2 mb-2">
+        <h3 class="text-sm font-bold text-teal-400">FAQ</h3>
+        <button type="button" onclick="hideModal('faqModal')" class="text-slate-400">✕</button>
+      </div>
+      <div id="faqList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- COMPLAINT MODAL -->
+  <div id="complaintModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-rose-400">Complaint &amp; Support</h3>
+        <button type="button" onclick="hideModal('complaintModal')" class="text-slate-400">✕</button>
+      </div>
+      <a href="https://wa.me/2349067862223?text=Hello%20ClickPeQR%20Support" target="_blank" rel="noopener noreferrer" class="block bg-green-500/10 border border-green-500/30 p-3 rounded-xl text-xs">WhatsApp: +234 906 786 2223</a>
+      <a href="mailto:info@krishnyanshzenovapeaks.com" class="block bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs">Email: info@krishnyanshzenovapeaks.com</a>
+      <button type="button" onclick="toggleAIBot(); hideModal('complaintModal')" class="w-full bg-teal-500/10 border border-teal-500/30 text-teal-300 py-2.5 rounded-xl text-xs font-bold">Chat with AI Assistant (24/7)</button>
+    </div>
+  </div>
+
+  <!-- POINTS MODAL -->
+  <div id="pointsModal" class="fixed inset-0 bg-slate-950/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-amber-300">⭐ Points &amp; Rewards</h3>
+        <button type="button" onclick="hideModal('pointsModal')" class="text-slate-400">✕</button>
+      </div>
+      <div class="text-center bg-gradient-to-r from-amber-500/15 to-teal-500/15 border border-amber-500/25 rounded-xl p-4">
+        <p class="text-[10px] text-slate-400">Your Balance</p>
+        <p class="text-3xl font-bold text-amber-300">⭐ <span id="pointsBalanceBig">0</span></p>
+        <p class="text-[10px] text-slate-500">100 pts = ₦10 cashback</p>
+      </div>
+      <div>
+        <p class="text-xs font-bold mb-2">Points History</p>
+        <div id="pointsHistoryList" class="space-y-2 max-h-40 overflow-y-auto text-[11px]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING AI BOT -->
+  <div class="fixed bottom-4 right-4 z-40">
+    <button type="button" onclick="toggleAIBot()" title="ClickPeQR Bot" class="bot-btn w-14 h-14 rounded-full shadow-2xl flex items-center justify-center overflow-hidden border-2 border-teal-400 bg-slate-900 p-0 hover:scale-105 transition">
+      <img src="icon.png" alt="Bot" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span style="display:none; font-size:22px;">🤖</span>
+    </button>
+  </div>
+
+  <div id="aiBotModal" class="fixed bottom-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden z-50 p-4 flex-col h-96 anim-fadeUp">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+      <h4 class="text-xs font-bold text-teal-400 flex items-center gap-2">
+        <img src="icon.png" alt="Bot" class="w-7 h-7 rounded-full object-cover border border-teal-400" onerror="this.style.display='none'">
+        <span>ClickPeQR Bot - 24/7 <span id="botStatusDot" class="text-[9px] text-emerald-400">● Online</span></span>
+      </h4>
+      <button type="button" onclick="toggleAIBot()" class="text-slate-400 text-xs">✕</button>
+    </div>
+    <div id="botChatMessages" class="flex-grow overflow-y-auto space-y-2 text-xs text-slate-300 pr-1">
+      <div class="bg-slate-950 p-2.5 rounded-xl">Hello! I'm ClickPeQR Bot. Ask me about payments, QR codes, bank linking, reward points, or support. 😊</div>
+    </div>
+    <div class="flex mt-2 pt-2 border-t border-slate-800 space-x-1">
+      <input type="text" id="botInputText" placeholder="Ask anything..." class="flex-grow bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs outline-none focus:border-teal-500" onkeydown="if(event.key==='Enter') sendBotMessage()">
+      <button type="button" onclick="sendBotMessage()" class="bg-teal-500 text-slate-950 px-3 rounded-xl text-xs font-bold">Send</button>
+    </div>
+  </div>
+
+  <!-- ===================== APPLICATION SCRIPT ===================== -->
+  <script>
+    // 1. SUPABASE & CONSTANTS
+    const SUPABASE_URL = 'https://pkzyvyfdgcpzteqexkc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.placeholder';
+
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      supabaseClient = null;
+    }
+
+    if (!supabaseClient) {
+      const stubRes = { data: [], error: null };
+      const chain = {
+        select() { return chain; },
+        eq() { return chain; },
+        order() { return chain; },
+        then(fn) { return Promise.resolve(stubRes).then(fn); },
+        catch(fn) { return Promise.resolve(stubRes).catch(fn); }
       };
-    },
-    channel: function(){ return { on: function(){ return { subscribe: function(){} }; } }; }
-  };
-}
-
-const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
-const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
-const SUPPORT = { whatsapp: 'https://wa.me/2349067862223', whatsappDisplay: '+234 906 786 2223', email1: 'Info@krishnyanshzenovapeaks.com', email2: 'Krishnyanshzenovapeaksltd@gmail.com' };
-
-const nigerianBanksList = [
-{ name: "【entity-Access¦canonical_name=Access Bank】", code: "044" }, { name: "【entity-Citibank¦canonical_name=Citibank】", code: "023" }, { name: "Diamond", code: "063" },
-{ name: "Ecobank", code: "050" }, { name: "Fidelity", code: "070" }, { name: "First Bank", code: "011" },
-{ name: "【entity-FCMB¦canonical_name=FCMB】", code: "214" }, { name: "【entity-GTB¦canonical_name=GTBank】", code: "058" }, { name: "Heritage", code: "030" },
-{ name: "Keystone", code: "082" }, { name: "Polaris", code: "076" }, { name: "Providus", code: "101" },
-{ name: "【entity-Stanbic IBTC¦canonical_name=Stanbic IBTC】", code: "221" }, { name: "Standard Chartered", code: "068" }, { name: "Sterling", code: "232" },
-{ name: "Union", code: "032" }, { name: "UBA", code: "033" }, { name: "【entity-Unity¦canonical_name=Unity】", code: "215" },
-{ name: "Wema", code: "035" }, { name: "Zenith", code: "057" }, { name: "Globus", code: "103" },
-{ name: "Parallex", code: "104" }, { name: "PremiumTrust", code: "105" }, { name: "Titan Trust", code: "102" },
-{ name: "SunTrust", code: "100" }, { name: "Signature", code: "106" }, { name: "Jaiz", code: "301" },
-{ name: "Taj", code: "302" }, { name: "Lotus", code: "303" }, { name: "Coronation Merchant", code: "559" },
-{ name: "FBNQuest Merchant", code: "060" }, { name: "FSDH Merchant", code: "601" }, { name: "Rand Merchant", code: "502" },
-{ name: "Nova Merchant", code: "561" }, { name: "Greenwich Merchant", code: "562" }, { name: "9PSB", code: "120001" },
-{ name: "Hope PSB", code: "120002" }, { name: "MTN MoMo PSB", code: "120003" }, { name: "Airtel SmartCash PSB", code: "120004" },
-{ name: "GLOBACOM XWallet PSB", code: "120005" }, { name: "Kuda MFB", code: "50211" }, { name: "【entity-Moniepoint¦canonical_name=Moniepoint】 MFB", code: "50515" },
-{ name: "【entity-OPay¦canonical_name=OPay】", code: "999992" }, { name: "PalmPay", code: "999991" }, { name: "Paga", code: "100002" },
-{ name: "VFD MFB", code: "566" }, { name: "Sparkle MFB", code: "51310" }, { name: "Rubies MFB", code: "125" },
-{ name: "Mint MFB", code: "50304" }, { name: "Carbon", code: "565" }, { name: "FairMoney MFB", code: "51318" },
-{ name: "GoMoney", code: "100022" }, { name: "SafeHaven MFB", code: "51113" }, { name: "RenMoney MFB", code: "51293" },
-{ name: "Eyowo MFB", code: "50126" }, { name: "Abbey MFB", code: "51205" }, { name: "Lagos Building MFB", code: "51201" },
-{ name: "Infinity MFB", code: "50457" }, { name: "Accion MFB", code: "50314" }, { name: "Addosser MFB", code: "50307" },
-{ name: "Advans La Fayette MFB", code: "50117" }, { name: "AMML MFB", code: "50072" }, { name: "ASO Savings", code: "401" },
-{ name: "Bowen MFB", code: "50931" }, { name: "CEMCS MFB", code: "50823" }, { name: "FBN MFB", code: "51314" },
-{ name: "First Generation MFB", code: "50572" }, { name: "Hasal MFB", code: "50383" }, { name: "IBILE MFB", code: "50453" },
-{ name: "Imperial Homes Mortgage", code: "415" }, { name: "Jubilee-Life Mortgage", code: "402" }, { name: "LAPO MFB", code: "50604" },
-{ name: "Mainstreet MFB", code: "50164" }, { name: "Mutual Benefits MFB", code: "50629" }, { name: "NOVA MFB", code: "51316" },
-{ name: "NPF MFB", code: "50629" }, { name: "Parallex MFB", code: "104" }, { name: "Personnel MFB", code: "50548" },
-{ name: "Rephidim MFB", code: "50548" }, { name: "Seed Capital MFB", code: "51206" }, { name: "Stellas MFB", code: "51253" },
-{ name: "SunTrust MFB", code: "100" }, { name: "Trust MFB", code: "51211" }, { name: "Unical MFB", code: "50871" },
-{ name: "Gowans MFB", code: "50439" }, { name: "【entity-FCMB¦canonical_name=FCMB】 MFB", code: "214" }, { name: "ALAT by Wema", code: "035" },
-{ name: "ALAT MFB", code: "035" }, { name: "OneBank (Sterling)", code: "232" }, { name: "【entity-GTB¦canonical_name=GTBank】 MFB", code: "058" },
-{ name: "UBA MFB", code: "033" }, { name: "Zenith MFB", code: "057" }, { name: "Access MFB", code: "044" },
-{ name: "Assets MFB", code: "50036" }, { name: "Astra Polaris MFB", code: "076" }, { name: "Auchi MFB", code: "50910" },
-{ name: "Baobab MFB", code: "50992" }, { name: "Boaz MFB", code: "50992" }, { name: "BOS MFB", code: "50902" },
-{ name: "Bricks MFB", code: "50645" }, { name: "Bridge MFB", code: "50645" }, { name: "Coastline MFB", code: "50910" },
-{ name: "Consumer MFB", code: "50922" }, { name: "Daylight MFB", code: "50563" }, { name: "Dot MFB", code: "50126" },
-{ name: "Eagle Flight MFB", code: "50138" }, { name: "Fast MFB", code: "50611" }, { name: "Finca MFB", code: "50302" },
-{ name: "Firmus MFB", code: "51113" }, { name: "Fullrange MFB", code: "51100" }, { name: "Gashua MFB", code: "50591" },
-{ name: "Gateway MFB", code: "50533" }, { name: "Globus MFB", code: "103" },
-];
-
-let currentAuthMode = 'login';
-let currentPortalType = 'customer';
-let scannedMerchantData = null;
-let speakerChannel = null;
-let isSpeakerEnabled = false;
-
-function getUser(){ try { return JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}'); } catch(e){ return {}; } }
-function saveUser(u){ localStorage.setItem('clickpeqr_active_user', JSON.stringify(u)); }
-function within3Months(ts){ return (Date.now() - ts) <= THREE_MONTHS_MS; }
-
-try {
-speakerChannel = new BroadcastChannel('clickpeqr_payments');
-speakerChannel.onmessage = (e) => { if(e.data && e.data.type === 'payment_success'){ triggerVirtualSpeaker(e.data.amount, e.data.txId); } };
-} catch(e){}
-
-function toggleSidebar(){
-document.getElementById('appSidebar').classList.toggle('-translate-x-full');
-document.getElementById('sidebarOverlay').classList.toggle('hidden');
-}
-function switchView(){ window.scrollTo({top:0, behavior:'smooth'}); }
-function copyToClipboard(t){ if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('Copied: '+t)); } }
-
-function switchAuthTab(m){
-currentAuthMode = m;
-const l = document.getElementById('loginTabBtn'), r = document.getElementById('registerTabBtn');
-const k = document.getElementById('kycFields'), s = document.getElementById('authSubmitBtn');
-if(m === 'login'){
-l.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
-r.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
-k.classList.add('hidden'); s.textContent = "Sign In Securely";
-} else {
-r.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
-l.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
-k.classList.remove('hidden'); s.textContent = "Register & Launch App";
-}
-}
-function setPortalType(t){
-currentPortalType = t;
-const c = document.getElementById('typeCustomerBtn'), m = document.getElementById('typeMerchantBtn'), b = document.getElementById('businessNameField');
-if(t === 'customer'){
-c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400";
-m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
-b.classList.add('hidden');
-} else {
-m.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400";
-c.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
-b.classList.remove('hidden');
-}
-}
-function handleAuthSubmit(e){
-e.preventDefault();
-const fullName = document.getElementById('fullNameInput').value.trim();
-const email = document.getElementById('emailInput').value.trim().toLowerCase();
-const bizName = (document.getElementById('businessNameInput') || {}).value || '';
-const businessName = bizName.trim() || (fullName + " Store");
-if(!fullName || !email){ alert('Please enter your name and email.'); return; }
-let allUsers = {};
-try { allUsers = JSON.parse(localStorage.getItem('clickpeqr_all_users') || '{}'); } catch(e){}
-let uniqueId = allUsers[email] && allUsers[email].id;
-if(!uniqueId){ uniqueId = Math.floor(Math.random()*900000)+100000; allUsers[email] = {id: uniqueId, email: email}; localStorage.setItem('clickpeqr_all_users', JSON.stringify(allUsers)); }
-const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
-const userData = { id: uniqueId, full_name: fullName, email: email, business_name: businessName, portal_type: currentPortalType, avatar_url: dp, phone_number: '+2349067862223', permanent_qr_version: Date.now() };
-saveUser(userData);
-localStorage.setItem('clickpeqr_remember', 'true');
-loadDashboard(userData);
-pushNotification('Welcome to ClickPeQR', 'Your account is ready. Link your bank to start receiving payments.');
-setTimeout(async () => {
-try {
-if(currentPortalType === 'merchant'){
-await supabaseClient.from('merchants').upsert([{ id: uniqueId, business_name: businessName, full_name: fullName, email: email, phone_number: userData.phone_number, avatar_url: dp, permanent_qr_id: 'PERM_'+uniqueId+'_'+userData.permanent_qr_version }], {onConflict: 'email'});
-} else {
-await supabaseClient.from('users').upsert([{ id: uniqueId, full_name: fullName, email: email, phone_number: userData.phone_number, avatar_url: dp, user_type: 'customer', permanent_qr_id: 'CUST_'+uniqueId+'_'+userData.permanent_qr_version }], {onConflict: 'email'});
-}
-} catch(err){}
-}, 100);
-}
-function loadDashboard(user){
-document.getElementById('authScreen').classList.add('hidden');
-document.getElementById('mainHeader').classList.remove('hidden');
-document.getElementById('dashboardScreen').classList.remove('hidden');
-document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = user.full_name || 'User');
-const se = document.getElementById('sidebarUserEmail'); if(se) se.textContent = user.email || '';
-document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
-document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
-const dp = localStorage.getItem('user_custom_dp') || user.avatar_url || 'logo.png';
-document.querySelectorAll('.user-avatar-display').forEach(img => img.src = dp);
-const sdp = document.getElementById('sidebarUserDP'); if(sdp) sdp.src = dp;
-if(user.portal_type === 'merchant'){
-document.getElementById('merchantPortalView').classList.remove('hidden');
-document.getElementById('customerPortalView').classList.add('hidden');
-document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
-setTimeout(() => renderPermanentShopQR(user), 100);
-setTimeout(() => initMerchantRealtime(user.id), 500);
-} else {
-document.getElementById('customerPortalView').classList.remove('hidden');
-document.getElementById('merchantPortalView').classList.add('hidden');
-setTimeout(() => renderCustomerPermanentQR(user), 100);
-}
-fetchAndRenderBanks(user.id);
-updatePointsUI();
-updateNotifBadge();
-}
-function handleLogout(){ localStorage.removeItem('clickpeqr_active_user'); window.location.href = window.location.pathname; }
-
-function handleDPChange(event){
-const file = event.target.files[0];
-if(!file) return;
-const r = new FileReader();
-r.onload = async function(e){
-const b = e.target.result;
-localStorage.setItem('user_custom_dp', b);
-document.querySelectorAll('.user-avatar-display').forEach(img => img.src = b);
-const s = document.getElementById('sidebarUserDP'); if(s) s.src = b;
-const pv = document.getElementById('settingsAvatarPreview'); if(pv) pv.src = b;
-try {
-const u = getUser();
-if(u.id){
-if(u.portal_type === 'merchant'){ await supabaseClient.from('merchants').update({avatar_url: b}).eq('id', u.id); }
-else { await supabaseClient.from('users').update({avatar_url: b}).eq('id', u.id); }
-u.avatar_url = b; saveUser(u);
-}
-} catch(err){}
-alert('Profile picture updated successfully.');
-};
-r.readAsDataURL(file);
-}
-function openSettingsModal(){
-const u = getUser();
-document.getElementById('settingsFullName').value = u.full_name || '';
-document.getElementById('settingsEmail').value = u.email || '';
-document.getElementById('settingsPhone').value = u.phone_number || '+2349067862223';
-const pv = document.getElementById('settingsAvatarPreview'); if(pv) pv.src = localStorage.getItem('user_custom_dp') || u.avatar_url || 'logo.png';
-if(u.portal_type === 'merchant'){ document.getElementById('settingsBizField').classList.remove('hidden'); document.getElementById('settingsBizName').value = u.business_name || ''; }
-else { document.getElementById('settingsBizField').classList.add('hidden'); }
-document.getElementById('settingsModal').classList.remove('hidden');
-}
-async function saveProfileSettings(){
-let u = getUser();
-const newName = document.getElementById('settingsFullName').value.trim();
-const newEmail = document.getElementById('settingsEmail').value.trim().toLowerCase();
-const newPhone = document.getElementById('settingsPhone').value.trim();
-if(!newName){ alert('Please enter your full name.'); return; }
-if(!newEmail || newEmail.indexOf('@') < 0){ alert('Please enter a valid email address.'); return; }
-u.full_name = newName; u.email = newEmail; u.phone_number = newPhone;
-if(u.portal_type === 'merchant'){
-u.business_name = document.getElementById('settingsBizName').value.trim() || u.business_name;
-document.getElementById('merchantStoreNameLabel').textContent = "Store: " + u.business_name;
-renderPermanentShopQR(u);
-try { await supabaseClient.from('merchants').update({business_name: u.business_name, full_name: newName, email: newEmail, phone_number: newPhone}).eq('id', u.id); } catch(e){}
-} else {
-renderCustomerPermanentQR(u);
-try { await supabaseClient.from('users').update({full_name: newName, email: newEmail, phone_number: newPhone}).eq('id', u.id); } catch(e){}
-}
-saveUser(u);
-document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = u.full_name);
-const se = document.getElementById('sidebarUserEmail'); if(se) se.textContent = u.email;
-document.getElementById('settingsModal').classList.add('hidden');
-pushNotification('Profile updated', 'Your profile details were saved successfully.');
-alert('Profile saved successfully.');
-}
-
-function primaryBankOf(userId){
-  const u = getUser();
-  const emailKey = (u.email || '').toLowerCase();
-  let banks = [];
-  try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]'); } catch(e){}
-  if(banks.length === 0){
-    try { banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]'); } catch(e){}
-  }
-  return banks.find(b => b.is_primary) || banks[0] || { bank_code: '058', account_number: '0638090889', account_name: 'RUBY GARG', bank_name: ' GTBank' };
-}
-function renderPermanentShopQR(user){
-  const c = document.getElementById('permanentShopQRContainer');
-  if(!c) return;
-  c.innerHTML = "";
-  const ver = user.permanent_qr_version || Date.now();
-  const pb = primaryBankOf(user.id);
-  const payload = { type: "MERCHANT_PERMANENT", merchantId: user.id, businessName: user.business_name || user.full_name, version: ver, permanent_id: 'PERM_'+user.id+'_'+ver, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name };
-  new QRCode(c, {text: JSON.stringify(payload), width: 130, height: 130});
-}
-function renderCustomerPermanentQR(user){
-const c = document.getElementById('customerPermanentQRContainer');
-if(!c) return;
-c.innerHTML = "";
-const ver = user.permanent_qr_version || Date.now();
-new QRCode(c, {text: JSON.stringify({type: "CUSTOMER_PERMANENT", customerId: user.id, name: user.full_name, version: ver, permanent_id: 'CUST_'+user.id+'_'+ver}), width: 130, height: 130});
-}
-function regenerateMerchantQR(){
-let u = getUser();
-if(!u.id) return;
-if(!confirm('Generate a new Permanent Shop QR? Your previous QR will no longer work.')) return;
-u.permanent_qr_version = Date.now();
-saveUser(u);
-renderPermanentShopQR(u);
-try { supabaseClient.from('merchants').update({permanent_qr_id: 'PERM_'+u.id+'_'+u.permanent_qr_version}).eq('id', u.id).then(()=>{}); } catch(e){}
-alert('Your new Permanent Shop QR is ready.');
-}
-function regenerateCustomerQR(){
-let u = getUser();
-if(!u.id) return;
-if(!confirm('Generate a new Permanent Customer QR?')) return;
-u.permanent_qr_version = Date.now();
-saveUser(u);
-renderCustomerPermanentQR(u);
-try { supabaseClient.from('users').update({permanent_qr_id: 'CUST_'+u.id+'_'+u.permanent_qr_version}).eq('id', u.id).then(()=>{}); } catch(e){}
-alert('Your new Permanent Customer QR is ready.');
-}
-function generateMerchantDynamicQR(){
- const amt = document.getElementById('merchantDynAmt').value;
-if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
-const c = document.getElementById('dynamicQRContainer');
-c.innerHTML = "";
-const u = getUser();
-const pb = primaryBankOf(u.id);
-new QRCode(c, { text: JSON.stringify({type: "MERCHANT_DYNAMIC", merchantId: u.id, amount: amt, businessName: u.business_name, bank_code: pb.bank_code, account_number: pb.account_number, account_name: pb.account_name, bank_name: pb.bank_name}), width: 140, height: 140 });
-document.getElementById('merchantQRResult').classList.remove('hidden');
-}
-/* ---------- Scanner & payment - FIXED ---------- */
-let html5QrCode = null;
-let isScanning = false;
-let qrAlreadyHandled = false;
-let scannerBusy = false;
-
-async function stopScannerQuietly(){
-  if(scannerBusy) return;
-  scannerBusy = true;
-  try{
-    if(html5QrCode){
-      try{ const p = html5QrCode.stop(); if(p && p.then) await Promise.race([p, new Promise(r=>setTimeout(r,800))]); }catch(e){}
-      try{ html5QrCode.clear(); }catch(e){}
+      supabaseClient = {
+        from() {
+          return {
+            select() { return chain; },
+            insert() { return Promise.resolve(stubRes); },
+            update() { return chain; },
+            upsert() { return Promise.resolve(stubRes); },
+            delete() { return chain; }
+          };
+        },
+        channel() {
+          return { on() { return { subscribe() {} }; } };
+        }
+      };
     }
-  }catch(e){}
-  isScanning = false;
-  try{ document.querySelectorAll('#qr-reader video').forEach(v=>{ if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; } }); }catch(e){}
-  scannerBusy = false;
-}
-async function openWorkingScanner(){
-  if(scannerBusy) return;
-  qrAlreadyHandled = false;
-  const m = document.getElementById('scannerModal');
-  m.classList.remove('hidden'); m.style.display='flex';
-  document.getElementById('scannerStatus').innerText='Scanning... Point at QR — No tap needed. Auto details by self.';
-  await stopScannerQuietly();
-  try{
-    if(!window.Html5Qrcode) throw new Error('Scanner library failed to load.');
-    html5QrCode = new Html5Qrcode("qr-reader");
-    isScanning = true;
-    const onScanSuccess = (decodedText)=>{
-      if(qrAlreadyHandled || !isScanning) return;
-      qrAlreadyHandled = true; isScanning = false;
-      document.getElementById('scannerStatus').innerText='QR Detected! Opening details...';
-      stopScannerQuietly().then(()=>{
-        try{ handleAutoScannedQR(JSON.parse(decodedText)); }
-        catch(e){ handleAutoScannedQR({account_number:decodedText,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
-      });
-    };
-    const config = {fps:10, qrbox:{width:250,height:250}, aspectRatio:1.0, disableFlip:false};
-    try{ await html5QrCode.start({facingMode:"environment"}, config, onScanSuccess, ()=>{}); }
-    catch(e1){
-      const cams = await Html5Qrcode.getCameras();
-      if(!cams || !cams.length) throw e1;
-      const back = cams.find(c=>/back|rear|environment/i.test(c.label)) || cams[0];
-      await html5QrCode.start(back.id, config, onScanSuccess, ()=>{});
+
+    const POINTS = { customerPer100: 1, merchantPer100: 2, nairaPer100Pts: 10 };
+    const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+
+    const NIGERIAN_BANKS = [
+      { name: "Access Bank", code: "044" },
+      { name: "Citibank", code: "023" },
+      { name: "Diamond Bank", code: "063" },
+      { name: "Ecobank", code: "050" },
+      { name: "Fidelity Bank", code: "070" },
+      { name: "First Bank", code: "011" },
+      { name: "FCMB", code: "214" },
+      { name: "GTBank", code: "058" },
+      { name: "Heritage Bank", code: "030" },
+      { name: "Keystone Bank", code: "082" },
+      { name: "Polaris Bank", code: "076" },
+      { name: "Providus Bank", code: "101" },
+      { name: "Stanbic IBTC", code: "221" },
+      { name: "Standard Chartered", code: "068" },
+      { name: "Sterling Bank", code: "232" },
+      { name: "Union Bank", code: "032" },
+      { name: "UBA", code: "033" },
+      { name: "Unity Bank", code: "215" },
+      { name: "Wema Bank", code: "035" },
+      { name: "Zenith Bank", code: "057" },
+      { name: "Globus Bank", code: "103" },
+      { name: "Kuda MFB", code: "50211" },
+      { name: "Moniepoint MFB", code: "50515" },
+      { name: "OPay", code: "999992" },
+      { name: "PalmPay", code: "999991" },
+      { name: "Paga", code: "100002" },
+      { name: "Jaiz Bank", code: "301" },
+      { name: "Taj Bank", code: "302" }
+    ];
+
+    let currentAuthMode = 'login';
+    let currentPortalType = 'customer';
+    let scannedMerchantData = null;
+    let speakerChannel = null;
+    let isSpeakerEnabled = false;
+
+    // 2. HELPERS & SECURITY
+    function escapeHTML(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
-  }catch(err){
-    console.log(err); isScanning = false;
-    document.getElementById('scannerStatus').innerText='Camera error: '+err.message+' - Use Click & Pay via QR - Upload / Paste. Camera needs HTTPS.';
-  }
-}
-function handleAutoScannedQR(qrData){
-  closeScannerModal();
-  scannedMerchantData={
-    shop_name:qrData.businessName||qrData.shop_name||qrData.business_name||'Merchant Store',
-    account_name:qrData.account_name||qrData.accountName||'Merchant',
-    account_number:qrData.account_number||qrData.accountNumber||'0638090889',
-    bank_name:qrData.bank_name||qrData.bankName||' GTBank',
-    bank_code:qrData.bank_code||qrData.bankCode||'058',
-    merchant_id:qrData.merchantId||qrData.merchant_id||('merchant_'+Date.now()),
-    amount:qrData.amount||''
-  };
-  document.getElementById('confirmShopName').innerText=scannedMerchantData.shop_name;
-  document.getElementById('confirmAccountName').innerText=scannedMerchantData.account_name;
-  document.getElementById('confirmBankName').innerText=scannedMerchantData.bank_name;
-  document.getElementById('confirmCustomerName').innerText=getUser().full_name||'Customer';
-  document.getElementById('confirmAmountInput').value=scannedMerchantData.amount||'';
-  const mm = document.getElementById('merchantConfirmModal');
-  mm.classList.remove('hidden'); mm.style.display='flex';
-}
-async function closeScannerModal(){
-  const m = document.getElementById('scannerModal');
-  m.style.display='none'; m.classList.add('hidden');
-  stopScannerQuietly();
-  html5QrCode = null;
-}
-function handleClickPayViaQR(){ const inp = document.getElementById('qrFileInput'); if(inp) inp.click(); }
-async function handleQRFileUpload(event){
-  const file = event.target.files && event.target.files[0];
-  if(!file) return;
-  const sm = document.getElementById('scannerModal');
-  sm.classList.remove('hidden'); sm.style.display='flex';
-  document.getElementById('scannerStatus').innerText='Reading QR from image...';
-  try{
-    let decoded = null;
-    if(window.Html5Qrcode){ const tmp = new Html5Qrcode("qr-reader"); decoded = await tmp.scanFile(file, true); }
-    else { throw new Error('Scanner library unavailable.'); }
-    event.target.value='';
-    try{ handleAutoScannedQR(JSON.parse(decoded)); }
-    catch(e){ handleAutoScannedQR({account_number:decoded,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'【entity-GTBank¦canonical_name=GTBank】',bank_code:'058'}); }
-  }catch(e1){
-    try{
-      if('BarcodeDetector' in window){
-        const bmp = await createImageBitmap(file);
-        const det = new BarcodeDetector({formats:['qr_code']});
-        const codes = await det.detect(bmp);
-        if(codes && codes.length){
-          event.target.value='';
-          try{ handleAutoScannedQR(JSON.parse(codes[0].rawValue)); }
-          catch(e){ handleAutoScannedQR({account_number:codes[0].rawValue,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:'GTBank',bank_code:'058'}); }
+
+    function getUser() {
+      try {
+        return JSON.parse(localStorage.getItem('clickpeqr_active_user') || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveUser(u) {
+      localStorage.setItem('clickpeqr_active_user', JSON.stringify(u));
+    }
+
+    function within3Months(ts) {
+      return (Date.now() - ts) <= THREE_MONTHS_MS;
+    }
+
+    function showModal(id, flexDir = 'flex') {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.style.display = flexDir;
+    }
+
+    function hideModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('hidden');
+      el.style.display = 'none';
+    }
+
+    try {
+      speakerChannel = new BroadcastChannel('clickpeqr_payments');
+      speakerChannel.onmessage = function (e) {
+        if (e.data && e.data.type === 'payment_success') {
+          triggerVirtualSpeaker(e.data.amount, e.data.txId);
+        }
+      };
+    } catch (e) {}
+
+    // 3. NAVIGATION & AUTH
+    function toggleSidebar() {
+      document.getElementById('appSidebar').classList.toggle('-translate-x-full');
+      document.getElementById('sidebarOverlay').classList.toggle('hidden');
+    }
+
+    function switchView() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchAuthTab(mode) {
+      currentAuthMode = mode;
+      const loginBtn = document.getElementById('loginTabBtn');
+      const regBtn = document.getElementById('registerTabBtn');
+      const kycFields = document.getElementById('kycFields');
+      const submitBtn = document.getElementById('authSubmitBtn');
+      const ninInput = document.getElementById('ninInput');
+      const bvnInput = document.getElementById('bvnInput');
+
+      if (mode === 'login') {
+        loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
+        regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
+        kycFields.classList.add('hidden');
+        ninInput.required = false;
+        bvnInput.required = false;
+        submitBtn.textContent = "Sign In Securely";
+      } else {
+        regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-teal-500 text-slate-950";
+        loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400";
+        kycFields.classList.remove('hidden');
+        ninInput.required = true;
+        bvnInput.required = true;
+        submitBtn.textContent = "Register & Launch App";
+      }
+    }
+
+    function setPortalType(type) {
+      currentPortalType = type;
+      const custBtn = document.getElementById('typeCustomerBtn');
+      const merchBtn = document.getElementById('typeMerchantBtn');
+      const bizField = document.getElementById('businessNameField');
+
+      if (type === 'customer') {
+        custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-teal-500/20 text-teal-400";
+        merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
+        bizField.classList.add('hidden');
+      } else {
+        merchBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400";
+        custBtn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400";
+        bizField.classList.remove('hidden');
+      }
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('fullNameInput').value.trim();
+      const email = document.getElementById('emailInput').value.trim().toLowerCase();
+      const pin = document.getElementById('pinInput').value.trim();
+      const bizInput = document.getElementById('businessNameInput');
+      const businessName = (bizInput && bizInput.value.trim()) || (fullName + " Store");
+
+      if (!fullName || !email) {
+        alert('Please enter your name and email.');
+        return;
+      }
+      if (!/^\d{6}$/.test(pin)) {
+        alert('Please enter a valid 6-digit numeric PIN.');
+        return;
+      }
+      if (currentAuthMode === 'register') {
+        const nin = document.getElementById('ninInput').value.trim();
+        const bvn = document.getElementById('bvnInput').value.trim();
+        if (!/^\d{11}$/.test(nin) || !/^\d{11}$/.test(bvn)) {
+          alert('Please enter valid 11-digit NIN and BVN numbers.');
           return;
         }
       }
-      throw new Error('Could not read QR from this image. Try a clearer photo.');
-    }catch(e2){
-      event.target.value='';
-      document.getElementById('scannerStatus').innerText='Could not read QR from image. Try clearer photo or Paste QR.';
-      alert(e2.message || 'Could not read QR from this image.');
+
+      let allUsers = {};
+      try {
+        allUsers = JSON.parse(localStorage.getItem('clickpeqr_all_users') || '{}');
+      } catch (err) {}
+
+      let uniqueId = allUsers[email] && allUsers[email].id;
+      if (!uniqueId) {
+        uniqueId = Math.floor(Math.random() * 900000) + 100000;
+        allUsers[email] = { id: uniqueId, email: email };
+        localStorage.setItem('clickpeqr_all_users', JSON.stringify(allUsers));
+      }
+
+      const dp = localStorage.getItem('user_custom_dp') || 'logo.png';
+      const userData = {
+        id: uniqueId,
+        full_name: fullName,
+        email: email,
+        pin: pin,
+        business_name: businessName,
+        portal_type: currentPortalType,
+        avatar_url: dp,
+        phone_number: '+2349067862223',
+        permanent_qr_version: Date.now()
+      };
+
+      saveUser(userData);
+      localStorage.setItem('clickpeqr_remember', 'true');
+      loadDashboard(userData);
+      pushNotification('Welcome to ClickPeQR', 'Your account is ready. Link your bank to start receiving payments.');
     }
-  }
-}
-function openManualQRInput(){
-  const sm = document.getElementById('scannerModal');
-  sm.style.display='none'; sm.classList.add('hidden');
-  const m = document.getElementById('manualQRModal');
-  m.classList.remove('hidden'); m.style.display='flex';
-}
-function payFromManualQR(){
-  const v = document.getElementById('manualQRText').value.trim();
-  if(!v){ alert('Paste QR text first.'); return; }
-  const m = document.getElementById('manualQRModal');
-  m.classList.add('hidden'); m.style.display='none';
-  try{ handleAutoScannedQR(JSON.parse(v)); }
-  catch(e){ handleAutoScannedQR({account_number:v,businessName:'Scanned Merchant',account_name:'Merchant Account',bank_name:' 【entity-GTBank¦canonical_name=GTBank】',bank_code:'058'}); }
-}
-function simulateSuccessfulScan(){ handleAutoScannedQR({businessName:'ZENOVA PEAK TECH HUB',account_name:'RUBY GARG',account_number:'0638090889',bank_name:'GTBank',bank_code:'058',merchantId:'zenova_demo',amount:'510'}); }
 
-window.addEventListener('DOMContentLoaded', () => {
-  if(window.__clickpeqr_init_done) return; window.__clickpeqr_init_done = true;
-  const activeUser = getUser();
-  let qrData = null;
-  try { const ls = localStorage.getItem('last_scanned_qr_payload'); if (ls) qrData = JSON.parse(ls); } catch (e) { qrData = null; }
-  if (qrData && qrData.account_number) {
-    scannedMerchantData = { shop_name: qrData.businessName || 'Merchant Store', account_name: qrData.account_name, account_number: qrData.account_number, bank_name: qrData.bank_name || 'GTBank', bank_code: qrData.bank_code || '', merchant_id: qrData.merchantId || ('merchant_' + Date.now()), amount: qrData.amount || '' };
-  } else {
-    const pb = primaryBankOf(activeUser.id);
-    scannedMerchantData = { shop_name: 'ZENOVA PEAK TECH HUB', account_name: pb.account_name, account_number: pb.account_number, bank_name: pb.bank_name, bank_code: pb.bank_code, merchant_id: 'zenova_' + (activeUser.id || Date.now()), amount: '' };
-  }
-  const setTextIf = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-  setTextIf('confirmShopName', scannedMerchantData.shop_name);
-  setTextIf('confirmAccountName', scannedMerchantData.account_name);
-  setTextIf('confirmBankName', scannedMerchantData.bank_name);
-  setTextIf('confirmCustomerName', activeUser.full_name || 'Customer');
-  const confirmAmountInput = document.getElementById('confirmAmountInput');
-  if (confirmAmountInput) confirmAmountInput.value = scannedMerchantData.amount || '510';
-  setTimeout(() => {
-    if (activeUser && activeUser.id) {
-      if ((activeUser.portal_type || 'customer') === 'merchant') { renderPermanentShopQR(activeUser); } else { renderCustomerPermanentQR(activeUser); }
+    function loadDashboard(user) {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('mainHeader').classList.remove('hidden');
+      document.getElementById('dashboardScreen').classList.remove('hidden');
+
+      document.querySelectorAll('.user-profile-name').forEach(el => {
+        el.textContent = user.full_name || 'User';
+      });
+      const se = document.getElementById('sidebarUserEmail');
+      if (se) se.textContent = user.email || '';
+
+      document.getElementById('sidebarModeLabel').textContent = (user.portal_type || 'customer').toUpperCase() + ' MODE';
+      document.getElementById('userRoleHeader').textContent = user.portal_type || 'customer';
+
+      const dp = localStorage.getItem('user_custom_dp') || user.avatar_url || 'logo.png';
+      document.querySelectorAll('.user-avatar-display').forEach(img => {
+        img.src = dp;
+      });
+
+      if (user.portal_type === 'merchant') {
+        document.getElementById('merchantPortalView').classList.remove('hidden');
+        document.getElementById('customerPortalView').classList.add('hidden');
+        document.getElementById('merchantStoreNameLabel').textContent = "Store: " + (user.business_name || user.full_name);
+        setTimeout(() => renderPermanentShopQR(user), 100);
+        setTimeout(() => initMerchantRealtime(user.id), 500);
+      } else {
+        document.getElementById('customerPortalView').classList.remove('hidden');
+        document.getElementById('merchantPortalView').classList.add('hidden');
+        setTimeout(() => renderCustomerPermanentQR(user), 100);
+      }
+
+      fetchAndRenderBanks(user.id);
+      updatePointsUI();
+      updateNotifBadge();
     }
-    fetchAndRenderBanks(activeUser.id);
-    updatePointsUI();
-    updateNotifBadge();
-  }, 50);
-});
 
-function checkDailyLimitSync(userId,amount){
-let txs=[]; try{ txs=JSON.parse(localStorage.getItem('clickpeqr_txs')||'[]'); }catch(e){ txs=[]; }
-const today=new Date(); today.setHours(0,0,0,0); let todayTotal=0;
-try{ for(let i=0;i<Math.min(txs.length,100);i++){ if(txs[i].ts>=today.getTime()){ todayTotal+=parseFloat(txs[i].amount||0); } } }catch(e){ todayTotal=0; }
-const limit=(getUser().portal_type==='merchant')?5000000:2000000;
-if((todayTotal+parseFloat(amount))>limit){
-document.getElementById('dailyLimitMsg').innerText='Daily limit exceeded: Customer 2M, Merchant 5M. Today: ₦'+todayTotal+' + New: ₦'+amount+' > Limit: ₦'+limit;
-document.getElementById('dailyLimitModal').classList.remove('hidden'); return false;
-} return true;
-}
-function proceedToManualTransfer(){
-const amt=document.getElementById('confirmAmountInput').value;
-if(!amt||parseFloat(amt)<=0){ alert('Enter valid amount'); return; }
-const numAmt=parseFloat(amt); const u=getUser();
- if(!checkDailyLimitSync(u.id,numAmt)) return;
-if(numAmt>10000000){ alert('BLOCKED: CBN Max QR 10M - 10M-100M blocked Govt NFIU'); return; }
-if(numAmt<2000000){ 
-  document.getElementById('merchantConfirmModal').style.display='none';
-  document.getElementById('manualTransferModal').style.display='flex';
-  document.getElementById('manualAmountDisplay').innerText='NGN '+numAmt.toLocaleString();
-  document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
-  document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
-  document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
-  return; 
-}
-if(numAmt>=2000000&&numAmt<5000000){ 
-  document.getElementById('merchantConfirmModal').style.display='none';
-  document.getElementById('highValueTitle').innerText='LEVEL 2 - 2M to 5M (PIN + OTP Recommended)';
-  document.getElementById('highValueDetails').innerHTML='Level 2: 2M-5M - PIN + OTP Recommended - Possible without OTP? Yes';
-  document.getElementById('highValueOtpSection').style.display='block';
-  document.getElementById('highValueSecurityModal').style.display='flex'; 
-  return; 
-}
-if(numAmt>=5000000&&numAmt<=10000000){ 
-  document.getElementById('merchantConfirmModal').style.display='none';
-  document.getElementById('highValueTitle').innerText='LEVEL 3 - 5M to 10M (PIN + OTP Compulsory + Admin Alert)';
-  document.getElementById('highValueDetails').innerHTML='Level 3: 5M-10M - PIN + OTP Compulsory + Admin Alert + NFIU - Possible without OTP? No';
-  document.getElementById('highValueOtpSection').style.display='block';
-  document.getElementById('highValueSecurityModal').style.display='flex'; 
-  return; 
-}
-}
-function requestOTP(){
-  const u=getUser();
-  document.getElementById('otpEmailDisplay').innerText=u.email||'your email';
-  document.getElementById('otpModal').style.display='flex';
-  document.getElementById('highValueSecurityModal').style.display='none';
-  document.getElementById('otpInputField').value='123456';
-  alert('OTP sent to '+(u.email||'email')+' - Demo OTP: 123456 - Real mail integration needed');
-}
-function closeOTPModal(){ document.getElementById('otpModal').style.display='none'; }
-function closeHighValueModal(){ document.getElementById('highValueSecurityModal').style.display='none'; }
-function verifyOTPAndPay(){
-  const otp=document.getElementById('otpInputField').value.trim();
-  const pin=document.getElementById('otpPinInput').value.trim();
-  if(!otp||otp.length<4){ alert('Enter valid OTP from mail - Real input box'); return; }
-  if(!pin||pin.length!==6){ alert('Enter 6-digit PIN'); return; }
-  if(otp==='123456'||otp.length===6){
-    document.getElementById('otpModal').style.display='none';
-    document.getElementById('highValueSecurityModal').style.display='none';
-    document.getElementById('manualTransferModal').style.display='flex';
-    document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
-    document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
-    document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
-    document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
-    window.pendingHighValuePin=pin;
-    window.pendingHighValueOtp=otp;
-  }else{ alert('Invalid OTP - Use 123456 for demo'); }
-}
-function bypassOTPForLevel2(){
-  const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0');
-  if(amt>=5000000){ alert('Level 3 requires OTP compulsory - Cannot bypass! Possible without OTP? No'); return; }
-  if(confirm('Level 2 - Continue WITHOUT OTP? Possible without OTP? Yes')){
-    const pin=document.getElementById('otpPinInput').value.trim()||document.getElementById('highValuePinInput').value.trim();
-    if(!pin||pin.length!==6){ alert('Enter PIN first'); return; }
-    document.getElementById('otpModal').style.display='none';
-    document.getElementById('highValueSecurityModal').style.display='none';
-    document.getElementById('manualTransferModal').style.display='flex';
-    document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
-    document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
-    document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
-    document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
-    window.pendingHighValuePin=pin;
-    window.pendingHighValueOtp='BYPASSED_LEVEL2';
-  }
-}
-function proceedHighValuePayment(){
-  const pin=document.getElementById('highValuePinInput').value.trim();
-  const otp=document.getElementById('highValueOtpInput').value.trim();
-  const amt=parseFloat(document.getElementById('confirmAmountInput').value||'0');
-  if(!pin||pin.length!==6){ alert('Enter PIN'); return; }
-  if(amt>=5000000&&(!otp||otp.length<4)){ alert('Level 3 requires OTP compulsory - Possible without OTP? No'); return; }
-  document.getElementById('highValueSecurityModal').style.display='none';
-  document.getElementById('manualTransferModal').style.display='flex';
-  document.getElementById('manualAmountDisplay').innerText='NGN '+document.getElementById('confirmAmountInput').value;
-  document.getElementById('manualAccountNumber').innerText=scannedMerchantData.account_number;
-  document.getElementById('manualBankNameDisplay').innerText=scannedMerchantData.bank_name+' ('+scannedMerchantData.bank_code+')';
-  document.getElementById('manualBeneficiaryName').innerText=scannedMerchantData.account_name+' / '+scannedMerchantData.shop_name;
-  window.pendingHighValuePin=pin;
-  window.pendingHighValueOtp=otp||'BYPASSED_LEVEL2';
-}
-async function handleManualPaid(){ await handleManualPaidDirectUPI(); }
-async function handleManualPaidDirectUPI(){
-const amtInput = document.getElementById('confirmAmountInput');
-const amt = (amtInput && amtInput.value) || '0';
-if(!amt || parseFloat(amt) <= 0){ alert('Please enter a valid amount.'); return; }
-const u = getUser();
-const merchant = scannedMerchantData;
-if(!u.id || !merchant){ alert('Something went wrong. Please try again.'); return; }
-try {
-const res = await fetch('/api/direct-account-to-account', {
-method: 'POST', headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({
-customer_id: u.id,
-merchant_id: merchant.merchant_id,
-amount: amt,
-transaction_id: 'TXN_'+Date.now(),
-merchant_account: merchant.account_number,
-merchant_bank_code: merchant.bank_code,
-merchant_account_name: merchant.account_name,
-merchant_bank_name: merchant.bank_name,
-customer_account: (primaryBankOf(u.id) && primaryBankOf(u.id).account_number) || '',
-customer_bank_code: (primaryBankOf(u.id) && primaryBankOf(u.id).bank_code) || ''
-})
-});
-const result = await res.json();
-if(result.status === 'success'){
-await saveTransactionToSupabase(amt, (result.transfer && result.transfer.data && result.transfer.data.id) || Date.now());
-awardPoints(u.id, Math.floor(parseFloat(amt)/100) * POINTS.customerPer100, 'Payment of \u20A6' + amt + ' to ' + merchant.shop_name);
-if(merchant.merchant_id){ awardPoints(merchant.merchant_id, Math.floor(parseFloat(amt)/100) * POINTS.merchantPer100, 'Sale of \u20A6' + amt); }
-if(speakerChannel){ speakerChannel.postMessage({type: 'payment_success', amount: amt, txId: (result.transfer && result.transfer.data && result.transfer.data.id) || ''}); }
-triggerVirtualSpeaker(amt, (result.transfer && result.transfer.data && result.transfer.data.id) || '');
-pushNotification('Payment successful', '\u20A6' + amt + ' paid to ' + merchant.shop_name + '. You earned ' + (Math.floor(parseFloat(amt)/100) * POINTS.customerPer100) + ' points.');
-document.getElementById('manualTransferModal').classList.add('hidden');
-alert('Payment successful. \u20A6' + amt + ' has been sent to ' + merchant.shop_name + '.');
-} else {
-alert('Payment could not be completed: ' + (result.message || 'Please try again.'));
-}
-} catch(e){ alert('Payment could not be completed. Please check your connection and try again.'); }
-}
-function executeLiveFlutterwavePayment(){ handleManualPaidDirectUPI(); }
+    function handleLogout() {
+      localStorage.removeItem('clickpeqr_active_user');
+      localStorage.removeItem('clickpeqr_remember');
+      window.location.href = window.location.pathname;
+    }
 
-function enableSpeaker(){
-isSpeakerEnabled = true;
-document.getElementById('enableSpeakerBtn').innerText = 'Voice ON';
-document.getElementById('speakerIdleText').innerText = 'Speaker enabled - Listening for payments...';
-document.getElementById('speakerLiveDot').className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
-speakMoneyReceived(0, true);
-}
-function testSpeakerVoice(){ if(!isSpeakerEnabled) enableSpeaker(); speakMoneyReceived('510', false); }
-function triggerVirtualSpeaker(amount, txId){
-const statusEl = document.getElementById('speakerStatus'), waveEl = document.getElementById('speakerWave'),
-idleEl = document.getElementById('speakerIdleText'), logEl = document.getElementById('lastPaymentLog');
-if(statusEl){ statusEl.innerText = 'Payment received: \u20A6' + amount; statusEl.className = 'text-[11px] text-teal-300 font-bold mb-2'; }
-if(waveEl){ waveEl.classList.remove('hidden'); waveEl.classList.add('flex'); }
-if(idleEl) idleEl.classList.add('hidden');
-if(logEl) logEl.innerHTML = '<div class="bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">Payment ID: ' + txId + ' - \u20A6' + amount + ' - ' + new Date().toLocaleTimeString() + '</div>';
-const salesEl = document.getElementById('todaysSales');
-if(salesEl){
-const current = parseFloat(salesEl.innerText.replace(/[^0-9.]/g, '')) || 0;
-salesEl.innerText = '\u20A6 ' + (current + parseFloat(amount)).toLocaleString(undefined, {minimumFractionDigits: 2});
-}
-speakMoneyReceived(amount, false);
-setTimeout(() => {
-if(waveEl){ waveEl.classList.add('hidden'); waveEl.classList.remove('flex'); }
-if(idleEl){ idleEl.classList.remove('hidden'); idleEl.innerText = 'Waiting for next payment...'; }
-if(statusEl){ statusEl.innerText = 'Speaker idle - Waiting for payment...'; statusEl.className = 'text-[11px] text-slate-400 mb-2'; }
-}, 5000);
-}
-function speakMoneyReceived(amount, isTest){
-if(!isSpeakerEnabled && !isTest) return;
-if(!('speechSynthesis' in window)) return;
-window.speechSynthesis.cancel();
-const text = isTest ? 'Voice alerts enabled. You will hear a message for every payment received.' : 'Payment received successfully. ' + amount + ' Naira received.';
-const utter = new SpeechSynthesisUtterance(text);
-utter.lang = 'en-NG'; utter.rate = 0.9; utter.pitch = 1.1; utter.volume = 1.0;
-const voices = window.speechSynthesis.getVoices();
-let preferred = voices.find(v => v.lang && v.lang.indexOf('en-NG') === 0) || voices.find(v => v.lang && v.lang.indexOf('en') === 0);
-if(preferred) utter.voice = preferred;
-window.speechSynthesis.speak(utter);
-}
-function initMerchantRealtime(merchantId){
-try {
-supabaseClient.channel('merchant:'+merchantId).on('broadcast', {event: 'payment_success'}, (payload) => {
-if(payload && payload.payload){ triggerVirtualSpeaker(payload.payload.amount, payload.payload.txId); }
-}).subscribe((status) => {
-if(status === 'SUBSCRIBED'){
-const se = document.getElementById('speakerStatus'); if(se) se.innerText = 'Live - Waiting for payments...';
-const d = document.getElementById('speakerLiveDot'); if(d) d.className = 'w-2 h-2 bg-teal-400 rounded-full animate-pulse';
-}
-});
-} catch(e){}
-}
+    function handleDPChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const base64 = e.target.result;
+        localStorage.setItem('user_custom_dp', base64);
+        document.querySelectorAll('.user-avatar-display').forEach(img => {
+          img.src = base64;
+        });
+        alert('Profile picture updated.');
+      };
+      reader.readAsDataURL(file);
+    }
 
-async function saveTransactionToSupabase(amount, txId){
-const u = getUser();
-const tx = { amount: parseFloat(amount), type: 'Direct Transfer', merchant: (scannedMerchantData && scannedMerchantData.shop_name) || 'Merchant', date: new Date().toLocaleString(), ts: Date.now(), txId: String(txId) };
-let txs = [];
-try { txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]'); } catch(e){}
-txs.unshift(tx);
-localStorage.setItem('clickpeqr_txs', JSON.stringify(txs.slice(0, 200)));
-try {
-await supabaseClient.from('transactions').insert([{ transaction_ref: String(txId), user_id: u.id, sender_id: u.id, merchant_id: (scannedMerchantData && scannedMerchantData.merchant_id) || u.id, amount: parseFloat(amount), status: 'success', type: 'Direct Transfer' }]);
-} catch(e){}
-}
-function showTransactionHistory(){
-const c = document.getElementById('transactionListContainer');
-let txs = [];
-try { txs = JSON.parse(localStorage.getItem('clickpeqr_txs') || '[]'); } catch(e){}
-const recent = txs.filter(t => t.ts && within3Months(t.ts));
-if(recent.length === 0){
-c.innerHTML = '<p class="text-slate-500 text-center py-4">No transactions in the last 3 months.</p>';
-} else {
-let h = '';
-for(let i = 0; i < recent.length; i++){
-const t = recent[i];
-h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="font-bold text-white text-[11px]">' + t.type + ' - ' + t.merchant + '</p><p class="text-[10px] text-slate-400">' + t.date + ' | ID: ' + t.txId + '</p></div><span class="text-teal-400 font-mono font-bold text-xs">\u20A6' + t.amount + '</span></div>';
-} 
-c.innerHTML = h;
-}
-document.getElementById('transactionModal').classList.remove('hidden');
-}
+    function openSettingsModal() {
+      const u = getUser();
+      document.getElementById('settingsFullName').value = u.full_name || '';
+      document.getElementById('settingsEmail').value = u.email || '';
+      document.getElementById('settingsPhone').value = u.phone_number || '+2349067862223';
 
-function pushNotification(title, body){
-let n = [];
-try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
-n.unshift({title: title, body: body, ts: Date.now(), date: new Date().toLocaleString()});
-localStorage.setItem('clickpeqr_notifs', JSON.stringify(n.slice(0, 100)));
-try {
-const u = getUser();
-if(u.id){ supabaseClient.from('notifications').insert([{user_id: u.id, title: title, body: body}]).then(()=>{}); }
-} catch(e){}
-updateNotifBadge();
-if(!document.getElementById('notificationModal').classList.contains('hidden')){ renderNotifications(); }
-}
-function updateNotifBadge(){
-let n = [];
-try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
-const lastSeen = parseInt(localStorage.getItem('clickpeqr_notif_seen') || '0', 10);
-const hasNew = n.some(x => x.ts > lastSeen);
-const badge = document.getElementById('notifBadge');
-if(badge){ badge.classList.toggle('hidden', !hasNew); }
-}
-function renderNotifications(){
-const c = document.getElementById('notificationListContainer');
-let n = [];
-try { n = JSON.parse(localStorage.getItem('clickpeqr_notifs') || '[]'); } catch(e){}
-const recent = n.filter(x => within3Months(x.ts));
-if(recent.length === 0){
-c.innerHTML = '<p class="text-slate-500 text-center py-4">You have no notifications.</p>';
-} else {
-let h = '';
-for(let i = 0; i < recent.length; i++){
-const x = recent[i];
-h += '<div class="bg-slate-950 p-3 rounded-xl border border-slate-800"><p class="font-bold text-white text-[11px]">' + x.title + '</p><p class="text-[11px] text-slate-400 mt-0.5">' + x.body + '</p><p class="text-[9px] text-slate-500 mt-1">' + x.date + '</p></div>';
-}
-c.innerHTML = h;
-}
-}
-function showNotificationModal(){
-renderNotifications();
-document.getElementById('notificationModal').classList.remove('hidden');
-localStorage.setItem('clickpeqr_notif_seen', String(Date.now()));
-setTimeout(updateNotifBadge, 300);
-}
+      const pv = document.getElementById('settingsAvatarPreview');
+      if (pv) pv.src = localStorage.getItem('user_custom_dp') || u.avatar_url || 'logo.png';
 
-function getPointsData(userId){
-try {
-const d = JSON.parse(localStorage.getItem('clickpeqr_points_'+userId) || '{"balance":0,"history":[]}');
-if(typeof d.balance !== 'number') d.balance = 0;
-if(!Array.isArray(d.history)) d.history = [];
-return d;
-} catch(e){ return {balance: 0, history: []}; }
-}
-function awardPoints(userId, pts, reason){
-if(!userId || !pts || pts <= 0) return;
-const d = getPointsData(userId);
-d.balance += pts;
-d.history.unshift({pts: pts, reason: reason, date: new Date().toLocaleString(), ts: Date.now()});
-localStorage.setItem('clickpeqr_points_'+userId, JSON.stringify({balance: d.balance, history: d.history.slice(0, 100)}));
-try { supabaseClient.from('reward_points').upsert([{user_id: userId, balance: d.balance}], {onConflict: 'user_id'}).then(()=>{}); } catch(e){}
-updatePointsUI();
-}
-function updatePointsUI(){
-const u = getUser();
-const bal = u.id ? getPointsData(u.id).balance : 0;
-document.querySelectorAll('.customerPointsVal').forEach(el => el.textContent = bal);
-document.querySelectorAll('.merchantPointsVal').forEach(el => el.textContent = bal);
-const hp = document.getElementById('headerPoints'); if(hp) hp.textContent = bal;
-const sp = document.getElementById('sidebarPoints'); if(sp) sp.textContent = bal;
-const bb = document.getElementById('pointsBalanceBig'); if(bb) bb.textContent = bal;
-}
-function openPointsModal(){
-const u = getUser();
-const d = u.id ? getPointsData(u.id) : {balance: 0, history: []};
-const c = document.getElementById('pointsHistoryList');
-if(!d.history.length){ c.innerHTML = '<p class="text-slate-500 text-center py-3">No points earned yet. Make a payment to start earning.</p>'; }
-else {
-let h = '';
-for(let i = 0; i < d.history.length; i++){
-const x = d.history[i];
-h += '<div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center"><div><p class="text-white text-[11px]">' + x.reason + '</p><p class="text-[9px] text-slate-500">' + x.date + '</p></div><span class="text-amber-300 font-bold text-xs">+' + x.pts + '</span></div>';
-}
-c.innerHTML = h;
-}
-updatePointsUI();
-document.getElementById('pointsModal').classList.remove('hidden');
-}
+      if (u.portal_type === 'merchant') {
+        document.getElementById('settingsBizField').classList.remove('hidden');
+        document.getElementById('settingsBizName').value = u.business_name || '';
+      } else {
+        document.getElementById('settingsBizField').classList.add('hidden');
+      }
+      showModal('settingsModal');
+    }
 
-async function fetchAndRenderBanks(userId){
-const c = document.getElementById('linkedBanksListContainer');
-if(!c) return;
-const u = getUser();
-const emailKey = (u.email || '').toLowerCase();
-try {
-const res = await Promise.race([
-  supabaseClient.from('linked_accounts').select('*').eq('user_id', userId).order('is_primary', {ascending: false}),
-  new Promise(r=>setTimeout(()=>r({error:{message:'timeout'},data:[]}), 3000))
-]);
-if(!res.error && res.data && res.data.length > 0){
-renderBankRows(c, res.data, userId);
-localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(res.data));
-localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(res.data));
-return;
-}
-} catch(e){}
-let localBanks = [];
-try {
-const a = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-const b = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-localBanks = b.length > 0 ? b : a;
-} catch(e){}
-if(localBanks.length === 0){
-c.innerHTML = '<p class="text-xs text-slate-500 text-center py-3">No bank accounts linked yet. Tap &quot;+ Link Bank&quot; to add your bank for instant payments.</p>';
-return;
-}
-renderBankRows(c, localBanks, userId);
-}
-function renderBankRows(c, banks, userId){
-let h = '';
-for(let i = 0; i < banks.length; i++){
-const a = banks[i];
-const tag = a.is_primary ? '<span class="text-[9px] bg-teal-500/20 text-teal-400 px-1.5 py-0.5 rounded ml-1">Primary</span>' : '';
-h += '<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800"><div><p class="text-xs font-bold text-white">' + a.bank_name + tag + '</p><p class="text-[10px] text-slate-400 font-mono">' + a.account_number + ' - ' + a.account_name + '</p></div><div class="flex gap-1"><button onclick="switchPrimaryBank(\'' + userId + '\',' + i + ')" class="text-[10px] bg-slate-800 text-teal-400 px-2 py-1 rounded">Primary</button><button onclick="deleteBankAccount(\'' + userId + '\',' + i + ')" class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-1 rounded">Remove</button></div></div>';
-}
-c.innerHTML = h;
-}
-function openAddBankModal(){ document.getElementById('addBankModal').classList.remove('hidden'); }
-function closeAddBankModal(){ document.getElementById('addBankModal').classList.add('hidden'); }
-let verifyDebounceTimer = null;
-async function verifyBankAccount(){
-clearTimeout(verifyDebounceTimer);
-verifyDebounceTimer = setTimeout(async ()=>{
-const bankCode = document.getElementById('bankSelectDropdown').value;
-const accNum = document.getElementById('accountNumberInput').value.trim();
-const nameInput = document.getElementById('accountNameInput');
-if(!bankCode||accNum.length!==10){ nameInput.value=''; return; }
-nameInput.value='Verifying... - No Freeze';
-try {
-const res = await fetch('/api/resolve-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_number:accNum,account_bank:bankCode})});
-const result = await res.json();
-if(result&&result.status==='success'&&result.data&&result.data.account_name){ nameInput.value=result.data.account_name; } else { nameInput.value=''; }
-} catch(err){ nameInput.value=''; console.log('Verify error - no freeze',err); }
-}, 500);
-}
-async function saveNewBankAccount(){
-const u = getUser();
-if(!u.id){ alert('Please sign in first.'); return; }
-const dd = document.getElementById('bankSelectDropdown');
-const bankName = dd.options[dd.selectedIndex] ? dd.options[dd.selectedIndex].text : '';
-const bankCode = dd.value;
-const accNum = document.getElementById('accountNumberInput').value.trim();
-const accName = document.getElementById('accountNameInput').value.trim();
-if(!bankCode || accNum.length !== 10 || !accName || accName === 'Verifying account details...'){
-alert('Please select a bank, enter your 10-digit account number, and wait for the account name to appear.');
-return;
-}
-const emailKey = (u.email || '').toLowerCase();
-let localBanks = [];
-try {
-const a = JSON.parse(localStorage.getItem('clickpeqr_banks_'+u.id) || '[]');
-const b = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-localBanks = b.length > 0 ? b : a;
-} catch(e){}
-if(localBanks.some(b => b.account_number === accNum)){ alert('This account is already linked.'); return; }
-const newBank = { user_id: u.id, bank_name: bankName, bank_code: bankCode, account_number: accNum, account_name: accName, is_primary: localBanks.length === 0, email: emailKey, created_at: new Date().toISOString() };
-try { await supabaseClient.from('linked_accounts').insert([newBank]); } catch(e){}
-localBanks.push(newBank);
-localStorage.setItem('clickpeqr_banks_'+u.id, JSON.stringify(localBanks));
-localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(localBanks));
-closeAddBankModal();
-fetchAndRenderBanks(u.id);
-pushNotification('Bank account linked', bankName + ' (' + accNum + ') was linked successfully.');
-alert('Bank account linked successfully.');
-document.getElementById('accountNumberInput').value = '';
-document.getElementById('accountNameInput').value = '';
-}
-async function switchPrimaryBank(userId, idx){
-const u = getUser();
-const emailKey = (u.email || '').toLowerCase();
-let banks = [];
-try {
-banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-} catch(e){}
-if(!banks[idx]) return;
-banks.forEach((a, i) => { a.is_primary = (i === idx); });
-localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
-localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
-try {
-await supabaseClient.from('linked_accounts').update({is_primary: false}).eq('user_id', userId);
-await supabaseClient.from('linked_accounts').update({is_primary: true}).eq('user_id', userId).eq('account_number', banks[idx].account_number);
-} catch(e){}
-fetchAndRenderBanks(userId);
-const cu = getUser(); if(cu.portal_type === 'merchant'){ renderPermanentShopQR(cu); }
-alert('Primary bank updated.');
-}
-async function deleteBankAccount(userId, idx){
-if(!confirm('Remove this bank account?')) return;
-const u = getUser();
-const emailKey = (u.email || '').toLowerCase();
-let banks = [];
-try {
-banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+userId) || '[]');
-if(banks.length === 0) banks = JSON.parse(localStorage.getItem('clickpeqr_banks_'+emailKey) || '[]');
-} catch(e){}
-const toDelete = banks[idx];
-banks.splice(idx, 1);
-if(banks.length > 0 && !banks.some(b => b.is_primary)) banks[0].is_primary = true;
-localStorage.setItem('clickpeqr_banks_'+userId, JSON.stringify(banks));
-localStorage.setItem('clickpeqr_banks_'+emailKey, JSON.stringify(banks));
-try { if(toDelete) await supabaseClient.from('linked_accounts').delete().eq('user_id', userId).eq('account_number', toDelete.account_number); } catch(e){}
-fetchAndRenderBanks(userId);
-alert('Bank account removed.');
-}
+    async function saveProfileSettings() {
+      const u = getUser();
+      const newName = document.getElementById('settingsFullName').value.trim();
+      const newEmail = document.getElementById('settingsEmail').value.trim().toLowerCase();
+      const newPhone = document.getElementById('settingsPhone').value.trim();
 
-function showAboutModal(){ document.getElementById('aboutModal').classList.remove('hidden'); }
-function showComplaintModal(){ document.getElementById('complaintModal').classList.remove('hidden'); }
-function showComplaintWhatsApp(){ window.open(SUPPORT.whatsapp + '?text=Hello%20ClickPeQR%20Support%2C%20I%20need%20help', '_blank'); }
+      if (!newName) {
+        alert('Enter full name.');
+        return;
+      }
 
-const FAQ_DATA = [
-{q: "What is ClickPeQR?", a: "ClickPeQR is a secure payment gateway by Krishnyansh Zenova Peaks Ltd (RC-9810296). It lets merchants receive payments instantly through QR codes, and lets customers pay directly from their bank accounts."},
-{q: "How do I receive payments as a merchant?", a: "Sign in as a merchant, link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives."},
-{q: "How do I pay as a customer?", a: "Sign in as a customer, tap \u201CPay (Scan QR)\u201D, scan the merchant\u2019s QR code, confirm the amount, and complete the transfer. Your payment is confirmed instantly."},
-{q: "How do I link my bank account?", a: "Go to \u201CBank Accounts\u201D and tap \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, and wait for your account name to be verified automatically. Then tap \u201CVerify & Save\u201D."},
-{q: "Which banks are supported?", a: "All major Nigerian banks are supported, including GTBank, Access Bank, First Bank, UBA, Zenith Bank, and digital banks like Kuda, OPay, PalmPay and Moniepoint."},
-{q: "Is my money safe?", a: "Yes. Payments go directly between verified bank accounts, your details are stored securely, and every transaction is recorded in your history."},
-{q: "What are reward points and how do they work?", a: "Every successful transaction earns you points \u2014 customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app."},
-{q: "How do I update my profile?", a: "Open the menu, tap \u201CSettings\u201D, and you can update your profile picture, full name, email address and phone number."},
-{q: "What should I do if a payment fails?", a: "First check your internet connection and confirm the merchant\u2019s account details. If the problem continues, contact us through \u201CComplaints\u201D in the menu \u2014 we respond within 24 hours."},
-{q: "How do I file a complaint?", a: "Tap \u201CComplaints\u201D in the menu. You can reach us instantly on WhatsApp (+234 906 786 2223) or by email at Info@krishnyanshzenovapeaks.com."},
-{q: "How far back can I see my history?", a: "Your transaction history and notifications are available for the last 3 months, so you always have a clear record of your activity."},
-{q: "Who built ClickPeQR?", a: "ClickPeQR was designed and built by Krishnyansh Zenova Peaks Ltd, a registered Nigerian company (RC-9810296), to make digital payments simple for every small business."}
-];
-function buildFAQ(){
-const c = document.getElementById('faqList');
-if(!c) return;
-let h = '';
-for(let i = 0; i < FAQ_DATA.length; i++){
-h += '<div class="faq-item bg-slate-950 border border-slate-800 rounded-xl"><button onclick="toggleFaq(' + i + ')" class="w-full text-left p-3 flex justify-between items-center gap-2"><span class="font-semibold text-white text-[11px]">' + FAQ_DATA[i].q + '</span><span class="text-teal-400 text-sm">+</span></button><div class="faq-a px-3"><p class="pb-3 text-slate-400 text-[11px]">' + FAQ_DATA[i].a + '</p></div></div>';
-}
-c.innerHTML = h;
-}
-function toggleFaq(i){
-const items = document.querySelectorAll('#faqList .faq-item');
-if(items[i]) items[i].classList.toggle('faq-open');
-}
-function showFAQModal(){ buildFAQ(); document.getElementById('faqModal').classList.remove('hidden'); }
+      u.full_name = newName;
+      u.email = newEmail;
+      u.phone_number = newPhone;
 
-function toggleAIBot(){ document.getElementById('aiBotModal').classList.toggle('hidden'); }
-const BOT_KB = [
-{k: ['hello','hi ','hey','good morning','good afternoon','good evening'], r: "Hello! Welcome to ClickPeQR. I can help with payments, QR codes, bank linking, reward points, and support. What would you like to know?"},
-{k: ['point','reward','cashback','earn'], r: "You earn reward points on every successful transaction: customers earn 1 point per \u20A6100 paid, and merchants earn 2 points per \u20A6100 received. 100 points carry a \u20A610 cashback value. Your balance is shown at the top of the app \u2014 tap it anytime to view your points history."},
-{k: ['fail','not receive','pending','stuck','error ','unsuccessful','did not receive'], r: "I\u2019m sorry about that. Please check your internet connection and confirm the merchant\u2019s account details, then try again. If the issue continues, use \u201CComplaints\u201D in the menu to reach us on WhatsApp (+234 906 786 2223) or email \u2014 we respond within 24 hours."},
-{k: ['refund','reverse','money back','returned'], r: "For refund requests, please contact our support team through \u201CComplaints\u201D with your transaction ID and amount. We will review it and respond within 24 hours."},
-{k: ['complain','support','help','contact','whatsapp','human','agent','email','issue','problem'], r: "Our support team is here for you. You can reach us on WhatsApp at +234 906 786 2223, or by email at Info@krishnyanshzenovapeaks.com and Krishnyanshzenovapeaksltd@gmail.com. We respond within 24 hours. You can also tap \u201CComplaints\u201D in the menu for direct links."},
-{k: ['receive','accept payment','collect','merchant','sell ','sale'], r: "As a merchant: link your bank account, then show your Permanent Shop QR to customers. For a specific amount, enter it and tap \u201CGenerate Dynamic QR\u201D. You will hear a voice alert the moment payment arrives, and it appears in your transaction history."},
-{k: ['qr code','dynamic qr','permanent qr','change qr','new qr'], r: "Merchants have two QR types: a Permanent Shop QR for everyday use, and a Dynamic QR with a fixed amount for single sales. You can generate a new permanent QR anytime from your dashboard \u2014 the old one will stop working."},
-{k: ['link bank','add bank','bank account','connect bank'], r: "To link your bank: open the menu, tap \u201CBank Accounts\u201D, then \u201C+ Link Bank\u201D. Select your bank, enter your 10-digit account number, wait for your account name to be verified, then tap \u201CVerify & Save\u201D."},
-{k: ['verify','account name','resolve'], r: "When you link a bank, we verify the account name live with your bank before saving \u2014 this protects you from sending money to the wrong account."},
-{k: ['pay ','send money','make payment','customer pay'], r: "To pay: tap \u201CPay (Scan QR)\u201D, scan the merchant\u2019s QR code, confirm the amount and beneficiary details, then complete the transfer. You will earn reward points on every payment."},
-{k: ['history','record','past payment','previous'], r: "Tap \u201CTransaction History\u201D in the menu to see all your successful transactions from the last 3 months, with amounts, dates and reference IDs."},
-{k: ['notification','alert','bell'], r: "Tap the bell icon at the top to see your notifications from the last 3 months \u2014 including payments, points earned, and account updates."},
-{k: ['profile','my name','change name','email address','picture','avatar','photo','settings','phone number'], r: "To update your profile: open the menu, tap \u201CSettings\u201D. You can change your profile picture, full name, email address and phone number there."},
-{k: ['speaker','voice','sound','announce','hear'], r: "The virtual speaker announces every payment received. Tap \u201CEnable Voice\u201D on the merchant terminal to turn it on, and \u201CTest Voice\u201D to check it."},
-{k: ['fee','charge','cost','commission','how much'], r: "ClickPeQR keeps charges minimal so small businesses keep more of every sale. Any applicable charge is always shown clearly before you confirm a payment."},
-{k: ['which bank','supported bank','kuda','opay','palmpay','gtb ','access bank'], r: "We support all major Nigerian banks \u2014 including GTBank, Access Bank, First Bank, UBA, Zenith Bank \u2014 plus digital banks like Kuda, OPay, PalmPay and Moniepoint."},
-{k: ['safe','secure','security','trust'], r: "Your security comes first: payments move directly between verified bank accounts, account names are verified before saving, and every transaction is recorded in your history."},
-{k: ['about','vision','mission','who are you','company','zenova','built'], r: "ClickPeQR was designed and built by Krishnyansh Zenova Peaks Ltd (RC-9810296). Our vision is a Nigeria where every small business can accept digital payments as easily as receiving cash."},
-{k: ['open','hours','time','24'], r: "ClickPeQR works 24/7 \u2014 receive and make payments anytime. Our human support team responds within 24 hours."},
-{k: ['pin','login','password','forgot','log out','logout'], r: "You sign in with your name, email and 6-digit PIN. Keep your PIN private. To log out, use the \u201CLog Out\u201D button at the bottom of the menu."},
-{k: ['thank','great','nice','awesome','good job'], r: "You are most welcome! If there is anything else I can help with \u2014 payments, points, or support \u2014 just ask."},
-{k: ['price','plan','subscription'], r: "ClickPeQR is free to join for both customers and merchants. Just create your account, link your bank, and start transacting."}
-];
-function botReplyText(t){
-const l = ' ' + t.toLowerCase() + ' ';
-for(let i = 0; i < BOT_KB.length; i++){
-const item = BOT_KB[i];
-for(let j = 0; j < item.k.length; j++){ if(l.indexOf(item.k[j]) >= 0) return item.r; }
-}
-return "I want to make sure I give you the right answer. You can ask me about payments, QR codes, bank linking, reward points, transaction history, or account settings \u2014 or tap \u201CComplaints\u201D in the menu to reach our support team on WhatsApp (+234 906 786 2223).";
-}
-function sendBotMessage(){
-const i = document.getElementById('botInputText');
-const c = document.getElementById('botChatMessages');
-const t = i.value.trim();
-if(!t) return;
-const div = document.createElement('div');
-div.className = 'bg-teal-500/10 text-teal-200 p-2.5 rounded-xl text-right';
-div.textContent = t;
-c.appendChild(div);
-i.value = '';
-c.scrollTop = c.scrollHeight;
-setTimeout(() => {
-const r = document.createElement('div');
-r.className = 'bg-slate-950 p-2.5 rounded-xl';
-r.textContent = botReplyText(t);
-c.appendChild(r);
-c.scrollTop = c.scrollHeight;
-}, 500);
-}
+      if (u.portal_type === 'merchant') {
+        u.business_name = document.getElementById('settingsBizName').value.trim() || u.business_name;
+        document.getElementById('merchantStoreNameLabel').textContent = "Store: " + u.business_name;
+        renderPermanentShopQR(u);
+      } else {
+        renderCustomerPermanentQR(u);
+      }
 
-window.addEventListener('DOMContentLoaded', () => {
-if(window.__clickpeqr_init_done) return;
-const d = document.getElementById('bankSelectDropdown');
-if(d){
-d.innerHTML = '<option value="">Select Bank</option>';
-nigerianBanksList.forEach(b => {
-const o = document.createElement('option');
-o.value = b.code; o.textContent = b.name;
-d.appendChild(o);
-});
-}
-buildFAQ();
-try {
-const remember = localStorage.getItem('clickpeqr_remember') === 'true';
-const a = localStorage.getItem('clickpeqr_active_user');
-if(remember && a){ setTimeout(()=>loadDashboard(JSON.parse(a)), 50); }
-else {
-document.getElementById('authScreen').classList.remove('hidden');
-document.getElementById('dashboardScreen').classList.add('hidden');
-document.getElementById('mainHeader').classList.add('hidden');
-}
-} catch(e){}
-if('speechSynthesis' in window){
-try {
-speechSynthesis.getVoices();
-window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
-} catch(e){}
-}
-updateNotifBadge();
-});
-</script>
-</body>
-</html>
+      saveUser(u);
+      document.querySelectorAll('.user-profile-name').forEach(el => { el.textContent = u.full_name; });
+      const se = document.getElementById('sidebarUserEmail');
+      if (se) se.textContent = u.email;
+
+      hideModal('settingsModal');
+      pushNotification('Profile updated', 'Your profile details were saved.');
+      alert('Profile saved.');
+    }
+
+    // 4. QR CODE GENERATION
+    function primaryBankOf(userId) {
+      const u = getUser();
+      const emailKey = (u.email || '').toLowerCase();
+      let banks = [];
+      try {
+        banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + userId) || '[]');
+      } catch (e) {}
+      if (banks.length === 0) {
+        try {
+          banks = JSON.parse(localStorage.getItem('clickpeqr_banks_' + emailKey) || '[]');
+        } catch (e) {}
+      }
+      return banks.find(b => b.is_primary) || banks[0] || {
+        bank_code: '058',
+        account_number: '0638090889',
+        account_name: 'RUBY GARG',
+        bank_name: 'GTBank'
+      };
+    }
+
+    function renderPermanentShopQR(user) {
+      const c = document.getElementById('permanentShopQRContainer');
+      if (!c) return;
+      c.innerHTML = "";
+      const ver = user.permanent_qr_version || Date.now();
+      const pb = primaryBankOf(user.id);
+      const payload = {
+        type: "MERCHANT_PERMANENT",
+        merchantId: user.id,
+        businessName: user.business_name || user.full_name,
+        version: ver,
+        permanent_id: 'PERM_' + user.id + '_' + ver,
+        bank_code: pb.bank_code,
+        account_number: pb.account_number,
+        account_name: pb.account_name,
+        bank_name: pb.bank_name
+      };
+      new QRCode(c, { text: JSON.stringify(payload), width: 130, height: 130 });
+    }
+
+    function renderCustomerPermanentQR(user) {
+      const c = document.getElementById('customerPermanentQRContainer');
+      if (!c) return;
+      c.innerHTML = "";
+      const ver = user.permanent_qr_version || Date.now();
+      new QRCode(c, {
+        text: JSON.stringify({
+          type: "CUSTOMER_PERMANENT",
+          customerId: user.id,
+          name: user.full_name,
+          version: ver,
+          permanent_id: 'CUST_' + user.id + '_' + ver
+        }),
+        width: 130,
+        height: 130
+      });
+    }
+
+    function regenerateMerchantQR() {
+      const u = getUser();
+      if (!u.id) return;
+      if (!confirm('Generate a new Permanent Shop QR? Previous QR will stop working.')) return;
+      u.permanent_qr_version = Date.now();
+      saveUser(u);
+      renderPermanentShopQR(u);
+      alert('New Permanent Shop QR ready.');
+    }
+
+    function regenerateCustomerQR() {
+      const u = getUser();
+      if (!u.id) return;
+      if (!confirm('Generate a new Permanent Customer QR?')) return;
+      u.permanent_qr_version = Date.now();
+      saveUser(u);
+      renderCustomerPermanentQR(u);
+      alert('New Permanent Customer QR ready.');
+    }
+
+    function generateMerchantDynamicQR() {
+      const amt = document.getElementById('merchantDynAmt').value;
+      if (!amt || parseFloat(amt) <= 0) {
+        alert('Enter a valid amount.');
+        return;
+      }
+      const c = document.getElementById('dynamicQRContainer');
+      c.innerHTML = "";
+      const u = getUser();
+      const pb = primaryBankOf(u.id);
+      new QRCode(c, {
+        text: JSON.stringify({
+          type: "MERCHANT_DYNAMIC",
+          merchantId: u.id,
+          amount: amt,
+          businessName: u.business_name,
+          bank_code: pb.bank_code,
+          account_number: pb.account_number,
+          account_name: pb.account_name,
+          bank_name: pb.bank_name
+        }),
+        width: 140,
+        height: 140
+      });
+      document.getElementById('merchantQRResult').classList.remove('hidden');
+    }
+
+    // 5. QR SCANNER & PARSING
+    let html5QrCode = null;
+    let isScanning = false;
+    let qrAlreadyHandled = false;
+
+    async function stopScannerQuietly() {
+      try {
+        if (html5QrCode) {
+          try {
+            const p = html5QrCode.stop();
+            if (p && p.then) {
+              await Promise.race([p, new Promise(r => setTimeout(r, 800))]);
+            }
+          } catch (e) {}
+          try {
+            html5QrCode.clear();
+          } catch (e) {}
+        }
+      } catch (e) {}
+      isScanning = false;
+      try {
+        document.querySelectorAll('#qr-reader video').forEach(v => {
+          if (v.srcObject) {
+            v.srcObject.getTracks().forEach(t => t.stop());
+            v.srcObject = null;
+          }
+        });
+      } catch (e) {}
+    }
+
+    async function openWorkingScanner() {
+      qrAlreadyHandled = false;
+      showModal('scannerModal', 'flex');
+      document.getElementById('scannerStatus').innerText = 'Scanning... Point at QR code for automatic detection.';
+      await stopScannerQuietly();
+
+      try {
+        if (!window.Html5Qrcode) throw new Error('Scanner library failed to load.');
+        html5QrCode = new Html5Qrcode("qr-reader");
+        isScanning = true;
+
+        const onScanSuccess = function (decodedText) {
+          if (qrAlreadyHandled || !isScanning) return;
+          qrAlreadyHandled = true;
+          isScanning = false;
+          document.getElementById('scannerStatus').innerText = 'QR Detected! Opening details...';
+          const parsed = parseQRText(decodedText);
+          stopScannerQuietly().then(() => showMerchantConfirm(parsed));
+        };
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0, disableFlip: false };
+        try {
+          await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+        } catch (e1) {
+          const cams = await Html5Qrcode.getCameras();
+          if (!cams || !cams.length) throw e1;
+          const back = cams.find(c => /back|rear|environment/i.test(c.label)) || cams[0];
+          await html5QrCode.start(back.id, config, onScanSuccess, () => {});
+        }
+      } catch (err) {
+        isScanning = false;
+        document.getElementById('scannerStatus').innerText = 'Camera unavailable (' + err.message + '). Use Upload Image or Paste QR Text.';
+      }
+    }
+
+    function parseQRText(raw) {
+      const t = (raw || '').trim();
+      if (!t) return {};
+      try {
+        const j = JSON.parse(t);
+        if (j && typeof j === 'object') return j;
+      } catch (e) {}
+      try {
+        const u = new URL(t);
+        const q = {};
+        u.searchParams.forEach((v, k) => { q[k] = v; });
+        if (Object.keys(q).length) return q;
+      } catch (e) {}
+      if (/^\d{10}$/.test(t)) return { account_number: t };
+      return { account_number: t, businessName: 'Scanned Merchant' };
+    }
+
+    function normalizeQR(qrData) {
+      return {
+        shop_name: qrData.businessName || qrData.shop_name || qrData.business_name || qrData.name || 'Merchant Store',
+        account_name: qrData.account_name || qrData.accountName || 'Merchant',
+        account_number: qrData.account_number || qrData.accountNumber || qrData.account || qrData.acct || '0638090889',
+        bank_name: qrData.bank_name || qrData.bankName || qrData.bank || 'GTBank',
+        bank_code: qrData.bank_code || qrData.bankCode || qrData.code || '058',
+        merchant_id: qrData.merchantId || qrData.merchant_id || qrData.merchant || ('merchant_' + Date.now()),
+        amount: qrData.amount || qrData.amt || ''
+      };
+    }
+
+    function showMerchantConfirm(qrData) {
+      scannedMerchantData = normalizeQR(qrData || {});
+      hideModal('scannerModal');
+      hideModal('manualQRModal');
+
+      document.getElementById('confirmShopName').innerText = scannedMerchantData.shop_name;
+      document.getElementById('confirmAccountName').innerText = scannedMerchantData.account_name;
+      document.getElementById('confirmBankName').innerText = scannedMerchantData.bank_name;
+      document.getElementById('confirmCustomerName').innerText = getUser().full_name || 'Customer';
+
+      const accEl = document.getElementById('confirmAccountNumber');
+      if (accEl) accEl.innerText = scannedMerchantData.account_number;
+      document.getElementById('confirmAmountInput').value = scannedMerchantData.amount || '';
+
+      showModal('merchantConfirmModal');
+    }
+
+    async function closeScannerModal() {
+      await stopScannerQuietly();
+      hideModal('scannerModal');
+      html5QrCode = null;
+    }
+
+    function handleClickPayViaQR() {
+      const inp = document.getElementById('qrFileInput');
+      if (inp) inp.click();
+    }
+
+    async function handleQRFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      showModal('scannerModal', 'flex');
+      document.getElementById('scannerStatus').innerText = 'Reading QR from image...';
+
+      try {
+        let decoded = null;
+        if (window.Html5Qrcode) {
+          const tmp = new Html5Qrcode("qr-reader");
+          decoded = await tmp.scanFile(file, true);
+        } else {
+          throw new Error('Scanner library unavailable.');
+        }
+        event.target.value = '';
+        await stopScannerQuietly();
+        showMerchantConfirm(parseQRText(decoded));
+      } catch (e1) {
+        try {
+          if ('BarcodeDetector' in window) {
+            const bmp = await createImageBitmap(file);
+            const det = new BarcodeDetector({ formats: ['qr_code'] });
+            const codes = await det.detect(bmp);
+            if (codes && codes.length) {
+              event.target.value = '';
+              showMerchantConfirm(parseQRText(codes[0].rawValue));
+              return;
+            }
+          }
+          throw new Error('Could not read QR from this image. Try a clearer photo.');
+        } catch (e2) {
+          event.target.value = '';
+          document.getElementById('scannerStatus').innerText = 'Could not read QR. Try a clearer photo or Paste QR Text.';
+          alert(e2.message || 'Could not read QR.');
+        }
+      }
+    }
+
+    function openManualQRInput() {
+      hideModal('scannerModal');
+      showModal('manualQRModal');
+    }
+
+    function payFromManualQR() {
+      const v = document.getElementById('manualQRText').value.trim();
+      if (!v) {
+        alert('Paste QR text first.');
+        return;
+      }
+      hideModal('manualQRModal');
+      showMerchantConfirm(parseQRText(v));
+    }
+
+    function simulateSuccessfulScan() {
+      showMerchantConfirm({
+        businessName: 'ZENOVA PEAK TECH HUB',
+        account_name: 'RUBY GARG',
+        account_number: '0638090889',
+        bank_name: 'GTBank',
+        bank_code: '058',
+        merchantId: 'zenova_demo',
+        amount: '510'
+      });
+    }
+
+    // 6. LIMITS, TIERED SECURITY & DIRECT PAYMENT
+    function validateUserPin(entered
